@@ -1,0 +1,613 @@
+public abstract interface annotation class com/alirezaiyan/passki/InternalPasskiApi : java/lang/annotation/Annotation {
+}
+
+public final class com/alirezaiyan/passki/PasskeyAssertion {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun getCredentialId ()Ljava/lang/String;
+	public final fun getJson ()Ljava/lang/String;
+	public final fun getUserHandle ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/PasskeyCapabilities {
+	public fun <init> (ZZZZZ)V
+	public final fun getConditionalCreate ()Z
+	public final fun getImmediateSignIn ()Z
+	public final fun getSignals ()Z
+	public final fun getUnifiedPasswordSignIn ()Z
+	public final fun isSupported ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class com/alirezaiyan/passki/PasskeyError {
+	public fun getFixHint ()Ljava/lang/String;
+	public abstract fun getMessage ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/PasskeyError$AlreadyRegistered : com/alirezaiyan/passki/PasskeyError {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/PasskeyError$AlreadyRegistered;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getMessage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/PasskeyError$Cancelled : com/alirezaiyan/passki/PasskeyError {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/PasskeyError$Cancelled;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getMessage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/PasskeyError$Interrupted : com/alirezaiyan/passki/PasskeyError {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/PasskeyError$Interrupted;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getMessage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/PasskeyError$InvalidOptions : com/alirezaiyan/passki/PasskeyError {
+	public fun <init> (Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getFixHint ()Ljava/lang/String;
+	public fun getMessage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/PasskeyError$Misconfigured : com/alirezaiyan/passki/PasskeyError {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getFixHint ()Ljava/lang/String;
+	public fun getMessage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/PasskeyError$NoCredentials : com/alirezaiyan/passki/PasskeyError {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/PasskeyError$NoCredentials;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getMessage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/PasskeyError$NotSupported : com/alirezaiyan/passki/PasskeyError {
+	public fun <init> (Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getMessage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/PasskeyError$Unknown : com/alirezaiyan/passki/PasskeyError {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getMessage ()Ljava/lang/String;
+	public final fun getPlatformCode ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/PasskeyException : java/lang/Exception {
+	public fun <init> (Lcom/alirezaiyan/passki/PasskeyError;)V
+	public final fun getError ()Lcom/alirezaiyan/passki/PasskeyError;
+}
+
+public final class com/alirezaiyan/passki/PasskeyRegistration {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;)V
+	public final fun getAuthenticatorAttachment ()Ljava/lang/String;
+	public final fun getCredentialId ()Ljava/lang/String;
+	public final fun getJson ()Ljava/lang/String;
+	public final fun getTransports ()Ljava/util/List;
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class com/alirezaiyan/passki/PasskeyResult {
+}
+
+public final class com/alirezaiyan/passki/PasskeyResult$Failure : com/alirezaiyan/passki/PasskeyResult {
+	public fun <init> (Lcom/alirezaiyan/passki/PasskeyError;)V
+	public final fun component1 ()Lcom/alirezaiyan/passki/PasskeyError;
+	public final fun copy (Lcom/alirezaiyan/passki/PasskeyError;)Lcom/alirezaiyan/passki/PasskeyResult$Failure;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/PasskeyResult$Failure;Lcom/alirezaiyan/passki/PasskeyError;ILjava/lang/Object;)Lcom/alirezaiyan/passki/PasskeyResult$Failure;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getError ()Lcom/alirezaiyan/passki/PasskeyError;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/PasskeyResult$Success : com/alirezaiyan/passki/PasskeyResult {
+	public fun <init> (Ljava/lang/Object;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun copy (Ljava/lang/Object;)Lcom/alirezaiyan/passki/PasskeyResult$Success;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/PasskeyResult$Success;Ljava/lang/Object;ILjava/lang/Object;)Lcom/alirezaiyan/passki/PasskeyResult$Success;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/PasskeyResultKt {
+	public static final fun getOrNull (Lcom/alirezaiyan/passki/PasskeyResult;)Ljava/lang/Object;
+	public static final fun getOrThrow (Lcom/alirezaiyan/passki/PasskeyResult;)Ljava/lang/Object;
+	public static final fun map (Lcom/alirezaiyan/passki/PasskeyResult;Lkotlin/jvm/functions/Function1;)Lcom/alirezaiyan/passki/PasskeyResult;
+	public static final fun onFailure (Lcom/alirezaiyan/passki/PasskeyResult;Lkotlin/jvm/functions/Function1;)Lcom/alirezaiyan/passki/PasskeyResult;
+	public static final fun onSuccess (Lcom/alirezaiyan/passki/PasskeyResult;Lkotlin/jvm/functions/Function1;)Lcom/alirezaiyan/passki/PasskeyResult;
+}
+
+public abstract interface class com/alirezaiyan/passki/PasskeySignals {
+	public abstract fun acceptedCredentials (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun currentUserDetails (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun unknownCredential (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class com/alirezaiyan/passki/Passkeys {
+	public abstract fun capabilities (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getSignals ()Lcom/alirezaiyan/passki/PasskeySignals;
+	public abstract fun register (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun signIn (Ljava/lang/String;Lcom/alirezaiyan/passki/SignInMode;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun signIn$default (Lcom/alirezaiyan/passki/Passkeys;Ljava/lang/String;Lcom/alirezaiyan/passki/SignInMode;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public abstract fun signInOrPassword (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun upgrade (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/alirezaiyan/passki/Passkeys$DefaultImpls {
+	public static synthetic fun signIn$default (Lcom/alirezaiyan/passki/Passkeys;Ljava/lang/String;Lcom/alirezaiyan/passki/SignInMode;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class com/alirezaiyan/passki/Passkeys_jvmKt {
+	public static final fun Passkeys ()Lcom/alirezaiyan/passki/Passkeys;
+}
+
+public abstract interface class com/alirezaiyan/passki/SignInCredential {
+}
+
+public final class com/alirezaiyan/passki/SignInCredential$Passkey : com/alirezaiyan/passki/SignInCredential {
+	public fun <init> (Lcom/alirezaiyan/passki/PasskeyAssertion;)V
+	public final fun getAssertion ()Lcom/alirezaiyan/passki/PasskeyAssertion;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/SignInCredential$Password : com/alirezaiyan/passki/SignInCredential {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun getId ()Ljava/lang/String;
+	public final fun getPassword ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/SignInMode : java/lang/Enum {
+	public static final field ImmediateOnly Lcom/alirezaiyan/passki/SignInMode;
+	public static final field Modal Lcom/alirezaiyan/passki/SignInMode;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/alirezaiyan/passki/SignInMode;
+	public static fun values ()[Lcom/alirezaiyan/passki/SignInMode;
+}
+
+public final class com/alirezaiyan/passki/internal/AssertionResponseJson {
+	public static final field Companion Lcom/alirezaiyan/passki/internal/AssertionResponseJson$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcom/alirezaiyan/passki/internal/AssertionResponseJson;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/internal/AssertionResponseJson;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/alirezaiyan/passki/internal/AssertionResponseJson;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAuthenticatorData ()Ljava/lang/String;
+	public final fun getClientDataJSON ()Ljava/lang/String;
+	public final fun getSignature ()Ljava/lang/String;
+	public final fun getUserHandle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/alirezaiyan/passki/internal/AssertionResponseJson$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/AssertionResponseJson$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/alirezaiyan/passki/internal/AssertionResponseJson;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/alirezaiyan/passki/internal/AssertionResponseJson;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/AssertionResponseJson$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/AttestationResponseJson {
+	public static final field Companion Lcom/alirezaiyan/passki/internal/AttestationResponseJson$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)Lcom/alirezaiyan/passki/internal/AttestationResponseJson;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/internal/AttestationResponseJson;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lcom/alirezaiyan/passki/internal/AttestationResponseJson;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAttestationObject ()Ljava/lang/String;
+	public final fun getClientDataJSON ()Ljava/lang/String;
+	public final fun getTransports ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/alirezaiyan/passki/internal/AttestationResponseJson$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/AttestationResponseJson$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/alirezaiyan/passki/internal/AttestationResponseJson;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/alirezaiyan/passki/internal/AttestationResponseJson;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/AttestationResponseJson$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/AuthenticationResponseJson {
+	public static final field Companion Lcom/alirezaiyan/passki/internal/AuthenticationResponseJson$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/alirezaiyan/passki/internal/AssertionResponseJson;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/alirezaiyan/passki/internal/AssertionResponseJson;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Lcom/alirezaiyan/passki/internal/AssertionResponseJson;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Lkotlinx/serialization/json/JsonObject;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/alirezaiyan/passki/internal/AssertionResponseJson;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;)Lcom/alirezaiyan/passki/internal/AuthenticationResponseJson;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/internal/AuthenticationResponseJson;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/alirezaiyan/passki/internal/AssertionResponseJson;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;ILjava/lang/Object;)Lcom/alirezaiyan/passki/internal/AuthenticationResponseJson;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAuthenticatorAttachment ()Ljava/lang/String;
+	public final fun getClientExtensionResults ()Lkotlinx/serialization/json/JsonObject;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getRawId ()Ljava/lang/String;
+	public final fun getResponse ()Lcom/alirezaiyan/passki/internal/AssertionResponseJson;
+	public final fun getType ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/alirezaiyan/passki/internal/AuthenticationResponseJson$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/AuthenticationResponseJson$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/alirezaiyan/passki/internal/AuthenticationResponseJson;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/alirezaiyan/passki/internal/AuthenticationResponseJson;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/AuthenticationResponseJson$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/AuthenticatorSelectionJson {
+	public static final field Companion Lcom/alirezaiyan/passki/internal/AuthenticatorSelectionJson$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/Boolean;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;)Lcom/alirezaiyan/passki/internal/AuthenticatorSelectionJson;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/internal/AuthenticatorSelectionJson;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;ILjava/lang/Object;)Lcom/alirezaiyan/passki/internal/AuthenticatorSelectionJson;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAuthenticatorAttachment ()Ljava/lang/String;
+	public final fun getRequireResidentKey ()Ljava/lang/Boolean;
+	public final fun getResidentKey ()Ljava/lang/String;
+	public final fun getUserVerification ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/alirezaiyan/passki/internal/AuthenticatorSelectionJson$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/AuthenticatorSelectionJson$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/alirezaiyan/passki/internal/AuthenticatorSelectionJson;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/alirezaiyan/passki/internal/AuthenticatorSelectionJson;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/AuthenticatorSelectionJson$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/Base64Url {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/Base64Url;
+	public final fun decode (Ljava/lang/String;)[B
+	public final fun encode ([B)Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/internal/CreationOptionsJson {
+	public static final field Companion Lcom/alirezaiyan/passki/internal/CreationOptionsJson$Companion;
+	public fun <init> (Lcom/alirezaiyan/passki/internal/RelyingPartyJson;Lcom/alirezaiyan/passki/internal/UserJson;Ljava/lang/String;Ljava/util/List;Ljava/lang/Long;Ljava/util/List;Lcom/alirezaiyan/passki/internal/AuthenticatorSelectionJson;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;)V
+	public synthetic fun <init> (Lcom/alirezaiyan/passki/internal/RelyingPartyJson;Lcom/alirezaiyan/passki/internal/UserJson;Ljava/lang/String;Ljava/util/List;Ljava/lang/Long;Ljava/util/List;Lcom/alirezaiyan/passki/internal/AuthenticatorSelectionJson;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lcom/alirezaiyan/passki/internal/RelyingPartyJson;
+	public final fun component2 ()Lcom/alirezaiyan/passki/internal/UserJson;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/util/List;
+	public final fun component5 ()Ljava/lang/Long;
+	public final fun component6 ()Ljava/util/List;
+	public final fun component7 ()Lcom/alirezaiyan/passki/internal/AuthenticatorSelectionJson;
+	public final fun component8 ()Ljava/lang/String;
+	public final fun component9 ()Lkotlinx/serialization/json/JsonObject;
+	public final fun copy (Lcom/alirezaiyan/passki/internal/RelyingPartyJson;Lcom/alirezaiyan/passki/internal/UserJson;Ljava/lang/String;Ljava/util/List;Ljava/lang/Long;Ljava/util/List;Lcom/alirezaiyan/passki/internal/AuthenticatorSelectionJson;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;)Lcom/alirezaiyan/passki/internal/CreationOptionsJson;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/internal/CreationOptionsJson;Lcom/alirezaiyan/passki/internal/RelyingPartyJson;Lcom/alirezaiyan/passki/internal/UserJson;Ljava/lang/String;Ljava/util/List;Ljava/lang/Long;Ljava/util/List;Lcom/alirezaiyan/passki/internal/AuthenticatorSelectionJson;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;ILjava/lang/Object;)Lcom/alirezaiyan/passki/internal/CreationOptionsJson;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAttestation ()Ljava/lang/String;
+	public final fun getAuthenticatorSelection ()Lcom/alirezaiyan/passki/internal/AuthenticatorSelectionJson;
+	public final fun getChallenge ()Ljava/lang/String;
+	public final fun getExcludeCredentials ()Ljava/util/List;
+	public final fun getExtensions ()Lkotlinx/serialization/json/JsonObject;
+	public final fun getPubKeyCredParams ()Ljava/util/List;
+	public final fun getRp ()Lcom/alirezaiyan/passki/internal/RelyingPartyJson;
+	public final fun getTimeout ()Ljava/lang/Long;
+	public final fun getUser ()Lcom/alirezaiyan/passki/internal/UserJson;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/alirezaiyan/passki/internal/CreationOptionsJson$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/CreationOptionsJson$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/alirezaiyan/passki/internal/CreationOptionsJson;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/alirezaiyan/passki/internal/CreationOptionsJson;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/CreationOptionsJson$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/CredentialDescriptorJson {
+	public static final field Companion Lcom/alirezaiyan/passki/internal/CredentialDescriptorJson$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)Lcom/alirezaiyan/passki/internal/CredentialDescriptorJson;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/internal/CredentialDescriptorJson;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lcom/alirezaiyan/passki/internal/CredentialDescriptorJson;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getTransports ()Ljava/util/List;
+	public final fun getType ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/alirezaiyan/passki/internal/CredentialDescriptorJson$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/CredentialDescriptorJson$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/alirezaiyan/passki/internal/CredentialDescriptorJson;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/alirezaiyan/passki/internal/CredentialDescriptorJson;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/CredentialDescriptorJson$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/NormalizedOptions {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Object;)V
+	public final fun getJson ()Ljava/lang/String;
+	public final fun getModel ()Ljava/lang/Object;
+}
+
+public final class com/alirezaiyan/passki/internal/PubKeyCredParamJson {
+	public static final field Companion Lcom/alirezaiyan/passki/internal/PubKeyCredParamJson$Companion;
+	public fun <init> (Ljava/lang/String;I)V
+	public synthetic fun <init> (Ljava/lang/String;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()I
+	public final fun copy (Ljava/lang/String;I)Lcom/alirezaiyan/passki/internal/PubKeyCredParamJson;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/internal/PubKeyCredParamJson;Ljava/lang/String;IILjava/lang/Object;)Lcom/alirezaiyan/passki/internal/PubKeyCredParamJson;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAlg ()I
+	public final fun getType ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/alirezaiyan/passki/internal/PubKeyCredParamJson$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/PubKeyCredParamJson$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/alirezaiyan/passki/internal/PubKeyCredParamJson;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/alirezaiyan/passki/internal/PubKeyCredParamJson;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/PubKeyCredParamJson$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/RegistrationResponseJson {
+	public static final field Companion Lcom/alirezaiyan/passki/internal/RegistrationResponseJson$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/alirezaiyan/passki/internal/AttestationResponseJson;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/alirezaiyan/passki/internal/AttestationResponseJson;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Lcom/alirezaiyan/passki/internal/AttestationResponseJson;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Lkotlinx/serialization/json/JsonObject;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/alirezaiyan/passki/internal/AttestationResponseJson;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;)Lcom/alirezaiyan/passki/internal/RegistrationResponseJson;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/internal/RegistrationResponseJson;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/alirezaiyan/passki/internal/AttestationResponseJson;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;ILjava/lang/Object;)Lcom/alirezaiyan/passki/internal/RegistrationResponseJson;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAuthenticatorAttachment ()Ljava/lang/String;
+	public final fun getClientExtensionResults ()Lkotlinx/serialization/json/JsonObject;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getRawId ()Ljava/lang/String;
+	public final fun getResponse ()Lcom/alirezaiyan/passki/internal/AttestationResponseJson;
+	public final fun getType ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/alirezaiyan/passki/internal/RegistrationResponseJson$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/RegistrationResponseJson$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/alirezaiyan/passki/internal/RegistrationResponseJson;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/alirezaiyan/passki/internal/RegistrationResponseJson;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/RegistrationResponseJson$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/RelyingPartyJson {
+	public static final field Companion Lcom/alirezaiyan/passki/internal/RelyingPartyJson$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lcom/alirezaiyan/passki/internal/RelyingPartyJson;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/internal/RelyingPartyJson;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/alirezaiyan/passki/internal/RelyingPartyJson;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/alirezaiyan/passki/internal/RelyingPartyJson$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/RelyingPartyJson$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/alirezaiyan/passki/internal/RelyingPartyJson;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/alirezaiyan/passki/internal/RelyingPartyJson;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/RelyingPartyJson$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/RequestOptionsJson {
+	public static final field Companion Lcom/alirezaiyan/passki/internal/RequestOptionsJson$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/Long;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Long;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/Long;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/util/List;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Lkotlinx/serialization/json/JsonObject;
+	public final fun copy (Ljava/lang/String;Ljava/lang/Long;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;)Lcom/alirezaiyan/passki/internal/RequestOptionsJson;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/internal/RequestOptionsJson;Ljava/lang/String;Ljava/lang/Long;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;ILjava/lang/Object;)Lcom/alirezaiyan/passki/internal/RequestOptionsJson;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllowCredentials ()Ljava/util/List;
+	public final fun getChallenge ()Ljava/lang/String;
+	public final fun getExtensions ()Lkotlinx/serialization/json/JsonObject;
+	public final fun getRpId ()Ljava/lang/String;
+	public final fun getTimeout ()Ljava/lang/Long;
+	public final fun getUserVerification ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/alirezaiyan/passki/internal/RequestOptionsJson$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/RequestOptionsJson$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/alirezaiyan/passki/internal/RequestOptionsJson;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/alirezaiyan/passki/internal/RequestOptionsJson;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/RequestOptionsJson$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/SignalRequests {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/SignalRequests;
+	public final fun acceptedCredentials (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public final fun currentUserDetails (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public final fun unknownCredential (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/internal/UserJson {
+	public static final field Companion Lcom/alirezaiyan/passki/internal/UserJson$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcom/alirezaiyan/passki/internal/UserJson;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/internal/UserJson;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/alirezaiyan/passki/internal/UserJson;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDisplayName ()Ljava/lang/String;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/alirezaiyan/passki/internal/UserJson$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/UserJson$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/alirezaiyan/passki/internal/UserJson;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/alirezaiyan/passki/internal/UserJson;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/UserJson$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/WebAuthnJsonKt {
+	public static final fun getPasskiJson ()Lkotlinx/serialization/json/Json;
+}
+
+public final class com/alirezaiyan/passki/internal/WebAuthnOptions {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/WebAuthnOptions;
+	public final fun parseCreation (Ljava/lang/String;)Lcom/alirezaiyan/passki/internal/NormalizedOptions;
+	public final fun parseRequest (Ljava/lang/String;)Lcom/alirezaiyan/passki/internal/NormalizedOptions;
+}
+
+public final class com/alirezaiyan/passki/internal/WebAuthnResponses {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/WebAuthnResponses;
+	public final fun authentication ([B[B[B[B[BLjava/lang/String;Lkotlinx/serialization/json/JsonObject;)Ljava/lang/String;
+	public static synthetic fun authentication$default (Lcom/alirezaiyan/passki/internal/WebAuthnResponses;[B[B[B[B[BLjava/lang/String;Lkotlinx/serialization/json/JsonObject;ILjava/lang/Object;)Ljava/lang/String;
+	public final fun registration ([B[B[BLjava/util/List;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;)Ljava/lang/String;
+	public static synthetic fun registration$default (Lcom/alirezaiyan/passki/internal/WebAuthnResponses;[B[B[BLjava/util/List;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;ILjava/lang/Object;)Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/internal/WebAuthnResponsesKt {
+	public static final fun parseAssertion (Ljava/lang/String;)Lcom/alirezaiyan/passki/PasskeyAssertion;
+	public static final fun parseRegistration (Ljava/lang/String;)Lcom/alirezaiyan/passki/PasskeyRegistration;
+}
+

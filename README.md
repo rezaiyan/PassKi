@@ -1,46 +1,66 @@
-This is a Kotlin Multiplatform project targeting Android, iOS, Web, Desktop (JVM).
+# PassKi
 
-* [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+Passkeys for Kotlin Multiplatform. One dependency, one call, native authenticators, and errors that tell you how to fix them.
 
-* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
-    folder is the appropriate location.
+| Platform | Status |
+|---|---|
+| Android 9+ (Credential Manager) | register, sign in, passkey-or-password, upgrade, signals |
+| iOS 16+ (AuthenticationServices) | register, sign in, passkey-or-password, upgrade (iOS 18+); signals return `NotSupported` for now |
+| Web, Windows, macOS, Linux | roadmap; returns `PasskeyError.NotSupported` today |
 
-### Running the apps
+## Install
 
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
+```kotlin
+commonMain.dependencies { implementation("com.alirezaiyan.passki:passki:0.1.0-alpha01") }
+commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha01") }
+```
 
-- Android app: `./gradlew :androidApp:assembleDebug`
-- Desktop app:
-  - Hot reload: `./gradlew :desktopApp:hotRun --auto`
-  - Standard run: `./gradlew :desktopApp:run`
-- Web app:
-  - Wasm target (faster, modern browsers): `./gradlew :webApp:wasmJsBrowserDevelopmentRun`
-  - JS target (slower, supports older browsers): `./gradlew :webApp:jsBrowserDevelopmentRun`
-- iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+## Use
 
-### Running tests
+```kotlin
+val passkeys = Passkeys() // no Activity, no UIWindow
 
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
+passkeys.register(api.registrationOptions())
+    .onSuccess { api.finishRegistration(it.json) }
+    .onFailure { error ->
+        when (error) {
+            PasskeyError.Cancelled -> Unit
+            is PasskeyError.Misconfigured -> log(error.fixHint) // tells you exactly what's wrong
+            else -> showError(error.message)
+        }
+    }
 
-- Android tests: `./gradlew :shared:testAndroidHostTest`
-- Desktop tests: `./gradlew :shared:jvmTest`
-- Web tests:
-  - Wasm target: `./gradlew :shared:wasmJsTest`
-  - JS target: `./gradlew :shared:jsTest`
-- iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
+passkeys.signIn(api.authenticationOptions()).onSuccess { api.finishSignIn(it.json) }
+passkeys.signInOrPassword(options)   // one sheet: passkeys + saved passwords
+passkeys.upgrade(options)            // silently add a passkey after password login
+passkeys.signals.unknownCredential(rpId, credentialId) // keep password managers in sync
+```
 
----
+Options are your server's WebAuthn JSON, used as-is (a `{"publicKey": ...}` envelope is fine). Verify the returned `json` on your server with java-webauthn-server, webauthn4j, SimpleWebAuthn or py_webauthn.
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
-[Compose Multiplatform](https://kotlinlang.org/compose-multiplatform/),
-[Kotlin/Wasm](https://kotl.in/wasm/)…
+## Good to know
 
-We would appreciate your feedback on Compose/Web and Kotlin/Wasm in the public Slack channel [#compose-web](https://slack-chats.kotlinlang.org/c/compose-web).
-If you face any issues, please report them on [YouTrack](https://youtrack.jetbrains.com/newIssue?project=CMP).
+- **`upgrade()` is opportunistic.** It uses conditional create, so the platform may decline without any UI. Treat every `upgrade()` failure as silent: do not show an error and do not block your login flow.
+- **Verifying upgrade responses.** A conditional-create response is created without a user prompt, so the user-presence (UP) flag may be 0. Servers verifying these responses must not require user presence.
+- **Signals on iOS.** `passkeys.signals` returns `PasskeyError.NotSupported` on iOS for now.
+- **iOS registration responses** omit the WebAuthn Level 3 `publicKey` and `publicKeyAlgorithm` fields. Read the public key from `attestationObject`, which every server library already does.
+
+## Test without devices
+
+```kotlin
+val passkeys = FakePasskeys(origin = "https://example.com") // real ES256 responses, accepted by webauthn4j
+passkeys.failNextWith(PasskeyError.Cancelled)               // next call fails once
+passkeys.conditionalCreate = false                          // simulate a device without conditional create
+```
+
+Other capability flags: `isSupported`, `immediateSignIn`, `unifiedPasswordSignIn`, `signalsSupported`. `TestOptions.creation(rpId)` and `TestOptions.request(rpId)` build server-style options JSON.
+
+## Server setup
+
+- **Android:** serve `https://<rpId>/.well-known/assetlinks.json` with `delegate_permission/common.get_login_creds` and your signing SHA-256. Allow the origin `android:apk-key-hash:<base64url-sha256>` in your verifier.
+- **iOS:** add the Associated Domains `webcredentials:<rpId>` entitlement and serve `/.well-known/apple-app-site-association`.
+- See `docs/setup/well-known/` for templates.
+
+## License
+
+Apache-2.0 (c) Ali Rezaiyan

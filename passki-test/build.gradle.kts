@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.vanniktechPublish)
 }
 
 kotlin {
@@ -50,6 +51,32 @@ kotlin {
         }
         jvmTest.dependencies {
             implementation(libs.webauthn4j.core)
+        }
+    }
+}
+
+mavenPublishing {
+    coordinates(artifactId = "passki-test")
+    publishToMavenCentral()
+    if (project.hasProperty("signingInMemoryKey")) signAllPublications()
+    pom {
+        name.set("PassKi Test")
+        description.set("Test fakes for PassKi: FakePasskeys and a WebAuthn-valid fake authenticator.")
+        url.set("https://github.com/rezaiyan/PassKi")
+        licenses {
+            license {
+                name.set("Apache-2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+            }
+        }
+        developers {
+            developer {
+                id.set("alirezaiyan")
+                name.set("Ali Rezaiyan")
+            }
+        }
+        scm {
+            url.set("https://github.com/rezaiyan/PassKi")
         }
     }
 }

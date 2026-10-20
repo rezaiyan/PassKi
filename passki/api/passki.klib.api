@@ -1,0 +1,681 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, js, wasmJs]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <PassKi:passki>
+open annotation class com.alirezaiyan.passki/InternalPasskiApi : kotlin/Annotation { // com.alirezaiyan.passki/InternalPasskiApi|null[0]
+    constructor <init>() // com.alirezaiyan.passki/InternalPasskiApi.<init>|<init>(){}[0]
+}
+
+final enum class com.alirezaiyan.passki/SignInMode : kotlin/Enum<com.alirezaiyan.passki/SignInMode> { // com.alirezaiyan.passki/SignInMode|null[0]
+    enum entry ImmediateOnly // com.alirezaiyan.passki/SignInMode.ImmediateOnly|null[0]
+    enum entry Modal // com.alirezaiyan.passki/SignInMode.Modal|null[0]
+
+    final val entries // com.alirezaiyan.passki/SignInMode.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.alirezaiyan.passki/SignInMode> // com.alirezaiyan.passki/SignInMode.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): com.alirezaiyan.passki/SignInMode // com.alirezaiyan.passki/SignInMode.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.alirezaiyan.passki/SignInMode> // com.alirezaiyan.passki/SignInMode.values|values#static(){}[0]
+}
+
+abstract interface com.alirezaiyan.passki/PasskeySignals { // com.alirezaiyan.passki/PasskeySignals|null[0]
+    abstract suspend fun acceptedCredentials(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String>): com.alirezaiyan.passki/PasskeyResult<kotlin/Unit> // com.alirezaiyan.passki/PasskeySignals.acceptedCredentials|acceptedCredentials(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+    abstract suspend fun currentUserDetails(kotlin/String, kotlin/String, kotlin/String, kotlin/String): com.alirezaiyan.passki/PasskeyResult<kotlin/Unit> // com.alirezaiyan.passki/PasskeySignals.currentUserDetails|currentUserDetails(kotlin.String;kotlin.String;kotlin.String;kotlin.String){}[0]
+    abstract suspend fun unknownCredential(kotlin/String, kotlin/String): com.alirezaiyan.passki/PasskeyResult<kotlin/Unit> // com.alirezaiyan.passki/PasskeySignals.unknownCredential|unknownCredential(kotlin.String;kotlin.String){}[0]
+}
+
+abstract interface com.alirezaiyan.passki/Passkeys { // com.alirezaiyan.passki/Passkeys|null[0]
+    abstract val signals // com.alirezaiyan.passki/Passkeys.signals|{}signals[0]
+        abstract fun <get-signals>(): com.alirezaiyan.passki/PasskeySignals // com.alirezaiyan.passki/Passkeys.signals.<get-signals>|<get-signals>(){}[0]
+
+    abstract suspend fun capabilities(): com.alirezaiyan.passki/PasskeyCapabilities // com.alirezaiyan.passki/Passkeys.capabilities|capabilities(){}[0]
+    abstract suspend fun register(kotlin/String): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/PasskeyRegistration> // com.alirezaiyan.passki/Passkeys.register|register(kotlin.String){}[0]
+    abstract suspend fun signIn(kotlin/String, com.alirezaiyan.passki/SignInMode = ...): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/PasskeyAssertion> // com.alirezaiyan.passki/Passkeys.signIn|signIn(kotlin.String;com.alirezaiyan.passki.SignInMode){}[0]
+    abstract suspend fun signInOrPassword(kotlin/String): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignInCredential> // com.alirezaiyan.passki/Passkeys.signInOrPassword|signInOrPassword(kotlin.String){}[0]
+    abstract suspend fun upgrade(kotlin/String): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/PasskeyRegistration> // com.alirezaiyan.passki/Passkeys.upgrade|upgrade(kotlin.String){}[0]
+}
+
+sealed interface <#A: out kotlin/Any?> com.alirezaiyan.passki/PasskeyResult { // com.alirezaiyan.passki/PasskeyResult|null[0]
+    final class <#A1: out kotlin/Any?> Success : com.alirezaiyan.passki/PasskeyResult<#A1> { // com.alirezaiyan.passki/PasskeyResult.Success|null[0]
+        constructor <init>(#A1) // com.alirezaiyan.passki/PasskeyResult.Success.<init>|<init>(1:0){}[0]
+
+        final val value // com.alirezaiyan.passki/PasskeyResult.Success.value|{}value[0]
+            final fun <get-value>(): #A1 // com.alirezaiyan.passki/PasskeyResult.Success.value.<get-value>|<get-value>(){}[0]
+
+        final fun component1(): #A1 // com.alirezaiyan.passki/PasskeyResult.Success.component1|component1(){}[0]
+        final fun copy(#A1 = ...): com.alirezaiyan.passki/PasskeyResult.Success<#A1> // com.alirezaiyan.passki/PasskeyResult.Success.copy|copy(1:0){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki/PasskeyResult.Success.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.alirezaiyan.passki/PasskeyResult.Success.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.alirezaiyan.passki/PasskeyResult.Success.toString|toString(){}[0]
+    }
+
+    final class Failure : com.alirezaiyan.passki/PasskeyResult<kotlin/Nothing> { // com.alirezaiyan.passki/PasskeyResult.Failure|null[0]
+        constructor <init>(com.alirezaiyan.passki/PasskeyError) // com.alirezaiyan.passki/PasskeyResult.Failure.<init>|<init>(com.alirezaiyan.passki.PasskeyError){}[0]
+
+        final val error // com.alirezaiyan.passki/PasskeyResult.Failure.error|{}error[0]
+            final fun <get-error>(): com.alirezaiyan.passki/PasskeyError // com.alirezaiyan.passki/PasskeyResult.Failure.error.<get-error>|<get-error>(){}[0]
+
+        final fun component1(): com.alirezaiyan.passki/PasskeyError // com.alirezaiyan.passki/PasskeyResult.Failure.component1|component1(){}[0]
+        final fun copy(com.alirezaiyan.passki/PasskeyError = ...): com.alirezaiyan.passki/PasskeyResult.Failure // com.alirezaiyan.passki/PasskeyResult.Failure.copy|copy(com.alirezaiyan.passki.PasskeyError){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki/PasskeyResult.Failure.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.alirezaiyan.passki/PasskeyResult.Failure.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.alirezaiyan.passki/PasskeyResult.Failure.toString|toString(){}[0]
+    }
+}
+
+sealed interface com.alirezaiyan.passki/SignInCredential { // com.alirezaiyan.passki/SignInCredential|null[0]
+    final class Passkey : com.alirezaiyan.passki/SignInCredential { // com.alirezaiyan.passki/SignInCredential.Passkey|null[0]
+        constructor <init>(com.alirezaiyan.passki/PasskeyAssertion) // com.alirezaiyan.passki/SignInCredential.Passkey.<init>|<init>(com.alirezaiyan.passki.PasskeyAssertion){}[0]
+
+        final val assertion // com.alirezaiyan.passki/SignInCredential.Passkey.assertion|{}assertion[0]
+            final fun <get-assertion>(): com.alirezaiyan.passki/PasskeyAssertion // com.alirezaiyan.passki/SignInCredential.Passkey.assertion.<get-assertion>|<get-assertion>(){}[0]
+
+        final fun toString(): kotlin/String // com.alirezaiyan.passki/SignInCredential.Passkey.toString|toString(){}[0]
+    }
+
+    final class Password : com.alirezaiyan.passki/SignInCredential { // com.alirezaiyan.passki/SignInCredential.Password|null[0]
+        constructor <init>(kotlin/String, kotlin/String) // com.alirezaiyan.passki/SignInCredential.Password.<init>|<init>(kotlin.String;kotlin.String){}[0]
+
+        final val id // com.alirezaiyan.passki/SignInCredential.Password.id|{}id[0]
+            final fun <get-id>(): kotlin/String // com.alirezaiyan.passki/SignInCredential.Password.id.<get-id>|<get-id>(){}[0]
+        final val password // com.alirezaiyan.passki/SignInCredential.Password.password|{}password[0]
+            final fun <get-password>(): kotlin/String // com.alirezaiyan.passki/SignInCredential.Password.password.<get-password>|<get-password>(){}[0]
+
+        final fun toString(): kotlin/String // com.alirezaiyan.passki/SignInCredential.Password.toString|toString(){}[0]
+    }
+}
+
+final class <#A: kotlin/Any?> com.alirezaiyan.passki.internal/NormalizedOptions { // com.alirezaiyan.passki.internal/NormalizedOptions|null[0]
+    constructor <init>(kotlin/String, #A) // com.alirezaiyan.passki.internal/NormalizedOptions.<init>|<init>(kotlin.String;1:0){}[0]
+
+    final val json // com.alirezaiyan.passki.internal/NormalizedOptions.json|{}json[0]
+        final fun <get-json>(): kotlin/String // com.alirezaiyan.passki.internal/NormalizedOptions.json.<get-json>|<get-json>(){}[0]
+    final val model // com.alirezaiyan.passki.internal/NormalizedOptions.model|{}model[0]
+        final fun <get-model>(): #A // com.alirezaiyan.passki.internal/NormalizedOptions.model.<get-model>|<get-model>(){}[0]
+}
+
+final class com.alirezaiyan.passki.internal/AssertionResponseJson { // com.alirezaiyan.passki.internal/AssertionResponseJson|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String, kotlin/String? = ...) // com.alirezaiyan.passki.internal/AssertionResponseJson.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;kotlin.String?){}[0]
+
+    final val authenticatorData // com.alirezaiyan.passki.internal/AssertionResponseJson.authenticatorData|{}authenticatorData[0]
+        final fun <get-authenticatorData>(): kotlin/String // com.alirezaiyan.passki.internal/AssertionResponseJson.authenticatorData.<get-authenticatorData>|<get-authenticatorData>(){}[0]
+    final val clientDataJSON // com.alirezaiyan.passki.internal/AssertionResponseJson.clientDataJSON|{}clientDataJSON[0]
+        final fun <get-clientDataJSON>(): kotlin/String // com.alirezaiyan.passki.internal/AssertionResponseJson.clientDataJSON.<get-clientDataJSON>|<get-clientDataJSON>(){}[0]
+    final val signature // com.alirezaiyan.passki.internal/AssertionResponseJson.signature|{}signature[0]
+        final fun <get-signature>(): kotlin/String // com.alirezaiyan.passki.internal/AssertionResponseJson.signature.<get-signature>|<get-signature>(){}[0]
+    final val userHandle // com.alirezaiyan.passki.internal/AssertionResponseJson.userHandle|{}userHandle[0]
+        final fun <get-userHandle>(): kotlin/String? // com.alirezaiyan.passki.internal/AssertionResponseJson.userHandle.<get-userHandle>|<get-userHandle>(){}[0]
+
+    final fun component1(): kotlin/String // com.alirezaiyan.passki.internal/AssertionResponseJson.component1|component1(){}[0]
+    final fun component2(): kotlin/String // com.alirezaiyan.passki.internal/AssertionResponseJson.component2|component2(){}[0]
+    final fun component3(): kotlin/String // com.alirezaiyan.passki.internal/AssertionResponseJson.component3|component3(){}[0]
+    final fun component4(): kotlin/String? // com.alirezaiyan.passki.internal/AssertionResponseJson.component4|component4(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., kotlin/String? = ...): com.alirezaiyan.passki.internal/AssertionResponseJson // com.alirezaiyan.passki.internal/AssertionResponseJson.copy|copy(kotlin.String;kotlin.String;kotlin.String;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.internal/AssertionResponseJson.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.internal/AssertionResponseJson.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.alirezaiyan.passki.internal/AssertionResponseJson.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.alirezaiyan.passki.internal/AssertionResponseJson> { // com.alirezaiyan.passki.internal/AssertionResponseJson.$serializer|null[0]
+        final val descriptor // com.alirezaiyan.passki.internal/AssertionResponseJson.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.alirezaiyan.passki.internal/AssertionResponseJson.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.alirezaiyan.passki.internal/AssertionResponseJson.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.alirezaiyan.passki.internal/AssertionResponseJson // com.alirezaiyan.passki.internal/AssertionResponseJson.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.alirezaiyan.passki.internal/AssertionResponseJson) // com.alirezaiyan.passki.internal/AssertionResponseJson.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.alirezaiyan.passki.internal.AssertionResponseJson){}[0]
+    }
+
+    final object Companion { // com.alirezaiyan.passki.internal/AssertionResponseJson.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.alirezaiyan.passki.internal/AssertionResponseJson> // com.alirezaiyan.passki.internal/AssertionResponseJson.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.alirezaiyan.passki.internal/AttestationResponseJson { // com.alirezaiyan.passki.internal/AttestationResponseJson|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String> = ...) // com.alirezaiyan.passki.internal/AttestationResponseJson.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+
+    final val attestationObject // com.alirezaiyan.passki.internal/AttestationResponseJson.attestationObject|{}attestationObject[0]
+        final fun <get-attestationObject>(): kotlin/String // com.alirezaiyan.passki.internal/AttestationResponseJson.attestationObject.<get-attestationObject>|<get-attestationObject>(){}[0]
+    final val clientDataJSON // com.alirezaiyan.passki.internal/AttestationResponseJson.clientDataJSON|{}clientDataJSON[0]
+        final fun <get-clientDataJSON>(): kotlin/String // com.alirezaiyan.passki.internal/AttestationResponseJson.clientDataJSON.<get-clientDataJSON>|<get-clientDataJSON>(){}[0]
+    final val transports // com.alirezaiyan.passki.internal/AttestationResponseJson.transports|{}transports[0]
+        final fun <get-transports>(): kotlin.collections/List<kotlin/String> // com.alirezaiyan.passki.internal/AttestationResponseJson.transports.<get-transports>|<get-transports>(){}[0]
+
+    final fun component1(): kotlin/String // com.alirezaiyan.passki.internal/AttestationResponseJson.component1|component1(){}[0]
+    final fun component2(): kotlin/String // com.alirezaiyan.passki.internal/AttestationResponseJson.component2|component2(){}[0]
+    final fun component3(): kotlin.collections/List<kotlin/String> // com.alirezaiyan.passki.internal/AttestationResponseJson.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin.collections/List<kotlin/String> = ...): com.alirezaiyan.passki.internal/AttestationResponseJson // com.alirezaiyan.passki.internal/AttestationResponseJson.copy|copy(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.internal/AttestationResponseJson.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.internal/AttestationResponseJson.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.alirezaiyan.passki.internal/AttestationResponseJson.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.alirezaiyan.passki.internal/AttestationResponseJson> { // com.alirezaiyan.passki.internal/AttestationResponseJson.$serializer|null[0]
+        final val descriptor // com.alirezaiyan.passki.internal/AttestationResponseJson.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.alirezaiyan.passki.internal/AttestationResponseJson.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.alirezaiyan.passki.internal/AttestationResponseJson.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.alirezaiyan.passki.internal/AttestationResponseJson // com.alirezaiyan.passki.internal/AttestationResponseJson.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.alirezaiyan.passki.internal/AttestationResponseJson) // com.alirezaiyan.passki.internal/AttestationResponseJson.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.alirezaiyan.passki.internal.AttestationResponseJson){}[0]
+    }
+
+    final object Companion { // com.alirezaiyan.passki.internal/AttestationResponseJson.Companion|null[0]
+        final val $childSerializers // com.alirezaiyan.passki.internal/AttestationResponseJson.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<com.alirezaiyan.passki.internal/AttestationResponseJson> // com.alirezaiyan.passki.internal/AttestationResponseJson.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.alirezaiyan.passki.internal/AuthenticationResponseJson { // com.alirezaiyan.passki.internal/AuthenticationResponseJson|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String = ..., com.alirezaiyan.passki.internal/AssertionResponseJson, kotlin/String? = ..., kotlinx.serialization.json/JsonObject = ...) // com.alirezaiyan.passki.internal/AuthenticationResponseJson.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;com.alirezaiyan.passki.internal.AssertionResponseJson;kotlin.String?;kotlinx.serialization.json.JsonObject){}[0]
+
+    final val authenticatorAttachment // com.alirezaiyan.passki.internal/AuthenticationResponseJson.authenticatorAttachment|{}authenticatorAttachment[0]
+        final fun <get-authenticatorAttachment>(): kotlin/String? // com.alirezaiyan.passki.internal/AuthenticationResponseJson.authenticatorAttachment.<get-authenticatorAttachment>|<get-authenticatorAttachment>(){}[0]
+    final val clientExtensionResults // com.alirezaiyan.passki.internal/AuthenticationResponseJson.clientExtensionResults|{}clientExtensionResults[0]
+        final fun <get-clientExtensionResults>(): kotlinx.serialization.json/JsonObject // com.alirezaiyan.passki.internal/AuthenticationResponseJson.clientExtensionResults.<get-clientExtensionResults>|<get-clientExtensionResults>(){}[0]
+    final val id // com.alirezaiyan.passki.internal/AuthenticationResponseJson.id|{}id[0]
+        final fun <get-id>(): kotlin/String // com.alirezaiyan.passki.internal/AuthenticationResponseJson.id.<get-id>|<get-id>(){}[0]
+    final val rawId // com.alirezaiyan.passki.internal/AuthenticationResponseJson.rawId|{}rawId[0]
+        final fun <get-rawId>(): kotlin/String // com.alirezaiyan.passki.internal/AuthenticationResponseJson.rawId.<get-rawId>|<get-rawId>(){}[0]
+    final val response // com.alirezaiyan.passki.internal/AuthenticationResponseJson.response|{}response[0]
+        final fun <get-response>(): com.alirezaiyan.passki.internal/AssertionResponseJson // com.alirezaiyan.passki.internal/AuthenticationResponseJson.response.<get-response>|<get-response>(){}[0]
+    final val type // com.alirezaiyan.passki.internal/AuthenticationResponseJson.type|{}type[0]
+        final fun <get-type>(): kotlin/String // com.alirezaiyan.passki.internal/AuthenticationResponseJson.type.<get-type>|<get-type>(){}[0]
+
+    final fun component1(): kotlin/String // com.alirezaiyan.passki.internal/AuthenticationResponseJson.component1|component1(){}[0]
+    final fun component2(): kotlin/String // com.alirezaiyan.passki.internal/AuthenticationResponseJson.component2|component2(){}[0]
+    final fun component3(): kotlin/String // com.alirezaiyan.passki.internal/AuthenticationResponseJson.component3|component3(){}[0]
+    final fun component4(): com.alirezaiyan.passki.internal/AssertionResponseJson // com.alirezaiyan.passki.internal/AuthenticationResponseJson.component4|component4(){}[0]
+    final fun component5(): kotlin/String? // com.alirezaiyan.passki.internal/AuthenticationResponseJson.component5|component5(){}[0]
+    final fun component6(): kotlinx.serialization.json/JsonObject // com.alirezaiyan.passki.internal/AuthenticationResponseJson.component6|component6(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., com.alirezaiyan.passki.internal/AssertionResponseJson = ..., kotlin/String? = ..., kotlinx.serialization.json/JsonObject = ...): com.alirezaiyan.passki.internal/AuthenticationResponseJson // com.alirezaiyan.passki.internal/AuthenticationResponseJson.copy|copy(kotlin.String;kotlin.String;kotlin.String;com.alirezaiyan.passki.internal.AssertionResponseJson;kotlin.String?;kotlinx.serialization.json.JsonObject){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.internal/AuthenticationResponseJson.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.internal/AuthenticationResponseJson.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.alirezaiyan.passki.internal/AuthenticationResponseJson.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.alirezaiyan.passki.internal/AuthenticationResponseJson> { // com.alirezaiyan.passki.internal/AuthenticationResponseJson.$serializer|null[0]
+        final val descriptor // com.alirezaiyan.passki.internal/AuthenticationResponseJson.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.alirezaiyan.passki.internal/AuthenticationResponseJson.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.alirezaiyan.passki.internal/AuthenticationResponseJson.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.alirezaiyan.passki.internal/AuthenticationResponseJson // com.alirezaiyan.passki.internal/AuthenticationResponseJson.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.alirezaiyan.passki.internal/AuthenticationResponseJson) // com.alirezaiyan.passki.internal/AuthenticationResponseJson.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.alirezaiyan.passki.internal.AuthenticationResponseJson){}[0]
+    }
+
+    final object Companion { // com.alirezaiyan.passki.internal/AuthenticationResponseJson.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.alirezaiyan.passki.internal/AuthenticationResponseJson> // com.alirezaiyan.passki.internal/AuthenticationResponseJson.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.alirezaiyan.passki.internal/AuthenticatorSelectionJson { // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson|null[0]
+    constructor <init>(kotlin/String? = ..., kotlin/String? = ..., kotlin/Boolean? = ..., kotlin/String? = ...) // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.<init>|<init>(kotlin.String?;kotlin.String?;kotlin.Boolean?;kotlin.String?){}[0]
+
+    final val authenticatorAttachment // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.authenticatorAttachment|{}authenticatorAttachment[0]
+        final fun <get-authenticatorAttachment>(): kotlin/String? // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.authenticatorAttachment.<get-authenticatorAttachment>|<get-authenticatorAttachment>(){}[0]
+    final val requireResidentKey // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.requireResidentKey|{}requireResidentKey[0]
+        final fun <get-requireResidentKey>(): kotlin/Boolean? // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.requireResidentKey.<get-requireResidentKey>|<get-requireResidentKey>(){}[0]
+    final val residentKey // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.residentKey|{}residentKey[0]
+        final fun <get-residentKey>(): kotlin/String? // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.residentKey.<get-residentKey>|<get-residentKey>(){}[0]
+    final val userVerification // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.userVerification|{}userVerification[0]
+        final fun <get-userVerification>(): kotlin/String? // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.userVerification.<get-userVerification>|<get-userVerification>(){}[0]
+
+    final fun component1(): kotlin/String? // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.component2|component2(){}[0]
+    final fun component3(): kotlin/Boolean? // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.component3|component3(){}[0]
+    final fun component4(): kotlin/String? // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.component4|component4(){}[0]
+    final fun copy(kotlin/String? = ..., kotlin/String? = ..., kotlin/Boolean? = ..., kotlin/String? = ...): com.alirezaiyan.passki.internal/AuthenticatorSelectionJson // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.copy|copy(kotlin.String?;kotlin.String?;kotlin.Boolean?;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.alirezaiyan.passki.internal/AuthenticatorSelectionJson> { // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.$serializer|null[0]
+        final val descriptor // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.alirezaiyan.passki.internal/AuthenticatorSelectionJson // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.alirezaiyan.passki.internal/AuthenticatorSelectionJson) // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.alirezaiyan.passki.internal.AuthenticatorSelectionJson){}[0]
+    }
+
+    final object Companion { // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.alirezaiyan.passki.internal/AuthenticatorSelectionJson> // com.alirezaiyan.passki.internal/AuthenticatorSelectionJson.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.alirezaiyan.passki.internal/CreationOptionsJson { // com.alirezaiyan.passki.internal/CreationOptionsJson|null[0]
+    constructor <init>(com.alirezaiyan.passki.internal/RelyingPartyJson, com.alirezaiyan.passki.internal/UserJson, kotlin/String, kotlin.collections/List<com.alirezaiyan.passki.internal/PubKeyCredParamJson> = ..., kotlin/Long? = ..., kotlin.collections/List<com.alirezaiyan.passki.internal/CredentialDescriptorJson> = ..., com.alirezaiyan.passki.internal/AuthenticatorSelectionJson? = ..., kotlin/String? = ..., kotlinx.serialization.json/JsonObject? = ...) // com.alirezaiyan.passki.internal/CreationOptionsJson.<init>|<init>(com.alirezaiyan.passki.internal.RelyingPartyJson;com.alirezaiyan.passki.internal.UserJson;kotlin.String;kotlin.collections.List<com.alirezaiyan.passki.internal.PubKeyCredParamJson>;kotlin.Long?;kotlin.collections.List<com.alirezaiyan.passki.internal.CredentialDescriptorJson>;com.alirezaiyan.passki.internal.AuthenticatorSelectionJson?;kotlin.String?;kotlinx.serialization.json.JsonObject?){}[0]
+
+    final val attestation // com.alirezaiyan.passki.internal/CreationOptionsJson.attestation|{}attestation[0]
+        final fun <get-attestation>(): kotlin/String? // com.alirezaiyan.passki.internal/CreationOptionsJson.attestation.<get-attestation>|<get-attestation>(){}[0]
+    final val authenticatorSelection // com.alirezaiyan.passki.internal/CreationOptionsJson.authenticatorSelection|{}authenticatorSelection[0]
+        final fun <get-authenticatorSelection>(): com.alirezaiyan.passki.internal/AuthenticatorSelectionJson? // com.alirezaiyan.passki.internal/CreationOptionsJson.authenticatorSelection.<get-authenticatorSelection>|<get-authenticatorSelection>(){}[0]
+    final val challenge // com.alirezaiyan.passki.internal/CreationOptionsJson.challenge|{}challenge[0]
+        final fun <get-challenge>(): kotlin/String // com.alirezaiyan.passki.internal/CreationOptionsJson.challenge.<get-challenge>|<get-challenge>(){}[0]
+    final val excludeCredentials // com.alirezaiyan.passki.internal/CreationOptionsJson.excludeCredentials|{}excludeCredentials[0]
+        final fun <get-excludeCredentials>(): kotlin.collections/List<com.alirezaiyan.passki.internal/CredentialDescriptorJson> // com.alirezaiyan.passki.internal/CreationOptionsJson.excludeCredentials.<get-excludeCredentials>|<get-excludeCredentials>(){}[0]
+    final val extensions // com.alirezaiyan.passki.internal/CreationOptionsJson.extensions|{}extensions[0]
+        final fun <get-extensions>(): kotlinx.serialization.json/JsonObject? // com.alirezaiyan.passki.internal/CreationOptionsJson.extensions.<get-extensions>|<get-extensions>(){}[0]
+    final val pubKeyCredParams // com.alirezaiyan.passki.internal/CreationOptionsJson.pubKeyCredParams|{}pubKeyCredParams[0]
+        final fun <get-pubKeyCredParams>(): kotlin.collections/List<com.alirezaiyan.passki.internal/PubKeyCredParamJson> // com.alirezaiyan.passki.internal/CreationOptionsJson.pubKeyCredParams.<get-pubKeyCredParams>|<get-pubKeyCredParams>(){}[0]
+    final val rp // com.alirezaiyan.passki.internal/CreationOptionsJson.rp|{}rp[0]
+        final fun <get-rp>(): com.alirezaiyan.passki.internal/RelyingPartyJson // com.alirezaiyan.passki.internal/CreationOptionsJson.rp.<get-rp>|<get-rp>(){}[0]
+    final val timeout // com.alirezaiyan.passki.internal/CreationOptionsJson.timeout|{}timeout[0]
+        final fun <get-timeout>(): kotlin/Long? // com.alirezaiyan.passki.internal/CreationOptionsJson.timeout.<get-timeout>|<get-timeout>(){}[0]
+    final val user // com.alirezaiyan.passki.internal/CreationOptionsJson.user|{}user[0]
+        final fun <get-user>(): com.alirezaiyan.passki.internal/UserJson // com.alirezaiyan.passki.internal/CreationOptionsJson.user.<get-user>|<get-user>(){}[0]
+
+    final fun component1(): com.alirezaiyan.passki.internal/RelyingPartyJson // com.alirezaiyan.passki.internal/CreationOptionsJson.component1|component1(){}[0]
+    final fun component2(): com.alirezaiyan.passki.internal/UserJson // com.alirezaiyan.passki.internal/CreationOptionsJson.component2|component2(){}[0]
+    final fun component3(): kotlin/String // com.alirezaiyan.passki.internal/CreationOptionsJson.component3|component3(){}[0]
+    final fun component4(): kotlin.collections/List<com.alirezaiyan.passki.internal/PubKeyCredParamJson> // com.alirezaiyan.passki.internal/CreationOptionsJson.component4|component4(){}[0]
+    final fun component5(): kotlin/Long? // com.alirezaiyan.passki.internal/CreationOptionsJson.component5|component5(){}[0]
+    final fun component6(): kotlin.collections/List<com.alirezaiyan.passki.internal/CredentialDescriptorJson> // com.alirezaiyan.passki.internal/CreationOptionsJson.component6|component6(){}[0]
+    final fun component7(): com.alirezaiyan.passki.internal/AuthenticatorSelectionJson? // com.alirezaiyan.passki.internal/CreationOptionsJson.component7|component7(){}[0]
+    final fun component8(): kotlin/String? // com.alirezaiyan.passki.internal/CreationOptionsJson.component8|component8(){}[0]
+    final fun component9(): kotlinx.serialization.json/JsonObject? // com.alirezaiyan.passki.internal/CreationOptionsJson.component9|component9(){}[0]
+    final fun copy(com.alirezaiyan.passki.internal/RelyingPartyJson = ..., com.alirezaiyan.passki.internal/UserJson = ..., kotlin/String = ..., kotlin.collections/List<com.alirezaiyan.passki.internal/PubKeyCredParamJson> = ..., kotlin/Long? = ..., kotlin.collections/List<com.alirezaiyan.passki.internal/CredentialDescriptorJson> = ..., com.alirezaiyan.passki.internal/AuthenticatorSelectionJson? = ..., kotlin/String? = ..., kotlinx.serialization.json/JsonObject? = ...): com.alirezaiyan.passki.internal/CreationOptionsJson // com.alirezaiyan.passki.internal/CreationOptionsJson.copy|copy(com.alirezaiyan.passki.internal.RelyingPartyJson;com.alirezaiyan.passki.internal.UserJson;kotlin.String;kotlin.collections.List<com.alirezaiyan.passki.internal.PubKeyCredParamJson>;kotlin.Long?;kotlin.collections.List<com.alirezaiyan.passki.internal.CredentialDescriptorJson>;com.alirezaiyan.passki.internal.AuthenticatorSelectionJson?;kotlin.String?;kotlinx.serialization.json.JsonObject?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.internal/CreationOptionsJson.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.internal/CreationOptionsJson.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.alirezaiyan.passki.internal/CreationOptionsJson.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.alirezaiyan.passki.internal/CreationOptionsJson> { // com.alirezaiyan.passki.internal/CreationOptionsJson.$serializer|null[0]
+        final val descriptor // com.alirezaiyan.passki.internal/CreationOptionsJson.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.alirezaiyan.passki.internal/CreationOptionsJson.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.alirezaiyan.passki.internal/CreationOptionsJson.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.alirezaiyan.passki.internal/CreationOptionsJson // com.alirezaiyan.passki.internal/CreationOptionsJson.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.alirezaiyan.passki.internal/CreationOptionsJson) // com.alirezaiyan.passki.internal/CreationOptionsJson.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.alirezaiyan.passki.internal.CreationOptionsJson){}[0]
+    }
+
+    final object Companion { // com.alirezaiyan.passki.internal/CreationOptionsJson.Companion|null[0]
+        final val $childSerializers // com.alirezaiyan.passki.internal/CreationOptionsJson.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<com.alirezaiyan.passki.internal/CreationOptionsJson> // com.alirezaiyan.passki.internal/CreationOptionsJson.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.alirezaiyan.passki.internal/CredentialDescriptorJson { // com.alirezaiyan.passki.internal/CredentialDescriptorJson|null[0]
+    constructor <init>(kotlin/String, kotlin/String = ..., kotlin.collections/List<kotlin/String> = ...) // com.alirezaiyan.passki.internal/CredentialDescriptorJson.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+
+    final val id // com.alirezaiyan.passki.internal/CredentialDescriptorJson.id|{}id[0]
+        final fun <get-id>(): kotlin/String // com.alirezaiyan.passki.internal/CredentialDescriptorJson.id.<get-id>|<get-id>(){}[0]
+    final val transports // com.alirezaiyan.passki.internal/CredentialDescriptorJson.transports|{}transports[0]
+        final fun <get-transports>(): kotlin.collections/List<kotlin/String> // com.alirezaiyan.passki.internal/CredentialDescriptorJson.transports.<get-transports>|<get-transports>(){}[0]
+    final val type // com.alirezaiyan.passki.internal/CredentialDescriptorJson.type|{}type[0]
+        final fun <get-type>(): kotlin/String // com.alirezaiyan.passki.internal/CredentialDescriptorJson.type.<get-type>|<get-type>(){}[0]
+
+    final fun component1(): kotlin/String // com.alirezaiyan.passki.internal/CredentialDescriptorJson.component1|component1(){}[0]
+    final fun component2(): kotlin/String // com.alirezaiyan.passki.internal/CredentialDescriptorJson.component2|component2(){}[0]
+    final fun component3(): kotlin.collections/List<kotlin/String> // com.alirezaiyan.passki.internal/CredentialDescriptorJson.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin.collections/List<kotlin/String> = ...): com.alirezaiyan.passki.internal/CredentialDescriptorJson // com.alirezaiyan.passki.internal/CredentialDescriptorJson.copy|copy(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.internal/CredentialDescriptorJson.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.internal/CredentialDescriptorJson.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.alirezaiyan.passki.internal/CredentialDescriptorJson.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.alirezaiyan.passki.internal/CredentialDescriptorJson> { // com.alirezaiyan.passki.internal/CredentialDescriptorJson.$serializer|null[0]
+        final val descriptor // com.alirezaiyan.passki.internal/CredentialDescriptorJson.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.alirezaiyan.passki.internal/CredentialDescriptorJson.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.alirezaiyan.passki.internal/CredentialDescriptorJson.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.alirezaiyan.passki.internal/CredentialDescriptorJson // com.alirezaiyan.passki.internal/CredentialDescriptorJson.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.alirezaiyan.passki.internal/CredentialDescriptorJson) // com.alirezaiyan.passki.internal/CredentialDescriptorJson.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.alirezaiyan.passki.internal.CredentialDescriptorJson){}[0]
+    }
+
+    final object Companion { // com.alirezaiyan.passki.internal/CredentialDescriptorJson.Companion|null[0]
+        final val $childSerializers // com.alirezaiyan.passki.internal/CredentialDescriptorJson.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<com.alirezaiyan.passki.internal/CredentialDescriptorJson> // com.alirezaiyan.passki.internal/CredentialDescriptorJson.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.alirezaiyan.passki.internal/PubKeyCredParamJson { // com.alirezaiyan.passki.internal/PubKeyCredParamJson|null[0]
+    constructor <init>(kotlin/String = ..., kotlin/Int) // com.alirezaiyan.passki.internal/PubKeyCredParamJson.<init>|<init>(kotlin.String;kotlin.Int){}[0]
+
+    final val alg // com.alirezaiyan.passki.internal/PubKeyCredParamJson.alg|{}alg[0]
+        final fun <get-alg>(): kotlin/Int // com.alirezaiyan.passki.internal/PubKeyCredParamJson.alg.<get-alg>|<get-alg>(){}[0]
+    final val type // com.alirezaiyan.passki.internal/PubKeyCredParamJson.type|{}type[0]
+        final fun <get-type>(): kotlin/String // com.alirezaiyan.passki.internal/PubKeyCredParamJson.type.<get-type>|<get-type>(){}[0]
+
+    final fun component1(): kotlin/String // com.alirezaiyan.passki.internal/PubKeyCredParamJson.component1|component1(){}[0]
+    final fun component2(): kotlin/Int // com.alirezaiyan.passki.internal/PubKeyCredParamJson.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/Int = ...): com.alirezaiyan.passki.internal/PubKeyCredParamJson // com.alirezaiyan.passki.internal/PubKeyCredParamJson.copy|copy(kotlin.String;kotlin.Int){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.internal/PubKeyCredParamJson.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.internal/PubKeyCredParamJson.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.alirezaiyan.passki.internal/PubKeyCredParamJson.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.alirezaiyan.passki.internal/PubKeyCredParamJson> { // com.alirezaiyan.passki.internal/PubKeyCredParamJson.$serializer|null[0]
+        final val descriptor // com.alirezaiyan.passki.internal/PubKeyCredParamJson.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.alirezaiyan.passki.internal/PubKeyCredParamJson.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.alirezaiyan.passki.internal/PubKeyCredParamJson.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.alirezaiyan.passki.internal/PubKeyCredParamJson // com.alirezaiyan.passki.internal/PubKeyCredParamJson.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.alirezaiyan.passki.internal/PubKeyCredParamJson) // com.alirezaiyan.passki.internal/PubKeyCredParamJson.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.alirezaiyan.passki.internal.PubKeyCredParamJson){}[0]
+    }
+
+    final object Companion { // com.alirezaiyan.passki.internal/PubKeyCredParamJson.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.alirezaiyan.passki.internal/PubKeyCredParamJson> // com.alirezaiyan.passki.internal/PubKeyCredParamJson.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.alirezaiyan.passki.internal/RegistrationResponseJson { // com.alirezaiyan.passki.internal/RegistrationResponseJson|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String = ..., com.alirezaiyan.passki.internal/AttestationResponseJson, kotlin/String? = ..., kotlinx.serialization.json/JsonObject = ...) // com.alirezaiyan.passki.internal/RegistrationResponseJson.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;com.alirezaiyan.passki.internal.AttestationResponseJson;kotlin.String?;kotlinx.serialization.json.JsonObject){}[0]
+
+    final val authenticatorAttachment // com.alirezaiyan.passki.internal/RegistrationResponseJson.authenticatorAttachment|{}authenticatorAttachment[0]
+        final fun <get-authenticatorAttachment>(): kotlin/String? // com.alirezaiyan.passki.internal/RegistrationResponseJson.authenticatorAttachment.<get-authenticatorAttachment>|<get-authenticatorAttachment>(){}[0]
+    final val clientExtensionResults // com.alirezaiyan.passki.internal/RegistrationResponseJson.clientExtensionResults|{}clientExtensionResults[0]
+        final fun <get-clientExtensionResults>(): kotlinx.serialization.json/JsonObject // com.alirezaiyan.passki.internal/RegistrationResponseJson.clientExtensionResults.<get-clientExtensionResults>|<get-clientExtensionResults>(){}[0]
+    final val id // com.alirezaiyan.passki.internal/RegistrationResponseJson.id|{}id[0]
+        final fun <get-id>(): kotlin/String // com.alirezaiyan.passki.internal/RegistrationResponseJson.id.<get-id>|<get-id>(){}[0]
+    final val rawId // com.alirezaiyan.passki.internal/RegistrationResponseJson.rawId|{}rawId[0]
+        final fun <get-rawId>(): kotlin/String // com.alirezaiyan.passki.internal/RegistrationResponseJson.rawId.<get-rawId>|<get-rawId>(){}[0]
+    final val response // com.alirezaiyan.passki.internal/RegistrationResponseJson.response|{}response[0]
+        final fun <get-response>(): com.alirezaiyan.passki.internal/AttestationResponseJson // com.alirezaiyan.passki.internal/RegistrationResponseJson.response.<get-response>|<get-response>(){}[0]
+    final val type // com.alirezaiyan.passki.internal/RegistrationResponseJson.type|{}type[0]
+        final fun <get-type>(): kotlin/String // com.alirezaiyan.passki.internal/RegistrationResponseJson.type.<get-type>|<get-type>(){}[0]
+
+    final fun component1(): kotlin/String // com.alirezaiyan.passki.internal/RegistrationResponseJson.component1|component1(){}[0]
+    final fun component2(): kotlin/String // com.alirezaiyan.passki.internal/RegistrationResponseJson.component2|component2(){}[0]
+    final fun component3(): kotlin/String // com.alirezaiyan.passki.internal/RegistrationResponseJson.component3|component3(){}[0]
+    final fun component4(): com.alirezaiyan.passki.internal/AttestationResponseJson // com.alirezaiyan.passki.internal/RegistrationResponseJson.component4|component4(){}[0]
+    final fun component5(): kotlin/String? // com.alirezaiyan.passki.internal/RegistrationResponseJson.component5|component5(){}[0]
+    final fun component6(): kotlinx.serialization.json/JsonObject // com.alirezaiyan.passki.internal/RegistrationResponseJson.component6|component6(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., com.alirezaiyan.passki.internal/AttestationResponseJson = ..., kotlin/String? = ..., kotlinx.serialization.json/JsonObject = ...): com.alirezaiyan.passki.internal/RegistrationResponseJson // com.alirezaiyan.passki.internal/RegistrationResponseJson.copy|copy(kotlin.String;kotlin.String;kotlin.String;com.alirezaiyan.passki.internal.AttestationResponseJson;kotlin.String?;kotlinx.serialization.json.JsonObject){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.internal/RegistrationResponseJson.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.internal/RegistrationResponseJson.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.alirezaiyan.passki.internal/RegistrationResponseJson.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.alirezaiyan.passki.internal/RegistrationResponseJson> { // com.alirezaiyan.passki.internal/RegistrationResponseJson.$serializer|null[0]
+        final val descriptor // com.alirezaiyan.passki.internal/RegistrationResponseJson.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.alirezaiyan.passki.internal/RegistrationResponseJson.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.alirezaiyan.passki.internal/RegistrationResponseJson.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.alirezaiyan.passki.internal/RegistrationResponseJson // com.alirezaiyan.passki.internal/RegistrationResponseJson.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.alirezaiyan.passki.internal/RegistrationResponseJson) // com.alirezaiyan.passki.internal/RegistrationResponseJson.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.alirezaiyan.passki.internal.RegistrationResponseJson){}[0]
+    }
+
+    final object Companion { // com.alirezaiyan.passki.internal/RegistrationResponseJson.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.alirezaiyan.passki.internal/RegistrationResponseJson> // com.alirezaiyan.passki.internal/RegistrationResponseJson.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.alirezaiyan.passki.internal/RelyingPartyJson { // com.alirezaiyan.passki.internal/RelyingPartyJson|null[0]
+    constructor <init>(kotlin/String? = ..., kotlin/String) // com.alirezaiyan.passki.internal/RelyingPartyJson.<init>|<init>(kotlin.String?;kotlin.String){}[0]
+
+    final val id // com.alirezaiyan.passki.internal/RelyingPartyJson.id|{}id[0]
+        final fun <get-id>(): kotlin/String? // com.alirezaiyan.passki.internal/RelyingPartyJson.id.<get-id>|<get-id>(){}[0]
+    final val name // com.alirezaiyan.passki.internal/RelyingPartyJson.name|{}name[0]
+        final fun <get-name>(): kotlin/String // com.alirezaiyan.passki.internal/RelyingPartyJson.name.<get-name>|<get-name>(){}[0]
+
+    final fun component1(): kotlin/String? // com.alirezaiyan.passki.internal/RelyingPartyJson.component1|component1(){}[0]
+    final fun component2(): kotlin/String // com.alirezaiyan.passki.internal/RelyingPartyJson.component2|component2(){}[0]
+    final fun copy(kotlin/String? = ..., kotlin/String = ...): com.alirezaiyan.passki.internal/RelyingPartyJson // com.alirezaiyan.passki.internal/RelyingPartyJson.copy|copy(kotlin.String?;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.internal/RelyingPartyJson.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.internal/RelyingPartyJson.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.alirezaiyan.passki.internal/RelyingPartyJson.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.alirezaiyan.passki.internal/RelyingPartyJson> { // com.alirezaiyan.passki.internal/RelyingPartyJson.$serializer|null[0]
+        final val descriptor // com.alirezaiyan.passki.internal/RelyingPartyJson.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.alirezaiyan.passki.internal/RelyingPartyJson.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.alirezaiyan.passki.internal/RelyingPartyJson.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.alirezaiyan.passki.internal/RelyingPartyJson // com.alirezaiyan.passki.internal/RelyingPartyJson.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.alirezaiyan.passki.internal/RelyingPartyJson) // com.alirezaiyan.passki.internal/RelyingPartyJson.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.alirezaiyan.passki.internal.RelyingPartyJson){}[0]
+    }
+
+    final object Companion { // com.alirezaiyan.passki.internal/RelyingPartyJson.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.alirezaiyan.passki.internal/RelyingPartyJson> // com.alirezaiyan.passki.internal/RelyingPartyJson.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.alirezaiyan.passki.internal/RequestOptionsJson { // com.alirezaiyan.passki.internal/RequestOptionsJson|null[0]
+    constructor <init>(kotlin/String, kotlin/Long? = ..., kotlin/String? = ..., kotlin.collections/List<com.alirezaiyan.passki.internal/CredentialDescriptorJson> = ..., kotlin/String? = ..., kotlinx.serialization.json/JsonObject? = ...) // com.alirezaiyan.passki.internal/RequestOptionsJson.<init>|<init>(kotlin.String;kotlin.Long?;kotlin.String?;kotlin.collections.List<com.alirezaiyan.passki.internal.CredentialDescriptorJson>;kotlin.String?;kotlinx.serialization.json.JsonObject?){}[0]
+
+    final val allowCredentials // com.alirezaiyan.passki.internal/RequestOptionsJson.allowCredentials|{}allowCredentials[0]
+        final fun <get-allowCredentials>(): kotlin.collections/List<com.alirezaiyan.passki.internal/CredentialDescriptorJson> // com.alirezaiyan.passki.internal/RequestOptionsJson.allowCredentials.<get-allowCredentials>|<get-allowCredentials>(){}[0]
+    final val challenge // com.alirezaiyan.passki.internal/RequestOptionsJson.challenge|{}challenge[0]
+        final fun <get-challenge>(): kotlin/String // com.alirezaiyan.passki.internal/RequestOptionsJson.challenge.<get-challenge>|<get-challenge>(){}[0]
+    final val extensions // com.alirezaiyan.passki.internal/RequestOptionsJson.extensions|{}extensions[0]
+        final fun <get-extensions>(): kotlinx.serialization.json/JsonObject? // com.alirezaiyan.passki.internal/RequestOptionsJson.extensions.<get-extensions>|<get-extensions>(){}[0]
+    final val rpId // com.alirezaiyan.passki.internal/RequestOptionsJson.rpId|{}rpId[0]
+        final fun <get-rpId>(): kotlin/String? // com.alirezaiyan.passki.internal/RequestOptionsJson.rpId.<get-rpId>|<get-rpId>(){}[0]
+    final val timeout // com.alirezaiyan.passki.internal/RequestOptionsJson.timeout|{}timeout[0]
+        final fun <get-timeout>(): kotlin/Long? // com.alirezaiyan.passki.internal/RequestOptionsJson.timeout.<get-timeout>|<get-timeout>(){}[0]
+    final val userVerification // com.alirezaiyan.passki.internal/RequestOptionsJson.userVerification|{}userVerification[0]
+        final fun <get-userVerification>(): kotlin/String? // com.alirezaiyan.passki.internal/RequestOptionsJson.userVerification.<get-userVerification>|<get-userVerification>(){}[0]
+
+    final fun component1(): kotlin/String // com.alirezaiyan.passki.internal/RequestOptionsJson.component1|component1(){}[0]
+    final fun component2(): kotlin/Long? // com.alirezaiyan.passki.internal/RequestOptionsJson.component2|component2(){}[0]
+    final fun component3(): kotlin/String? // com.alirezaiyan.passki.internal/RequestOptionsJson.component3|component3(){}[0]
+    final fun component4(): kotlin.collections/List<com.alirezaiyan.passki.internal/CredentialDescriptorJson> // com.alirezaiyan.passki.internal/RequestOptionsJson.component4|component4(){}[0]
+    final fun component5(): kotlin/String? // com.alirezaiyan.passki.internal/RequestOptionsJson.component5|component5(){}[0]
+    final fun component6(): kotlinx.serialization.json/JsonObject? // com.alirezaiyan.passki.internal/RequestOptionsJson.component6|component6(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/Long? = ..., kotlin/String? = ..., kotlin.collections/List<com.alirezaiyan.passki.internal/CredentialDescriptorJson> = ..., kotlin/String? = ..., kotlinx.serialization.json/JsonObject? = ...): com.alirezaiyan.passki.internal/RequestOptionsJson // com.alirezaiyan.passki.internal/RequestOptionsJson.copy|copy(kotlin.String;kotlin.Long?;kotlin.String?;kotlin.collections.List<com.alirezaiyan.passki.internal.CredentialDescriptorJson>;kotlin.String?;kotlinx.serialization.json.JsonObject?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.internal/RequestOptionsJson.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.internal/RequestOptionsJson.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.alirezaiyan.passki.internal/RequestOptionsJson.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.alirezaiyan.passki.internal/RequestOptionsJson> { // com.alirezaiyan.passki.internal/RequestOptionsJson.$serializer|null[0]
+        final val descriptor // com.alirezaiyan.passki.internal/RequestOptionsJson.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.alirezaiyan.passki.internal/RequestOptionsJson.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.alirezaiyan.passki.internal/RequestOptionsJson.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.alirezaiyan.passki.internal/RequestOptionsJson // com.alirezaiyan.passki.internal/RequestOptionsJson.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.alirezaiyan.passki.internal/RequestOptionsJson) // com.alirezaiyan.passki.internal/RequestOptionsJson.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.alirezaiyan.passki.internal.RequestOptionsJson){}[0]
+    }
+
+    final object Companion { // com.alirezaiyan.passki.internal/RequestOptionsJson.Companion|null[0]
+        final val $childSerializers // com.alirezaiyan.passki.internal/RequestOptionsJson.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<com.alirezaiyan.passki.internal/RequestOptionsJson> // com.alirezaiyan.passki.internal/RequestOptionsJson.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.alirezaiyan.passki.internal/UserJson { // com.alirezaiyan.passki.internal/UserJson|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String = ...) // com.alirezaiyan.passki.internal/UserJson.<init>|<init>(kotlin.String;kotlin.String;kotlin.String){}[0]
+
+    final val displayName // com.alirezaiyan.passki.internal/UserJson.displayName|{}displayName[0]
+        final fun <get-displayName>(): kotlin/String // com.alirezaiyan.passki.internal/UserJson.displayName.<get-displayName>|<get-displayName>(){}[0]
+    final val id // com.alirezaiyan.passki.internal/UserJson.id|{}id[0]
+        final fun <get-id>(): kotlin/String // com.alirezaiyan.passki.internal/UserJson.id.<get-id>|<get-id>(){}[0]
+    final val name // com.alirezaiyan.passki.internal/UserJson.name|{}name[0]
+        final fun <get-name>(): kotlin/String // com.alirezaiyan.passki.internal/UserJson.name.<get-name>|<get-name>(){}[0]
+
+    final fun component1(): kotlin/String // com.alirezaiyan.passki.internal/UserJson.component1|component1(){}[0]
+    final fun component2(): kotlin/String // com.alirezaiyan.passki.internal/UserJson.component2|component2(){}[0]
+    final fun component3(): kotlin/String // com.alirezaiyan.passki.internal/UserJson.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String = ...): com.alirezaiyan.passki.internal/UserJson // com.alirezaiyan.passki.internal/UserJson.copy|copy(kotlin.String;kotlin.String;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.internal/UserJson.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.internal/UserJson.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.alirezaiyan.passki.internal/UserJson.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.alirezaiyan.passki.internal/UserJson> { // com.alirezaiyan.passki.internal/UserJson.$serializer|null[0]
+        final val descriptor // com.alirezaiyan.passki.internal/UserJson.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.alirezaiyan.passki.internal/UserJson.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.alirezaiyan.passki.internal/UserJson.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.alirezaiyan.passki.internal/UserJson // com.alirezaiyan.passki.internal/UserJson.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.alirezaiyan.passki.internal/UserJson) // com.alirezaiyan.passki.internal/UserJson.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.alirezaiyan.passki.internal.UserJson){}[0]
+    }
+
+    final object Companion { // com.alirezaiyan.passki.internal/UserJson.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.alirezaiyan.passki.internal/UserJson> // com.alirezaiyan.passki.internal/UserJson.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.alirezaiyan.passki/PasskeyAssertion { // com.alirezaiyan.passki/PasskeyAssertion|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String?) // com.alirezaiyan.passki/PasskeyAssertion.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?){}[0]
+
+    final val credentialId // com.alirezaiyan.passki/PasskeyAssertion.credentialId|{}credentialId[0]
+        final fun <get-credentialId>(): kotlin/String // com.alirezaiyan.passki/PasskeyAssertion.credentialId.<get-credentialId>|<get-credentialId>(){}[0]
+    final val json // com.alirezaiyan.passki/PasskeyAssertion.json|{}json[0]
+        final fun <get-json>(): kotlin/String // com.alirezaiyan.passki/PasskeyAssertion.json.<get-json>|<get-json>(){}[0]
+    final val userHandle // com.alirezaiyan.passki/PasskeyAssertion.userHandle|{}userHandle[0]
+        final fun <get-userHandle>(): kotlin/String? // com.alirezaiyan.passki/PasskeyAssertion.userHandle.<get-userHandle>|<get-userHandle>(){}[0]
+
+    final fun toString(): kotlin/String // com.alirezaiyan.passki/PasskeyAssertion.toString|toString(){}[0]
+}
+
+final class com.alirezaiyan.passki/PasskeyCapabilities { // com.alirezaiyan.passki/PasskeyCapabilities|null[0]
+    constructor <init>(kotlin/Boolean, kotlin/Boolean, kotlin/Boolean, kotlin/Boolean, kotlin/Boolean) // com.alirezaiyan.passki/PasskeyCapabilities.<init>|<init>(kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val conditionalCreate // com.alirezaiyan.passki/PasskeyCapabilities.conditionalCreate|{}conditionalCreate[0]
+        final fun <get-conditionalCreate>(): kotlin/Boolean // com.alirezaiyan.passki/PasskeyCapabilities.conditionalCreate.<get-conditionalCreate>|<get-conditionalCreate>(){}[0]
+    final val immediateSignIn // com.alirezaiyan.passki/PasskeyCapabilities.immediateSignIn|{}immediateSignIn[0]
+        final fun <get-immediateSignIn>(): kotlin/Boolean // com.alirezaiyan.passki/PasskeyCapabilities.immediateSignIn.<get-immediateSignIn>|<get-immediateSignIn>(){}[0]
+    final val isSupported // com.alirezaiyan.passki/PasskeyCapabilities.isSupported|{}isSupported[0]
+        final fun <get-isSupported>(): kotlin/Boolean // com.alirezaiyan.passki/PasskeyCapabilities.isSupported.<get-isSupported>|<get-isSupported>(){}[0]
+    final val signals // com.alirezaiyan.passki/PasskeyCapabilities.signals|{}signals[0]
+        final fun <get-signals>(): kotlin/Boolean // com.alirezaiyan.passki/PasskeyCapabilities.signals.<get-signals>|<get-signals>(){}[0]
+    final val unifiedPasswordSignIn // com.alirezaiyan.passki/PasskeyCapabilities.unifiedPasswordSignIn|{}unifiedPasswordSignIn[0]
+        final fun <get-unifiedPasswordSignIn>(): kotlin/Boolean // com.alirezaiyan.passki/PasskeyCapabilities.unifiedPasswordSignIn.<get-unifiedPasswordSignIn>|<get-unifiedPasswordSignIn>(){}[0]
+
+    final fun toString(): kotlin/String // com.alirezaiyan.passki/PasskeyCapabilities.toString|toString(){}[0]
+}
+
+final class com.alirezaiyan.passki/PasskeyException : kotlin/Exception { // com.alirezaiyan.passki/PasskeyException|null[0]
+    constructor <init>(com.alirezaiyan.passki/PasskeyError) // com.alirezaiyan.passki/PasskeyException.<init>|<init>(com.alirezaiyan.passki.PasskeyError){}[0]
+
+    final val error // com.alirezaiyan.passki/PasskeyException.error|{}error[0]
+        final fun <get-error>(): com.alirezaiyan.passki/PasskeyError // com.alirezaiyan.passki/PasskeyException.error.<get-error>|<get-error>(){}[0]
+}
+
+final class com.alirezaiyan.passki/PasskeyRegistration { // com.alirezaiyan.passki/PasskeyRegistration|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String>, kotlin/String?) // com.alirezaiyan.passki/PasskeyRegistration.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.String?){}[0]
+
+    final val authenticatorAttachment // com.alirezaiyan.passki/PasskeyRegistration.authenticatorAttachment|{}authenticatorAttachment[0]
+        final fun <get-authenticatorAttachment>(): kotlin/String? // com.alirezaiyan.passki/PasskeyRegistration.authenticatorAttachment.<get-authenticatorAttachment>|<get-authenticatorAttachment>(){}[0]
+    final val credentialId // com.alirezaiyan.passki/PasskeyRegistration.credentialId|{}credentialId[0]
+        final fun <get-credentialId>(): kotlin/String // com.alirezaiyan.passki/PasskeyRegistration.credentialId.<get-credentialId>|<get-credentialId>(){}[0]
+    final val json // com.alirezaiyan.passki/PasskeyRegistration.json|{}json[0]
+        final fun <get-json>(): kotlin/String // com.alirezaiyan.passki/PasskeyRegistration.json.<get-json>|<get-json>(){}[0]
+    final val transports // com.alirezaiyan.passki/PasskeyRegistration.transports|{}transports[0]
+        final fun <get-transports>(): kotlin.collections/List<kotlin/String> // com.alirezaiyan.passki/PasskeyRegistration.transports.<get-transports>|<get-transports>(){}[0]
+
+    final fun toString(): kotlin/String // com.alirezaiyan.passki/PasskeyRegistration.toString|toString(){}[0]
+}
+
+sealed class com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/PasskeyError|null[0]
+    abstract val message // com.alirezaiyan.passki/PasskeyError.message|{}message[0]
+        abstract fun <get-message>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.message.<get-message>|<get-message>(){}[0]
+    open val fixHint // com.alirezaiyan.passki/PasskeyError.fixHint|{}fixHint[0]
+        open fun <get-fixHint>(): kotlin/String? // com.alirezaiyan.passki/PasskeyError.fixHint.<get-fixHint>|<get-fixHint>(){}[0]
+
+    final class InvalidOptions : com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/PasskeyError.InvalidOptions|null[0]
+        constructor <init>(kotlin/String) // com.alirezaiyan.passki/PasskeyError.InvalidOptions.<init>|<init>(kotlin.String){}[0]
+
+        final val fixHint // com.alirezaiyan.passki/PasskeyError.InvalidOptions.fixHint|{}fixHint[0]
+            final fun <get-fixHint>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.InvalidOptions.fixHint.<get-fixHint>|<get-fixHint>(){}[0]
+        final val message // com.alirezaiyan.passki/PasskeyError.InvalidOptions.message|{}message[0]
+            final fun <get-message>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.InvalidOptions.message.<get-message>|<get-message>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki/PasskeyError.InvalidOptions.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.alirezaiyan.passki/PasskeyError.InvalidOptions.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.alirezaiyan.passki/PasskeyError.InvalidOptions.toString|toString(){}[0]
+    }
+
+    final class Misconfigured : com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/PasskeyError.Misconfigured|null[0]
+        constructor <init>(kotlin/String, kotlin/String) // com.alirezaiyan.passki/PasskeyError.Misconfigured.<init>|<init>(kotlin.String;kotlin.String){}[0]
+
+        final val fixHint // com.alirezaiyan.passki/PasskeyError.Misconfigured.fixHint|{}fixHint[0]
+            final fun <get-fixHint>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.Misconfigured.fixHint.<get-fixHint>|<get-fixHint>(){}[0]
+        final val message // com.alirezaiyan.passki/PasskeyError.Misconfigured.message|{}message[0]
+            final fun <get-message>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.Misconfigured.message.<get-message>|<get-message>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki/PasskeyError.Misconfigured.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.alirezaiyan.passki/PasskeyError.Misconfigured.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.alirezaiyan.passki/PasskeyError.Misconfigured.toString|toString(){}[0]
+    }
+
+    final class NotSupported : com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/PasskeyError.NotSupported|null[0]
+        constructor <init>(kotlin/String) // com.alirezaiyan.passki/PasskeyError.NotSupported.<init>|<init>(kotlin.String){}[0]
+
+        final val message // com.alirezaiyan.passki/PasskeyError.NotSupported.message|{}message[0]
+            final fun <get-message>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.NotSupported.message.<get-message>|<get-message>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki/PasskeyError.NotSupported.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.alirezaiyan.passki/PasskeyError.NotSupported.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.alirezaiyan.passki/PasskeyError.NotSupported.toString|toString(){}[0]
+    }
+
+    final class Unknown : com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/PasskeyError.Unknown|null[0]
+        constructor <init>(kotlin/String, kotlin/String?) // com.alirezaiyan.passki/PasskeyError.Unknown.<init>|<init>(kotlin.String;kotlin.String?){}[0]
+
+        final val message // com.alirezaiyan.passki/PasskeyError.Unknown.message|{}message[0]
+            final fun <get-message>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.Unknown.message.<get-message>|<get-message>(){}[0]
+        final val platformCode // com.alirezaiyan.passki/PasskeyError.Unknown.platformCode|{}platformCode[0]
+            final fun <get-platformCode>(): kotlin/String? // com.alirezaiyan.passki/PasskeyError.Unknown.platformCode.<get-platformCode>|<get-platformCode>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki/PasskeyError.Unknown.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.alirezaiyan.passki/PasskeyError.Unknown.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.alirezaiyan.passki/PasskeyError.Unknown.toString|toString(){}[0]
+    }
+
+    final object AlreadyRegistered : com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/PasskeyError.AlreadyRegistered|null[0]
+        final val message // com.alirezaiyan.passki/PasskeyError.AlreadyRegistered.message|{}message[0]
+            final fun <get-message>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.AlreadyRegistered.message.<get-message>|<get-message>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki/PasskeyError.AlreadyRegistered.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.alirezaiyan.passki/PasskeyError.AlreadyRegistered.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.alirezaiyan.passki/PasskeyError.AlreadyRegistered.toString|toString(){}[0]
+    }
+
+    final object Cancelled : com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/PasskeyError.Cancelled|null[0]
+        final val message // com.alirezaiyan.passki/PasskeyError.Cancelled.message|{}message[0]
+            final fun <get-message>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.Cancelled.message.<get-message>|<get-message>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki/PasskeyError.Cancelled.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.alirezaiyan.passki/PasskeyError.Cancelled.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.alirezaiyan.passki/PasskeyError.Cancelled.toString|toString(){}[0]
+    }
+
+    final object Interrupted : com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/PasskeyError.Interrupted|null[0]
+        final val message // com.alirezaiyan.passki/PasskeyError.Interrupted.message|{}message[0]
+            final fun <get-message>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.Interrupted.message.<get-message>|<get-message>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki/PasskeyError.Interrupted.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.alirezaiyan.passki/PasskeyError.Interrupted.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.alirezaiyan.passki/PasskeyError.Interrupted.toString|toString(){}[0]
+    }
+
+    final object NoCredentials : com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/PasskeyError.NoCredentials|null[0]
+        final val message // com.alirezaiyan.passki/PasskeyError.NoCredentials.message|{}message[0]
+            final fun <get-message>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.NoCredentials.message.<get-message>|<get-message>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki/PasskeyError.NoCredentials.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.alirezaiyan.passki/PasskeyError.NoCredentials.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.alirezaiyan.passki/PasskeyError.NoCredentials.toString|toString(){}[0]
+    }
+}
+
+final object com.alirezaiyan.passki.internal/Base64Url { // com.alirezaiyan.passki.internal/Base64Url|null[0]
+    final fun decode(kotlin/String): kotlin/ByteArray // com.alirezaiyan.passki.internal/Base64Url.decode|decode(kotlin.String){}[0]
+    final fun encode(kotlin/ByteArray): kotlin/String // com.alirezaiyan.passki.internal/Base64Url.encode|encode(kotlin.ByteArray){}[0]
+}
+
+final object com.alirezaiyan.passki.internal/SignalRequests { // com.alirezaiyan.passki.internal/SignalRequests|null[0]
+    final fun acceptedCredentials(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String>): kotlin/String // com.alirezaiyan.passki.internal/SignalRequests.acceptedCredentials|acceptedCredentials(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+    final fun currentUserDetails(kotlin/String, kotlin/String, kotlin/String, kotlin/String): kotlin/String // com.alirezaiyan.passki.internal/SignalRequests.currentUserDetails|currentUserDetails(kotlin.String;kotlin.String;kotlin.String;kotlin.String){}[0]
+    final fun unknownCredential(kotlin/String, kotlin/String): kotlin/String // com.alirezaiyan.passki.internal/SignalRequests.unknownCredential|unknownCredential(kotlin.String;kotlin.String){}[0]
+}
+
+final object com.alirezaiyan.passki.internal/WebAuthnOptions { // com.alirezaiyan.passki.internal/WebAuthnOptions|null[0]
+    final fun parseCreation(kotlin/String): com.alirezaiyan.passki.internal/NormalizedOptions<com.alirezaiyan.passki.internal/CreationOptionsJson> // com.alirezaiyan.passki.internal/WebAuthnOptions.parseCreation|parseCreation(kotlin.String){}[0]
+    final fun parseRequest(kotlin/String): com.alirezaiyan.passki.internal/NormalizedOptions<com.alirezaiyan.passki.internal/RequestOptionsJson> // com.alirezaiyan.passki.internal/WebAuthnOptions.parseRequest|parseRequest(kotlin.String){}[0]
+}
+
+final object com.alirezaiyan.passki.internal/WebAuthnResponses { // com.alirezaiyan.passki.internal/WebAuthnResponses|null[0]
+    final fun authentication(kotlin/ByteArray, kotlin/ByteArray, kotlin/ByteArray, kotlin/ByteArray, kotlin/ByteArray?, kotlin/String?, kotlinx.serialization.json/JsonObject = ...): kotlin/String // com.alirezaiyan.passki.internal/WebAuthnResponses.authentication|authentication(kotlin.ByteArray;kotlin.ByteArray;kotlin.ByteArray;kotlin.ByteArray;kotlin.ByteArray?;kotlin.String?;kotlinx.serialization.json.JsonObject){}[0]
+    final fun registration(kotlin/ByteArray, kotlin/ByteArray, kotlin/ByteArray, kotlin.collections/List<kotlin/String>, kotlin/String?, kotlinx.serialization.json/JsonObject = ...): kotlin/String // com.alirezaiyan.passki.internal/WebAuthnResponses.registration|registration(kotlin.ByteArray;kotlin.ByteArray;kotlin.ByteArray;kotlin.collections.List<kotlin.String>;kotlin.String?;kotlinx.serialization.json.JsonObject){}[0]
+}
+
+final val com.alirezaiyan.passki.internal/PasskiJson // com.alirezaiyan.passki.internal/PasskiJson|{}PasskiJson[0]
+    final fun <get-PasskiJson>(): kotlinx.serialization.json/Json // com.alirezaiyan.passki.internal/PasskiJson.<get-PasskiJson>|<get-PasskiJson>(){}[0]
+
+final fun <#A: kotlin/Any?> (com.alirezaiyan.passki/PasskeyResult<#A>).com.alirezaiyan.passki/getOrNull(): #A? // com.alirezaiyan.passki/getOrNull|getOrNull@com.alirezaiyan.passki.PasskeyResult<0:0>(){0§<kotlin.Any?>}[0]
+final fun <#A: kotlin/Any?> (com.alirezaiyan.passki/PasskeyResult<#A>).com.alirezaiyan.passki/getOrThrow(): #A // com.alirezaiyan.passki/getOrThrow|getOrThrow@com.alirezaiyan.passki.PasskeyResult<0:0>(){0§<kotlin.Any?>}[0]
+final fun com.alirezaiyan.passki.internal/parseAssertion(kotlin/String): com.alirezaiyan.passki/PasskeyAssertion // com.alirezaiyan.passki.internal/parseAssertion|parseAssertion(kotlin.String){}[0]
+final fun com.alirezaiyan.passki.internal/parseRegistration(kotlin/String): com.alirezaiyan.passki/PasskeyRegistration // com.alirezaiyan.passki.internal/parseRegistration|parseRegistration(kotlin.String){}[0]
+final fun com.alirezaiyan.passki/Passkeys(): com.alirezaiyan.passki/Passkeys // com.alirezaiyan.passki/Passkeys|Passkeys(){}[0]
+final inline fun <#A: kotlin/Any?, #B: kotlin/Any?> (com.alirezaiyan.passki/PasskeyResult<#A>).com.alirezaiyan.passki/map(kotlin/Function1<#A, #B>): com.alirezaiyan.passki/PasskeyResult<#B> // com.alirezaiyan.passki/map|map@com.alirezaiyan.passki.PasskeyResult<0:0>(kotlin.Function1<0:0,0:1>){0§<kotlin.Any?>;1§<kotlin.Any?>}[0]
+final inline fun <#A: kotlin/Any?> (com.alirezaiyan.passki/PasskeyResult<#A>).com.alirezaiyan.passki/onFailure(kotlin/Function1<com.alirezaiyan.passki/PasskeyError, kotlin/Unit>): com.alirezaiyan.passki/PasskeyResult<#A> // com.alirezaiyan.passki/onFailure|onFailure@com.alirezaiyan.passki.PasskeyResult<0:0>(kotlin.Function1<com.alirezaiyan.passki.PasskeyError,kotlin.Unit>){0§<kotlin.Any?>}[0]
+final inline fun <#A: kotlin/Any?> (com.alirezaiyan.passki/PasskeyResult<#A>).com.alirezaiyan.passki/onSuccess(kotlin/Function1<#A, kotlin/Unit>): com.alirezaiyan.passki/PasskeyResult<#A> // com.alirezaiyan.passki/onSuccess|onSuccess@com.alirezaiyan.passki.PasskeyResult<0:0>(kotlin.Function1<0:0,kotlin.Unit>){0§<kotlin.Any?>}[0]
