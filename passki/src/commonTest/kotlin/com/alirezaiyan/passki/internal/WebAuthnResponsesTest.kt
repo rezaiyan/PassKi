@@ -11,6 +11,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class WebAuthnResponsesTest {
     private val clientData = "{}".encodeToByteArray() // base64url "e30"
@@ -81,5 +82,35 @@ class WebAuthnResponsesTest {
     fun malformedPlatformJsonBecomesUnknown() {
         val e = assertFailsWith<PasskeyException> { parseRegistration("""{"id":"x"}""") }
         assertIs<PasskeyError.Unknown>(e.error)
+    }
+
+    private fun unknownMessage(block: () -> Unit): String {
+        val e = assertFailsWith<PasskeyException> { block() }
+        return assertIs<PasskeyError.Unknown>(e.error).message
+    }
+
+    @Test
+    fun nonBase64urlCredentialIdIsRejected() {
+        val reg = """{"id":"***","rawId":"***","response":{"clientDataJSON":"e30","attestationObject":"e30"}}"""
+        assertTrue("non-base64url" in unknownMessage { parseRegistration(reg) })
+        val auth = """{"id":"***","rawId":"***","response":{"clientDataJSON":"e30","authenticatorData":"e30","signature":"e30"}}"""
+        assertTrue("non-base64url" in unknownMessage { parseAssertion(auth) })
+    }
+
+    @Test
+    fun nonBase64urlUserHandleIsRejected() {
+        val auth = """{"id":"AQID","rawId":"AQID","response":{"clientDataJSON":"e30","authenticatorData":"e30","signature":"e30","userHandle":"***"}}"""
+        assertTrue("non-base64url" in unknownMessage { parseAssertion(auth) })
+    }
+
+    @Test
+    fun malformedAssertionJsonBecomesUnknown() {
+        unknownMessage { parseAssertion("""{"id":"x"}""") }
+    }
+
+    @Test
+    fun clientExtensionResultsPassThroughVerbatim() {
+        val json = """{"id":"AQID","rawId":"AQID","response":{"clientDataJSON":"e30","attestationObject":"e30"},"clientExtensionResults":{"credProps":{"rk":true}}}"""
+        assertEquals(json, parseRegistration(json).json)
     }
 }

@@ -37,4 +37,20 @@ class SignalRequestsTest {
         val e = assertFailsWith<PasskeyException> { SignalRequests.unknownCredential("example.com", "***") }
         assertIs<PasskeyError.InvalidOptions>(e.error)
     }
+
+    @Test
+    fun emitsCanonicalIds() {
+        assertEquals(
+            """{"rpId":"example.com","credentialId":"AQID_w"}""",
+            SignalRequests.unknownCredential("example.com", "AQID/w=="),
+        )
+        assertEquals(
+            """{"rpId":"example.com","userId":"AQID_w","allAcceptedCredentialIds":["AQID_w"]}""",
+            SignalRequests.acceptedCredentials("example.com", "AQID/w==", listOf("AQID/w==")),
+        )
+        assertEquals(
+            """{"rpId":"example.com","userId":"AQID_w","name":"a","displayName":"A"}""",
+            SignalRequests.currentUserDetails("example.com", "AQID/w==", "a", "A"),
+        )
+    }
 }

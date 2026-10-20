@@ -66,6 +66,7 @@ public fun parseRegistration(json: String): PasskeyRegistration {
     } catch (e: IllegalArgumentException) {
         throw PasskeyException(PasskeyError.Unknown("Platform returned malformed registration JSON: ${e.message}", null))
     }
+    requireBase64Url(model.id)
     return PasskeyRegistration(
         json = json,
         credentialId = model.id,
@@ -81,5 +82,15 @@ public fun parseAssertion(json: String): PasskeyAssertion {
     } catch (e: IllegalArgumentException) {
         throw PasskeyException(PasskeyError.Unknown("Platform returned malformed assertion JSON: ${e.message}", null))
     }
+    requireBase64Url(model.id)
+    model.response.userHandle?.let(::requireBase64Url)
     return PasskeyAssertion(json = json, credentialId = model.id, userHandle = model.response.userHandle)
+}
+
+private fun requireBase64Url(value: String) {
+    try {
+        Base64Url.decode(value)
+    } catch (e: IllegalArgumentException) {
+        throw PasskeyException(PasskeyError.Unknown("Platform returned a non-base64url credential id", null))
+    }
 }

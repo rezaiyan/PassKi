@@ -154,13 +154,19 @@ public class PasskeyAssertion @InternalPasskiApi constructor(
  * New subtypes may be added in minor releases — keep an `else` branch in exhaustive `when`s.
  */
 public sealed interface SignInCredential {
-    /** The user chose a passkey; send [assertion] to your server. */
-    public class Passkey(public val assertion: PasskeyAssertion) : SignInCredential {
+    /**
+     * The user chose a passkey; send [assertion] to your server.
+     * Instances are created by PassKi; the constructor is internal API so fields can be added without breaking binaries.
+     */
+    public class Passkey @InternalPasskiApi constructor(public val assertion: PasskeyAssertion) : SignInCredential {
         override fun toString(): String = "SignInCredential.Passkey($assertion)"
     }
 
-    /** The user chose a saved password. */
-    public class Password(public val id: String, public val password: String) : SignInCredential {
+    /**
+     * The user chose a saved password.
+     * Instances are created by PassKi; the constructor is internal API so fields can be added without breaking binaries.
+     */
+    public class Password @InternalPasskiApi constructor(public val id: String, public val password: String) : SignInCredential {
         override fun toString(): String = "SignInCredential.Password(id=$id, password=***)"
     }
 }

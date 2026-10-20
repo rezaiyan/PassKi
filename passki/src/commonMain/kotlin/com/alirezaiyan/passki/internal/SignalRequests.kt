@@ -12,7 +12,7 @@ import kotlinx.serialization.json.putJsonArray
 @InternalPasskiApi
 public object SignalRequests {
     public fun unknownCredential(rpId: String, credentialId: String): String {
-        requireBase64Url(credentialId, "credentialId")
+        val credentialId = canonical(credentialId, "credentialId")
         return buildJsonObject {
             put("rpId", rpId)
             put("credentialId", credentialId)
@@ -20,8 +20,8 @@ public object SignalRequests {
     }
 
     public fun acceptedCredentials(rpId: String, userId: String, credentialIds: List<String>): String {
-        requireBase64Url(userId, "userId")
-        credentialIds.forEach { requireBase64Url(it, "credentialIds") }
+        val userId = canonical(userId, "userId")
+        val credentialIds = credentialIds.map { canonical(it, "credentialIds") }
         return buildJsonObject {
             put("rpId", rpId)
             put("userId", userId)
@@ -30,7 +30,7 @@ public object SignalRequests {
     }
 
     public fun currentUserDetails(rpId: String, userId: String, name: String, displayName: String): String {
-        requireBase64Url(userId, "userId")
+        val userId = canonical(userId, "userId")
         return buildJsonObject {
             put("rpId", rpId)
             put("userId", userId)
@@ -39,9 +39,9 @@ public object SignalRequests {
         }.toString()
     }
 
-    private fun requireBase64Url(value: String, field: String) {
+    private fun canonical(value: String, field: String): String {
         try {
-            Base64Url.decode(value)
+            return Base64Url.encode(Base64Url.decode(value))
         } catch (e: IllegalArgumentException) {
             throw PasskeyException(PasskeyError.InvalidOptions("$field must be base64url: ${e.message}"))
         }

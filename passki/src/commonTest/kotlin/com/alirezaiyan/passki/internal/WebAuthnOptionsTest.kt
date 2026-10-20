@@ -76,4 +76,96 @@ class WebAuthnOptionsTest {
         val e = assertFailsWith<PasskeyException> { WebAuthnOptions.parseRequest("""{"challenge":"***"}""") }
         assertIs<PasskeyError.InvalidOptions>(e.error)
     }
+
+    private fun invalidMessage(block: () -> Unit): String {
+        val e = assertFailsWith<PasskeyException> { block() }
+        return assertIs<PasskeyError.InvalidOptions>(e.error).message
+    }
+
+    @Test
+    fun creationBinaryFieldsAreCanonicalized() {
+        val parsed = WebAuthnOptions.parseCreation(
+            """{"rp":{"name":"x"},"user":{"id":"AQID/w==","name":"a"},"challenge":"AQID/w==",
+               "excludeCredentials":[{"id":"AQID/w==","type":"public-key"}],"unknownField":1}""",
+        )
+        assertTrue("AQID_w" in parsed.json)
+        assertFalse("/" in parsed.json)
+        assertFalse("=" in parsed.json)
+        assertTrue("unknownField" in parsed.json)
+        assertEquals("AQID_w", parsed.model.challenge)
+        assertEquals("AQID_w", parsed.model.user.id)
+        assertEquals("AQID_w", parsed.model.excludeCredentials.single().id)
+    }
+
+    @Test
+    fun requestBinaryFieldsAreCanonicalized() {
+        val parsed = WebAuthnOptions.parseRequest(
+            """{"challenge":"AQID/w==","allowCredentials":[{"id":"AQID/w==","type":"public-key"}]}""",
+        )
+        assertTrue("AQID_w" in parsed.json)
+        assertFalse("/" in parsed.json)
+        assertEquals("AQID_w", parsed.model.challenge)
+        assertEquals("AQID_w", parsed.model.allowCredentials.single().id)
+    }
+
+    @Test
+    fun emptyChallengeIsRejected() {
+        assertTrue("challenge" in invalidMessage { WebAuthnOptions.parseRequest("""{"challenge":""}""") })
+        assertTrue(
+            "challenge" in invalidMessage {
+                WebAuthnOptions.parseCreation("""{"rp":{"name":"x"},"user":{"id":"AQID","name":"a"},"challenge":""}""")
+            },
+        )
+    }
+
+    @Test
+    fun emptyUserIdIsRejected() {
+        assertTrue(
+            "user.id" in invalidMessage {
+                WebAuthnOptions.parseCreation("""{"rp":{"name":"x"},"user":{"id":"","name":"a"},"challenge":"AAEC"}""")
+            },
+        )
+    }
+
+    @Test
+    fun userIdOver64BytesIsRejected() {
+        val id = Base64Url.encode(ByteArray(65))
+        assertTrue(
+            "user.id" in invalidMessage {
+                WebAuthnOptions.parseCreation("""{"rp":{"name":"x"},"user":{"id":"$id","name":"a"},"challenge":"AAEC"}""")
+            },
+        )
+        val ok = Base64Url.encode(ByteArray(64))
+        WebAuthnOptions.parseCreation("""{"rp":{"name":"x"},"user":{"id":"$ok","name":"a"},"challenge":"AAEC"}""")
+    }
+
+    @Test
+    fun invalidUserIdAndCredentialIdAreRejected() {
+        invalidMessage {
+            WebAuthnOptions.parseCreation("""{"rp":{"name":"x"},"user":{"id":"***","name":"a"},"challenge":"AAEC"}""")
+        }
+        invalidMessage {
+            WebAuthnOptions.parseCreation(
+                """{"rp":{"name":"x"},"user":{"id":"AQID","name":"a"},"challenge":"AAEC","excludeCredentials":[{"id":"***"}]}""",
+            )
+        }
+    }
+
+    @Test
+    fun nonObjectRootIsInvalid() {
+        invalidMessage { WebAuthnOptions.parseRequest("[]") }
+        invalidMessage { WebAuthnOptions.parseRequest("null") }
+    }
+
+    @Test
+    fun nonObjectPublicKeyIsNotAnEnvelope() {
+        invalidMessage { WebAuthnOptions.parseRequest("""{"publicKey":5}""") }
+    }
+
+    @Test
+    fun unknownFieldsPreservedInsideEnvelope() {
+        val parsed = WebAuthnOptions.parseCreation("""{"publicKey":$creation}""")
+        assertTrue("unknownField" in parsed.json)
+        assertTrue("credProps" in parsed.json)
+    }
 }

@@ -34,4 +34,11 @@ class PasskeyCatchingTest {
             passkeyCatching<Int>({ mapped }) { throw CancellationException("stop") }
         }
     }
+
+    @Test
+    fun errorsAreRethrown() {
+        assertFailsWith<Error> {
+            passkeyCatching<Int>({ mapped }) { throw Error("fatal") }
+        }
+    }
 }
