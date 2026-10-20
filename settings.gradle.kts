@@ -36,5 +36,5 @@ include(":desktopApp")
 include(":shared")
 include(":webApp")
 
-//include(":passki")
+include(":passki")
 //include(":passki-test")
