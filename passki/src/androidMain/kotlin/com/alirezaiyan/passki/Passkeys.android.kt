@@ -1,5 +1,5 @@
 package com.alirezaiyan.passki
 
-import com.alirezaiyan.passki.internal.UnsupportedPasskeys
+import com.alirezaiyan.passki.android.AndroidPasskeys
 
-public actual fun Passkeys(): Passkeys = UnsupportedPasskeys("Android")
+public actual fun Passkeys(): Passkeys = AndroidPasskeys()
