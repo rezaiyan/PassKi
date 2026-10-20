@@ -1,14 +1,14 @@
 package com.alirezaiyan.passki.test
 
 import com.alirezaiyan.passki.internal.Base64Url
+import dev.whyoleg.cryptography.random.CryptographyRandom
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
-import kotlin.random.Random
 
-/** Builds server-style WebAuthn options JSON for tests. Not cryptographically random; tests only. */
+/** Builds server-style WebAuthn options JSON for tests. Defaults come from a secure random source, safe under concurrency. */
 public object TestOptions {
     /**
      * PublicKeyCredentialCreationOptionsJSON for [rpId], requesting a discoverable ES256/RS256 credential.
@@ -79,5 +79,5 @@ public object TestOptions {
         }
     }.toString()
 
-    private fun randomBase64Url(size: Int): String = Base64Url.encode(Random.nextBytes(size))
+    private fun randomBase64Url(size: Int): String = Base64Url.encode(CryptographyRandom.nextBytes(size))
 }
