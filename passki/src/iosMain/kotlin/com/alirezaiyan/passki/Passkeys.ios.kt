@@ -1,5 +1,5 @@
 package com.alirezaiyan.passki
 
-import com.alirezaiyan.passki.internal.UnsupportedPasskeys
+import com.alirezaiyan.passki.apple.IosPasskeys
 
-public actual fun Passkeys(): Passkeys = UnsupportedPasskeys("iOS")
+public actual fun Passkeys(): Passkeys = IosPasskeys()
