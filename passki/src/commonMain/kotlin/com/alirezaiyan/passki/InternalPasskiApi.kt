@@ -10,6 +10,7 @@ package com.alirezaiyan.passki
 @Retention(AnnotationRetention.BINARY)
 @Target(
     AnnotationTarget.CLASS,
+    AnnotationTarget.CONSTRUCTOR,
     AnnotationTarget.FUNCTION,
     AnnotationTarget.PROPERTY,
     AnnotationTarget.TYPEALIAS,

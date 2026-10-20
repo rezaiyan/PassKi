@@ -27,4 +27,29 @@ class Base64UrlTest {
     fun rejectsInvalidCharacters() {
         assertFailsWith<IllegalArgumentException> { Base64Url.decode("***") }
     }
+
+    @Test
+    fun roundTripsEmptyAndShortLengths() {
+        assertEquals("", Base64Url.encode(ByteArray(0)))
+        assertContentEquals(ByteArray(0), Base64Url.decode(""))
+        for (n in 1..5) {
+            val input = ByteArray(n) { (it * 61 + 250).toByte() }
+            assertContentEquals(input, Base64Url.decode(Base64Url.encode(input)))
+        }
+    }
+
+    @Test
+    fun decodesMixedAlphabets() {
+        val input = byteArrayOf(-5, -1, -65, 62, 63) // forces both '+'/'-' and '/'/'_' symbols
+        val url = Base64Url.encode(input)
+        val mixed = url.replaceFirst('-', '+').replaceFirst('_', '/')
+        assertContentEquals(input, Base64Url.decode(mixed))
+        assertContentEquals(input, Base64Url.decode(url.replace('-', '+').replace('_', '/')))
+    }
+
+    @Test
+    fun decodesOverPaddedInput() {
+        val input = byteArrayOf(1, 2, 3, 4)
+        assertContentEquals(input, Base64Url.decode(Base64Url.encode(input) + "===="))
+    }
 }

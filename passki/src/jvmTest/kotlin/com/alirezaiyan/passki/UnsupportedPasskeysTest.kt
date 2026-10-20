@@ -21,6 +21,8 @@ class UnsupportedPasskeysTest {
             passkeys.signInOrPassword("{}"),
             passkeys.upgrade("{}"),
             passkeys.signals.unknownCredential("example.com", "AQID"),
+            passkeys.signals.acceptedCredentials("example.com", "AQID", listOf("AQID")),
+            passkeys.signals.currentUserDetails("example.com", "AQID", "a", "A"),
         ).forEach { result ->
             val failure = assertIs<PasskeyResult.Failure>(result)
             assertIs<PasskeyError.NotSupported>(failure.error)

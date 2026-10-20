@@ -45,7 +45,7 @@ kotlin {
             languageSettings.optIn("com.alirezaiyan.passki.InternalPasskiApi")
         }
         commonMain.dependencies {
-            api(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {
