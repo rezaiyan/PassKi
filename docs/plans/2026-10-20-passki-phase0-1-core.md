@@ -130,7 +130,7 @@ docs/setup/well-known/apple-app-site-association  (create) template
 **Files:**
 - Create: `docs/benchmarks/dx-comparison.md`
 
-- [ ] **Step 1: Clone both competitors outside the repo**
+- [x] **Step 1: Clone both competitors outside the repo**
 
 ```bash
 mkdir -p "$TMPDIR/passki-bench" && cd "$TMPDIR/passki-bench"
@@ -138,7 +138,7 @@ git clone --depth 1 https://github.com/AndroidPoet/passkeys-kmp
 git clone --depth 1 https://github.com/szijpeter/webauthn-kotlin-multiplatform
 ```
 
-- [ ] **Step 2: Measure each one.** For each repo, find the smallest sample code that performs register + sign-in from `commonMain`:
+- [x] **Step 2: Measure each one.** For each repo, find the smallest sample code that performs register + sign-in from `commonMain`:
   - `grep -rn "create(\|authenticate(\|register\|signIn" --include=*.kt <repo>/sample* | head -40`
 
   Then record:
@@ -148,7 +148,7 @@ git clone --depth 1 https://github.com/szijpeter/webauthn-kotlin-multiplatform
   - (d) error type shape
   - (e) feature checklist: unified password, conditional create, signals, restore credentials, fake/test support, setup diagnostics
 
-- [ ] **Step 3: Write `docs/benchmarks/dx-comparison.md`** using this exact structure. Fill each cell with the measured value from Step 2. The PassKi column holds the target from this plan.
+- [x] **Step 3: Write `docs/benchmarks/dx-comparison.md`** using this exact structure. Fill each cell with the measured value from Step 2. The PassKi column holds the target from this plan.
 
 ```markdown
 # DX Comparison (measured 2026-10-20)
@@ -169,7 +169,7 @@ git clone --depth 1 https://github.com/szijpeter/webauthn-kotlin-multiplatform
 - <observations per library, one bullet each>
 ```
 
-- [ ] **Step 4: Commit** (repo is initialised in Task 1; if Task 0 runs first, commit after Task 1)
+- [x] **Step 4: Commit** (repo is initialised in Task 1; if Task 0 runs first, commit after Task 1)
 
 ```bash
 git add docs/benchmarks/dx-comparison.md
@@ -186,13 +186,13 @@ git commit -m "docs: add competitor DX benchmark"
 - Create: `.gitignore`, `LICENSE`
 - Modify: `gradle/libs.versions.toml`, `settings.gradle.kts`, `build.gradle.kts`, `gradle.properties`
 
-- [ ] **Step 1: Init git** (the project is not a repo yet). **Ask the user before running.**
+- [x] **Step 1: Init git** (the project is not a repo yet). **Ask the user before running.**
 
 ```bash
 cd /Users/ali/projects/deblock/PassKi && git init -b main
 ```
 
-- [ ] **Step 2: Create `.gitignore`** (skip any lines already present if the file exists)
+- [x] **Step 2: Create `.gitignore`** (skip any lines already present if the file exists)
 
 ```gitignore
 .gradle/
@@ -210,9 +210,9 @@ iosApp/iosApp.xcodeproj/project.xcworkspace/xcuserdata/
 kotlin-js-store/
 ```
 
-- [ ] **Step 3: Create `LICENSE`.** Use the full Apache-2.0 text from https://www.apache.org/licenses/LICENSE-2.0.txt, saved verbatim. The copyright line goes in README, not LICENSE.
+- [x] **Step 3: Create `LICENSE`.** Use the full Apache-2.0 text from https://www.apache.org/licenses/LICENSE-2.0.txt, saved verbatim. The copyright line goes in README, not LICENSE.
 
-- [ ] **Step 4: Add to `gradle/libs.versions.toml`.** Merge into the existing sections.
+- [x] **Step 4: Add to `gradle/libs.versions.toml`.** Merge into the existing sections.
 
 ```toml
 [versions]
@@ -239,21 +239,21 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 vanniktechPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-publish" }
 ```
 
-- [ ] **Step 5: Root `build.gradle.kts`.** Add inside `plugins {}`:
+- [x] **Step 5: Root `build.gradle.kts`.** Add inside `plugins {}`:
 
 ```kotlin
     alias(libs.plugins.kotlinSerialization) apply false
     alias(libs.plugins.vanniktechPublish) apply false
 ```
 
-- [ ] **Step 6: `settings.gradle.kts`.** Append:
+- [x] **Step 6: `settings.gradle.kts`.** Append:
 
 ```kotlin
 include(":passki")
 include(":passki-test")
 ```
 
-- [ ] **Step 7: `gradle.properties`.** Append:
+- [x] **Step 7: `gradle.properties`.** Append:
 
 ```properties
 #Publishing
@@ -261,14 +261,14 @@ GROUP=com.alirezaiyan.passki
 VERSION_NAME=0.1.0-alpha01
 ```
 
-- [ ] **Step 8: Verify the catalog parses.** Modules don't exist yet, so temporarily comment out the two `include` lines.
+- [x] **Step 8: Verify the catalog parses.** Modules don't exist yet, so temporarily comment out the two `include` lines.
 
 Run: `./gradlew help -q`
 Expected: exit 0, no output.
 
 Then restore the includes.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add -A
@@ -283,7 +283,7 @@ git commit -m "chore: init repo, license, version catalog for passki"
 - Create: `passki/build.gradle.kts`
 - Create: `passki/src/commonMain/kotlin/com/alirezaiyan/passki/InternalPasskiApi.kt`
 
-- [ ] **Step 1: Create `passki/build.gradle.kts`**
+- [x] **Step 1: Create `passki/build.gradle.kts`**
 
 ```kotlin
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -351,7 +351,7 @@ kotlin {
 
 If `abiValidation` or `ExperimentalAbiValidation` doesn't resolve on Kotlin 2.4.20, remove that block. Then add plugin `org.jetbrains.kotlinx.binary-compatibility-validator` (latest) instead, and use `apiDump` / `apiCheck` wherever this plan says `updateKotlinAbi` / `checkKotlinAbi`.
 
-- [ ] **Step 2: Create `InternalPasskiApi.kt`**
+- [x] **Step 2: Create `InternalPasskiApi.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki
@@ -373,12 +373,12 @@ package com.alirezaiyan.passki
 public annotation class InternalPasskiApi
 ```
 
-- [ ] **Step 3: Verify the module configures.** Comment out `include(":passki-test")` until Task 15.
+- [x] **Step 3: Verify the module configures.** Comment out `include(":passki-test")` until Task 15.
 
 Run: `./gradlew :passki:tasks --group verification -q`
 Expected: lists `jvmTest`, `testAndroidHostTest`, `iosSimulatorArm64Test`, `allTests`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add passki settings.gradle.kts
@@ -393,7 +393,7 @@ git commit -m "build: add passki KMP library module"
 - Create: `passki/src/commonMain/kotlin/com/alirezaiyan/passki/internal/Base64Url.kt`
 - Test: `passki/src/commonTest/kotlin/com/alirezaiyan/passki/internal/Base64UrlTest.kt`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```kotlin
 package com.alirezaiyan.passki.internal
@@ -428,12 +428,12 @@ class Base64UrlTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./gradlew :passki:jvmTest --tests "com.alirezaiyan.passki.internal.Base64UrlTest"`
 Expected: FAIL, compilation error `Unresolved reference 'Base64Url'`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```kotlin
 package com.alirezaiyan.passki.internal
@@ -455,12 +455,12 @@ public object Base64Url {
 
 If the compiler reports `This declaration needs opt-in`, add `@OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)` on the object.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `./gradlew :passki:jvmTest --tests "com.alirezaiyan.passki.internal.Base64UrlTest"`
 Expected: PASS (4 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add passki/src
@@ -476,7 +476,7 @@ git commit -m "feat(core): add lenient base64url codec"
 - Create: `passki/src/commonMain/kotlin/com/alirezaiyan/passki/PasskeyResult.kt`
 - Test: `passki/src/commonTest/kotlin/com/alirezaiyan/passki/PasskeyResultTest.kt`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```kotlin
 package com.alirezaiyan.passki
@@ -533,12 +533,12 @@ class PasskeyResultTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./gradlew :passki:jvmTest --tests "com.alirezaiyan.passki.PasskeyResultTest"`
 Expected: FAIL, `Unresolved reference 'PasskeyResult'`.
 
-- [ ] **Step 3: Implement `PasskeyError.kt`**
+- [x] **Step 3: Implement `PasskeyError.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki
@@ -594,7 +594,7 @@ public class PasskeyException(public val error: PasskeyError) : Exception(error.
 
 Explicit API mode: if the compiler asks for `public` on `val platformCode`, write `public val platformCode: String?`.
 
-- [ ] **Step 4: Implement `PasskeyResult.kt`**
+- [x] **Step 4: Implement `PasskeyResult.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki
@@ -627,12 +627,12 @@ public inline fun <T, R> PasskeyResult<T>.map(transform: (T) -> R): PasskeyResul
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `./gradlew :passki:jvmTest --tests "com.alirezaiyan.passki.PasskeyResultTest"`
 Expected: PASS (6 tests).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add passki/src
@@ -651,7 +651,7 @@ git commit -m "feat(core): add PasskeyError and PasskeyResult"
 - Create (temporary, replaced in Tasks 11/14): `passki/src/androidMain/kotlin/com/alirezaiyan/passki/Passkeys.android.kt`, `passki/src/iosMain/kotlin/com/alirezaiyan/passki/Passkeys.ios.kt`
 - Test: `passki/src/jvmTest/kotlin/com/alirezaiyan/passki/UnsupportedPasskeysTest.kt`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```kotlin
 package com.alirezaiyan.passki
@@ -685,12 +685,12 @@ class UnsupportedPasskeysTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./gradlew :passki:jvmTest --tests "com.alirezaiyan.passki.UnsupportedPasskeysTest"`
 Expected: FAIL, `Unresolved reference 'Passkeys'`.
 
-- [ ] **Step 3: Implement `Passkeys.kt`**
+- [x] **Step 3: Implement `Passkeys.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki
@@ -801,7 +801,7 @@ public sealed interface SignInCredential {
 }
 ```
 
-- [ ] **Step 4: Implement `internal/UnsupportedPasskeys.kt`**
+- [x] **Step 4: Implement `internal/UnsupportedPasskeys.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.internal
@@ -851,7 +851,7 @@ internal class UnsupportedPasskeys(platform: String) : Passkeys {
 
 If the compiler complains about inferred return types in the anonymous object (explicit API doesn't apply to internal, but type inference to `PasskeyResult.Failure` may mismatch), annotate each with `: PasskeyResult<Unit>`.
 
-- [ ] **Step 5: Platform actuals**
+- [x] **Step 5: Platform actuals**
 
 `passki/src/jvmMain/kotlin/com/alirezaiyan/passki/Passkeys.jvm.kt`:
 
@@ -893,14 +893,14 @@ import com.alirezaiyan.passki.internal.UnsupportedPasskeys
 public actual fun Passkeys(): Passkeys = UnsupportedPasskeys("iOS")
 ```
 
-- [ ] **Step 6: Run test + compile all targets**
+- [x] **Step 6: Run test + compile all targets**
 
 Run: `./gradlew :passki:jvmTest --tests "com.alirezaiyan.passki.UnsupportedPasskeysTest" :passki:assemble`
 Expected: PASS (2 tests), BUILD SUCCESSFUL for all targets.
 
 If `webMain` isn't picked up (error: no actual for js/wasmJs), move the file to both `jsMain` and `wasmJsMain`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add passki/src
@@ -916,7 +916,7 @@ git commit -m "feat(core): add Passkeys API surface and unsupported-platform fal
 - Create: `passki/src/commonMain/kotlin/com/alirezaiyan/passki/internal/WebAuthnOptions.kt`
 - Test: `passki/src/commonTest/kotlin/com/alirezaiyan/passki/internal/WebAuthnOptionsTest.kt`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```kotlin
 package com.alirezaiyan.passki.internal
@@ -1000,12 +1000,12 @@ class WebAuthnOptionsTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./gradlew :passki:jvmTest --tests "com.alirezaiyan.passki.internal.WebAuthnOptionsTest"`
 Expected: FAIL, `Unresolved reference 'WebAuthnOptions'`.
 
-- [ ] **Step 3: Implement `WebAuthnJson.kt`**
+- [x] **Step 3: Implement `WebAuthnJson.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.internal
@@ -1116,7 +1116,7 @@ public data class AssertionResponseJson(
 )
 ```
 
-- [ ] **Step 4: Implement `WebAuthnOptions.kt`**
+- [x] **Step 4: Implement `WebAuthnOptions.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.internal
@@ -1174,12 +1174,12 @@ public object WebAuthnOptions {
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `./gradlew :passki:jvmTest --tests "com.alirezaiyan.passki.internal.WebAuthnOptionsTest"`
 Expected: PASS (7 tests).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add passki/src
@@ -1196,7 +1196,7 @@ git commit -m "feat(core): add WebAuthn JSON models and options normalizer"
 - Test: `passki/src/commonTest/kotlin/com/alirezaiyan/passki/internal/WebAuthnResponsesTest.kt`
 - Test: `passki/src/commonTest/kotlin/com/alirezaiyan/passki/internal/SignalRequestsTest.kt`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `WebAuthnResponsesTest.kt`:
 
@@ -1333,12 +1333,12 @@ class SignalRequestsTest {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `./gradlew :passki:jvmTest --tests "com.alirezaiyan.passki.internal.WebAuthnResponsesTest" --tests "com.alirezaiyan.passki.internal.SignalRequestsTest"`
 Expected: FAIL, `Unresolved reference 'WebAuthnResponses'` / `'SignalRequests'`.
 
-- [ ] **Step 3: Implement `WebAuthnResponses.kt`**
+- [x] **Step 3: Implement `WebAuthnResponses.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.internal
@@ -1428,7 +1428,7 @@ public fun parseAssertion(json: String): PasskeyAssertion {
 }
 ```
 
-- [ ] **Step 4: Implement `SignalRequests.kt`**
+- [x] **Step 4: Implement `SignalRequests.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.internal
@@ -1482,12 +1482,12 @@ public object SignalRequests {
 }
 ```
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 Run: `./gradlew :passki:jvmTest --tests "com.alirezaiyan.passki.internal.WebAuthnResponsesTest" --tests "com.alirezaiyan.passki.internal.SignalRequestsTest"`
 Expected: PASS (9 tests).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add passki/src
@@ -1502,7 +1502,7 @@ git commit -m "feat(core): build and parse WebAuthn responses, signal requests"
 - Create: `passki/src/commonMain/kotlin/com/alirezaiyan/passki/internal/PasskeyCatching.kt`
 - Test: `passki/src/commonTest/kotlin/com/alirezaiyan/passki/internal/PasskeyCatchingTest.kt`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```kotlin
 package com.alirezaiyan.passki.internal
@@ -1544,12 +1544,12 @@ class PasskeyCatchingTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./gradlew :passki:jvmTest --tests "com.alirezaiyan.passki.internal.PasskeyCatchingTest"`
 Expected: FAIL, `Unresolved reference 'passkeyCatching'`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```kotlin
 package com.alirezaiyan.passki.internal
@@ -1577,12 +1577,12 @@ internal inline fun <T> passkeyCatching(
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `./gradlew :passki:jvmTest --tests "com.alirezaiyan.passki.internal.PasskeyCatchingTest"`
 Expected: PASS (4 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add passki/src
@@ -1601,7 +1601,7 @@ git commit -m "feat(core): add passkeyCatching exception bridge"
 
 No unit test: lifecycle callbacks need a real Application. This is verified in Task 21 (sample on emulator).
 
-- [ ] **Step 1: Create `ActivityTracker.kt`**
+- [x] **Step 1: Create `ActivityTracker.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.android
@@ -1654,7 +1654,7 @@ internal object ActivityTracker : Application.ActivityLifecycleCallbacks {
 }
 ```
 
-- [ ] **Step 2: Create `PasskiInitializer.kt`**
+- [x] **Step 2: Create `PasskiInitializer.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.android
@@ -1673,7 +1673,7 @@ public class PasskiInitializer : Initializer<Unit> {
 }
 ```
 
-- [ ] **Step 3: Create `PasskiAndroid.kt`** (manual init when apps disable androidx.startup)
+- [x] **Step 3: Create `PasskiAndroid.kt`** (manual init when apps disable androidx.startup)
 
 ```kotlin
 package com.alirezaiyan.passki
@@ -1689,7 +1689,7 @@ public object PasskiAndroid {
 }
 ```
 
-- [ ] **Step 4: Create `AndroidManifest.xml`**
+- [x] **Step 4: Create `AndroidManifest.xml`**
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -1710,12 +1710,12 @@ public object PasskiAndroid {
 </manifest>
 ```
 
-- [ ] **Step 5: Compile Android**
+- [x] **Step 5: Compile Android**
 
 Run: `./gradlew :passki:compileAndroidMain`
 Expected: BUILD SUCCESSFUL. If the task name differs, run `./gradlew :passki:assemble`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add passki/src/androidMain
@@ -1730,7 +1730,7 @@ git commit -m "feat(android): auto-resolve foreground Activity via androidx.star
 - Create: `passki/src/androidMain/kotlin/com/alirezaiyan/passki/android/AndroidErrorMapper.kt`
 - Test: `passki/src/androidHostTest/kotlin/com/alirezaiyan/passki/android/AndroidErrorMapperTest.kt`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```kotlin
 package com.alirezaiyan.passki.android
@@ -1818,12 +1818,12 @@ class AndroidErrorMapperTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./gradlew :passki:testAndroidHostTest --tests "com.alirezaiyan.passki.android.AndroidErrorMapperTest"`
 Expected: FAIL, `Unresolved reference 'toPasskeyError'`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```kotlin
 package com.alirezaiyan.passki.android
@@ -1886,12 +1886,12 @@ private fun Throwable.messageOr(fallback: String): String = message?.takeIf { it
 
 If host tests throw `Method ... not mocked` from android.jar stubs, change `withHostTest {}` in `passki/build.gradle.kts` to `withHostTest { isReturnDefaultValues = true }`.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `./gradlew :passki:testAndroidHostTest --tests "com.alirezaiyan.passki.android.AndroidErrorMapperTest"`
 Expected: PASS (11 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add passki/src
@@ -1908,7 +1908,7 @@ git commit -m "feat(android): map Credential Manager exceptions to PasskeyError"
 
 This needs a real Credential Manager, so behaviour is verified in Task 21. The gate here is compilation plus the existing tests.
 
-- [ ] **Step 1: Create `AndroidPasskeys.kt`**
+- [x] **Step 1: Create `AndroidPasskeys.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.android
@@ -2057,7 +2057,7 @@ internal class AndroidPasskeys(private val tracker: ActivityTracker = ActivityTr
 
 If `CreatePublicKeyCredentialRequest(requestJson =, isConditional =)` doesn't compile (no default for the other params), use the 6-arg constructor: `CreatePublicKeyCredentialRequest(options.json, null, false, null, false, conditional)`.
 
-- [ ] **Step 2: Replace `Passkeys.android.kt`**
+- [x] **Step 2: Replace `Passkeys.android.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki
@@ -2067,12 +2067,12 @@ import com.alirezaiyan.passki.android.AndroidPasskeys
 public actual fun Passkeys(): Passkeys = AndroidPasskeys()
 ```
 
-- [ ] **Step 3: Compile + run all Android/common tests**
+- [x] **Step 3: Compile + run all Android/common tests**
 
 Run: `./gradlew :passki:testAndroidHostTest :passki:jvmTest`
 Expected: BUILD SUCCESSFUL, all tests pass.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add passki/src
@@ -2088,7 +2088,7 @@ git commit -m "feat(android): implement Passkeys with Credential Manager"
 - Create: `passki/src/iosMain/kotlin/com/alirezaiyan/passki/apple/IosPlatform.kt`
 - Test: `passki/src/iosTest/kotlin/com/alirezaiyan/passki/apple/NSDataInteropTest.kt`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```kotlin
 package com.alirezaiyan.passki.apple
@@ -2116,12 +2116,12 @@ class NSDataInteropTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./gradlew :passki:iosSimulatorArm64Test --tests "com.alirezaiyan.passki.apple.NSDataInteropTest"`
 Expected: FAIL, `Unresolved reference 'toNSData'`.
 
-- [ ] **Step 3: Implement `NSDataInterop.kt`**
+- [x] **Step 3: Implement `NSDataInterop.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.apple
@@ -2150,7 +2150,7 @@ internal fun NSData.toByteArray(): ByteArray {
 }
 ```
 
-- [ ] **Step 4: Implement `IosPlatform.kt`**
+- [x] **Step 4: Implement `IosPlatform.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.apple
@@ -2188,12 +2188,12 @@ internal fun keyWindow(): UIWindow? {
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `./gradlew :passki:iosSimulatorArm64Test --tests "com.alirezaiyan.passki.apple.NSDataInteropTest"`
 Expected: PASS (3 tests).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add passki/src
@@ -2217,7 +2217,7 @@ ASAuthorizationError codes:
 - 1005 notInteractive
 - 1006 matchedExcludedCredential (iOS 18)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```kotlin
 package com.alirezaiyan.passki.apple
@@ -2267,12 +2267,12 @@ class AppleErrorMapperTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./gradlew :passki:iosSimulatorArm64Test --tests "com.alirezaiyan.passki.apple.AppleErrorMapperTest"`
 Expected: FAIL, `Unresolved reference 'appleErrorToPasskeyError'`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```kotlin
 package com.alirezaiyan.passki.apple
@@ -2302,12 +2302,12 @@ internal fun Throwable.toPasskeyError(): PasskeyError = when (this) {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `./gradlew :passki:iosSimulatorArm64Test --tests "com.alirezaiyan.passki.apple.AppleErrorMapperTest"`
 Expected: PASS (6 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add passki/src
@@ -2328,7 +2328,7 @@ Real ceremonies are verified in Task 21. The gate here is compiling for iosArm64
 
 K/N naming note: if an `NS_ENUM` constant below doesn't resolve, type the enum name in the IDE and use autocomplete. K/N exposes NS_ENUM entries as `EnumName.FullConstantName`.
 
-- [ ] **Step 1: Create `AuthorizationSession.kt`**
+- [x] **Step 1: Create `AuthorizationSession.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.apple
@@ -2414,7 +2414,7 @@ internal class AuthorizationSession private constructor(
 
 If the compiler reports conflicting overloads for the two `authorizationController` overrides, annotate the `didCompleteWithError` one with `@kotlinx.cinterop.ObjCSignatureOverride`.
 
-- [ ] **Step 2: Create `AppleRequests.kt`**
+- [x] **Step 2: Create `AppleRequests.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.apple
@@ -2513,7 +2513,7 @@ internal object AppleRequests {
 
 Note: the `attachment` property was introduced in iOS 16.6. Reading it on 16.0–16.5 is guarded by `iosAtLeast(16, 6)` only for the comparison. If that crashes on 16.0–16.5 simulators, wrap the property read itself: `if (iosAtLeast(16, 6)) attachmentOf(credential.attachment) else "platform"`.
 
-- [ ] **Step 3: Create `IosPasskeys.kt`**
+- [x] **Step 3: Create `IosPasskeys.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.apple
@@ -2631,7 +2631,7 @@ internal class IosPasskeys(private val anchor: () -> UIWindow? = ::keyWindow) : 
 }
 ```
 
-- [ ] **Step 4: Replace `Passkeys.ios.kt`**
+- [x] **Step 4: Replace `Passkeys.ios.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki
@@ -2641,12 +2641,12 @@ import com.alirezaiyan.passki.apple.IosPasskeys
 public actual fun Passkeys(): Passkeys = IosPasskeys()
 ```
 
-- [ ] **Step 5: Compile both iOS targets + run iOS tests**
+- [x] **Step 5: Compile both iOS targets + run iOS tests**
 
 Run: `./gradlew :passki:compileKotlinIosArm64 :passki:iosSimulatorArm64Test`
 Expected: BUILD SUCCESSFUL; NSDataInteropTest + AppleErrorMapperTest pass (9 tests).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add passki/src
@@ -2663,7 +2663,7 @@ git commit -m "feat(ios): implement Passkeys with AuthenticationServices"
 - Test: `passki-test/src/commonTest/kotlin/com/alirezaiyan/passki/test/CborWriterTest.kt`
 - Modify: `settings.gradle.kts` (re-enable `include(":passki-test")`)
 
-- [ ] **Step 1: Create `passki-test/build.gradle.kts`**
+- [x] **Step 1: Create `passki-test/build.gradle.kts`**
 
 ```kotlin
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -2716,7 +2716,7 @@ kotlin {
 }
 ```
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 ```kotlin
 package com.alirezaiyan.passki.test
@@ -2760,12 +2760,12 @@ class CborWriterTest {
 }
 ```
 
-- [ ] **Step 3: Re-enable `include(":passki-test")` in `settings.gradle.kts` and run the test to verify it fails**
+- [x] **Step 3: Re-enable `include(":passki-test")` in `settings.gradle.kts` and run the test to verify it fails**
 
 Run: `./gradlew :passki-test:jvmTest --tests "com.alirezaiyan.passki.test.CborWriterTest"`
 Expected: FAIL, `Unresolved reference 'CborWriter'`.
 
-- [ ] **Step 4: Implement `CborWriter.kt`**
+- [x] **Step 4: Implement `CborWriter.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.test
@@ -2815,12 +2815,12 @@ internal class CborWriter {
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `./gradlew :passki-test:jvmTest --tests "com.alirezaiyan.passki.test.CborWriterTest"`
 Expected: PASS (7 tests).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add passki-test settings.gradle.kts
@@ -2836,7 +2836,7 @@ git commit -m "feat(test): add passki-test module with minimal CBOR writer"
 - Create: `passki-test/src/commonMain/kotlin/com/alirezaiyan/passki/test/FakeAuthenticator.kt`
 - Test: `passki-test/src/jvmTest/kotlin/com/alirezaiyan/passki/test/WebAuthn4jVerificationTest.kt`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```kotlin
 package com.alirezaiyan.passki.test
@@ -2899,12 +2899,12 @@ class WebAuthn4jVerificationTest {
 
 If webauthn4j 0.30 has no 3-arg `ServerProperty(origin, rpId, challenge)`, use `ServerProperty.builder().origin(Origin(origin)).rpId(rpId).challenge(DefaultChallenge(challenge)).build()`. Check https://webauthn4j.github.io/webauthn4j/en/ for the exact 0.30 signature. The `RegistrationParameters` / `AuthenticationParameters` arg order is `(serverProperty, pubKeyCredParams|credentialRecord, allowCredentials?, userVerificationRequired, userPresenceRequired)`.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./gradlew :passki-test:jvmTest --tests "com.alirezaiyan.passki.test.WebAuthn4jVerificationTest"`
 Expected: FAIL, `Unresolved reference 'FakeAuthenticator'`.
 
-- [ ] **Step 3: Implement `TestOptions.kt`**
+- [x] **Step 3: Implement `TestOptions.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.test
@@ -2984,7 +2984,7 @@ public object TestOptions {
 }
 ```
 
-- [ ] **Step 4: Implement `FakeAuthenticator.kt`**
+- [x] **Step 4: Implement `FakeAuthenticator.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.test
@@ -3143,12 +3143,12 @@ public class FakeAuthenticator(
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `./gradlew :passki-test:jvmTest --tests "com.alirezaiyan.passki.test.WebAuthn4jVerificationTest"`
 Expected: PASS (1 test). A webauthn4j `*VerificationException` means a byte-layout bug in FakeAuthenticator. Fix it there, never in the test.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add passki-test
@@ -3163,7 +3163,7 @@ git commit -m "feat(test): add FakeAuthenticator verified against webauthn4j"
 - Create: `passki-test/src/commonMain/kotlin/com/alirezaiyan/passki/test/FakePasskeys.kt`
 - Test: `passki-test/src/commonTest/kotlin/com/alirezaiyan/passki/test/FakePasskeysTest.kt`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```kotlin
 package com.alirezaiyan.passki.test
@@ -3232,12 +3232,12 @@ class FakePasskeysTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./gradlew :passki-test:jvmTest --tests "com.alirezaiyan.passki.test.FakePasskeysTest"`
 Expected: FAIL, `Unresolved reference 'FakePasskeys'`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```kotlin
 package com.alirezaiyan.passki.test
@@ -3345,7 +3345,7 @@ public class FakePasskeys(origin: String, random: Random = Random.Default) : Pas
 
 Explicit API: add `public` to the `val`s inside the `FakeSignal` data classes if the compiler asks.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `./gradlew :passki-test:jvmTest`
 Expected: PASS (CborWriterTest 7, WebAuthn4jVerificationTest 1, FakePasskeysTest 7).
@@ -3354,7 +3354,7 @@ Then run on iOS too (cryptography uses the Apple provider there):
 Run: `./gradlew :passki-test:iosSimulatorArm64Test`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add passki-test
@@ -3377,7 +3377,7 @@ Fixture format: one file per real-device response, `fixtures/<platform>-<yyyymmd
 
 Origin and challenge are read from the response's own clientDataJSON. The test proves the bytes PassKi emits on real devices are valid WebAuthn that a production verifier accepts.
 
-- [ ] **Step 1: Write the test**
+- [x] **Step 1: Write the test**
 
 ```kotlin
 package com.alirezaiyan.passki.test
@@ -3426,7 +3426,7 @@ class RecordedFixturesTest {
 
 Use the same `ServerProperty` construction you settled on in Task 16.
 
-- [ ] **Step 2: Create the empty fixtures dir and run**
+- [x] **Step 2: Create the empty fixtures dir and run**
 
 ```bash
 mkdir -p passki-test/src/jvmTest/resources/fixtures && touch passki-test/src/jvmTest/resources/fixtures/.gitkeep
@@ -3435,7 +3435,7 @@ mkdir -p passki-test/src/jvmTest/resources/fixtures && touch passki-test/src/jvm
 Run: `./gradlew :passki-test:jvmTest --tests "com.alirezaiyan.passki.test.RecordedFixturesTest" -i | grep "Verified"`
 Expected: PASS, prints `Verified 0 recorded registration fixture(s)`. Fixtures are added in Task 21.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add passki-test
@@ -3451,13 +3451,13 @@ git commit -m "test: add recorded real-device fixture contract test"
 - Create: `shared/src/commonMain/kotlin/com/alirezaiyan/passki/DemoRelyingParty.kt`
 - Replace: `shared/src/commonMain/kotlin/com/alirezaiyan/passki/App.kt`
 
-- [ ] **Step 1: Add the dependency.** In `shared/build.gradle.kts` → `commonMain.dependencies { ... }`, add:
+- [x] **Step 1: Add the dependency.** In `shared/build.gradle.kts` → `commonMain.dependencies { ... }`, add:
 
 ```kotlin
             implementation(project(":passki"))
 ```
 
-- [ ] **Step 2: Create `DemoRelyingParty.kt`**
+- [x] **Step 2: Create `DemoRelyingParty.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki
@@ -3496,7 +3496,7 @@ object DemoRelyingParty {
 }
 ```
 
-- [ ] **Step 3: Replace `App.kt`**
+- [x] **Step 3: Replace `App.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki
@@ -3588,7 +3588,7 @@ fun App(passkeys: Passkeys = remember { Passkeys() }) {
 }
 ```
 
-- [ ] **Step 4: Build all sample apps**
+- [x] **Step 4: Build all sample apps**
 
 Run: `./gradlew :androidApp:assembleDebug :desktopApp:compileKotlin :webApp:compileKotlinWasmJs :shared:compileKotlinIosSimulatorArm64`
 Expected: BUILD SUCCESSFUL.
@@ -3596,7 +3596,7 @@ Expected: BUILD SUCCESSFUL.
 Then run the desktop sample to see the graceful fallback: `./gradlew :desktopApp:run`. Click "Register passkey".
 Expected log: `Register ✗ NotSupported(message=PassKi does not support JVM desktop yet. It is on the roadmap.)`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add shared
@@ -3612,12 +3612,12 @@ git commit -m "feat(sample): demo app exercising every Passkeys operation"
 - Create: `docs/setup/well-known/apple-app-site-association`
 - External: `~/projects/alirezaiyan.com/public/.well-known/` (**publishing is outward-facing; ask the user before deploying**)
 
-- [ ] **Step 1: Get the debug signing SHA-256**
+- [x] **Step 1: Get the debug signing SHA-256**
 
 Run: `./gradlew :androidApp:signingReport | grep -A4 "Variant: debug" | grep SHA-256`
 Expected: `SHA-256: AB:CD:...` (64 hex pairs)
 
-- [ ] **Step 2: Create `docs/setup/well-known/assetlinks.json`.** Paste the SHA-256 printed in Step 1 as the array element.
+- [x] **Step 2: Create `docs/setup/well-known/assetlinks.json`.** Paste the SHA-256 printed in Step 1 as the array element.
 
 ```json
 [
@@ -3728,7 +3728,7 @@ git commit -m "test: add real-device registration fixtures"
 - Create: `README.md` (replace template)
 - Modify: `passki/build.gradle.kts`, `passki-test/build.gradle.kts`
 
-- [ ] **Step 1: Add publishing.** In both `passki/build.gradle.kts` and `passki-test/build.gradle.kts`, add `alias(libs.plugins.vanniktechPublish)` to `plugins {}` and append the block below. Use artifactId `passki` for the first and `passki-test` for the second; use the matching name/description.
+- [x] **Step 1: Add publishing.** In both `passki/build.gradle.kts` and `passki-test/build.gradle.kts`, add `alias(libs.plugins.vanniktechPublish)` to `plugins {}` and append the block below. Use artifactId `passki` for the first and `passki-test` for the second; use the matching name/description.
 
 ```kotlin
 mavenPublishing {
@@ -3760,7 +3760,7 @@ mavenPublishing {
 
 Confirm the GitHub repo URL with the user before the first real publish.
 
-- [ ] **Step 2: Write `README.md`**
+- [x] **Step 2: Write `README.md`**
 
 ````markdown
 # PassKi
@@ -3821,7 +3821,7 @@ passkeys.failNextWith(PasskeyError.Cancelled)
 Apache-2.0 © Ali Rezaiyan
 ````
 
-- [ ] **Step 3: Create the ABI baseline**
+- [x] **Step 3: Create the ABI baseline**
 
 Run: `./gradlew :passki:updateKotlinAbi :passki-test:updateKotlinAbi`. If the task names differ, find them with `./gradlew :passki:tasks --all | grep -i abi`.
 Expected: `passki/api/` dump files are created.
@@ -3829,17 +3829,17 @@ Expected: `passki/api/` dump files are created.
 Run: `./gradlew :passki:checkKotlinAbi`
 Expected: BUILD SUCCESSFUL.
 
-- [ ] **Step 4: Publish locally**
+- [x] **Step 4: Publish locally**
 
 Run: `./gradlew publishToMavenLocal`
 Expected: BUILD SUCCESSFUL. `ls ~/.m2/repository/com/alirezaiyan/passki/` lists `passki`, `passki-android`, `passki-iosarm64`, `passki-jvm`, `passki-test`, …
 
-- [ ] **Step 5: Full gate**
+- [x] **Step 5: Full gate**
 
 Run: `./gradlew :passki:jvmTest :passki:testAndroidHostTest :passki:iosSimulatorArm64Test :passki-test:jvmTest :passki-test:iosSimulatorArm64Test :passki:assemble :passki:checkKotlinAbi`
 Expected: BUILD SUCCESSFUL, 0 failures.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add -A
