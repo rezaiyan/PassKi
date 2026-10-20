@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -9,6 +10,11 @@ plugins {
 
 kotlin {
     explicitApi()
+
+    @OptIn(ExperimentalAbiValidation::class)
+    abiValidation {
+        // Calling abiValidation { } enables ABI validation in Kotlin 2.4 (the `enabled` property was removed).
+    }
 
     android {
         namespace = "com.alirezaiyan.passki.testing"

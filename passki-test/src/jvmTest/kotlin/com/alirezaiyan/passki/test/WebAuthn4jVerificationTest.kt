@@ -1,5 +1,6 @@
 package com.alirezaiyan.passki.test
 
+import com.alirezaiyan.passki.getOrThrow
 import com.alirezaiyan.passki.internal.Base64Url
 import com.webauthn4j.WebAuthnManager
 import com.webauthn4j.credential.CredentialRecordImpl
@@ -12,6 +13,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 
 class WebAuthn4jVerificationTest {
     private val origin = "https://passki.example"
@@ -52,5 +54,59 @@ class WebAuthn4jVerificationTest {
             AuthenticationParameters(serverProperty(assertionChallenge), record, null, true, true),
         )
         assertEquals(1L, assertion.authenticatorData!!.signCount)
+    }
+
+    private fun recordOf(registrationJson: String) = manager.parseRegistrationResponseJSON(registrationJson).let {
+        CredentialRecordImpl(it.attestationObject!!, it.collectedClientData, it.clientExtensions, it.transports)
+    }
+
+    @Test
+    fun upgradeEmitsConditionalCreateFlags() = runTest {
+        val passkeys = FakePasskeys(origin)
+        val challenge = Random.nextBytes(32)
+        val json = passkeys.upgrade(TestOptions.creation(rpId = rpId, challenge = Base64Url.encode(challenge)))
+            .getOrThrow().json
+        val registration = manager.parseRegistrationResponseJSON(json)
+        // BE | BS | AT, no UP, no UV.
+        assertEquals(0x58.toByte(), registration.attestationObject!!.authenticatorData.flags)
+
+        // Servers must accept conditional create with UP and UV not required ...
+        manager.verify(registration, RegistrationParameters(serverProperty(challenge), null, false, false))
+        // ... a server still requiring user presence rejects it.
+        assertFails {
+            manager.verify(
+                manager.parseRegistrationResponseJSON(json),
+                RegistrationParameters(serverProperty(challenge), null, false, true),
+            )
+        }
+    }
+
+    @Test
+    fun conditionalRegisterOnAuthenticatorUsesConditionalFlags() = runTest {
+        val json = FakeAuthenticator(origin).register(TestOptions.creation(rpId), conditional = true)
+        assertEquals(0x58.toByte(), manager.parseRegistrationResponseJSON(json).attestationObject!!.authenticatorData.flags)
+    }
+
+    @Test
+    fun allowCredentialsPicksAllowedCredentialAndCounterAdvances() = runTest {
+        val authenticator = FakeAuthenticator(origin)
+        val firstJson = authenticator.register(TestOptions.creation(rpId = rpId, userId = "AAAA"))
+        authenticator.register(TestOptions.creation(rpId = rpId, userId = "BBBB"))
+        val first = manager.parseRegistrationResponseJSON(firstJson)
+        val firstId = Base64Url.encode(first.attestationObject!!.authenticatorData.attestedCredentialData!!.credentialId)
+        val record = recordOf(firstJson)
+
+        repeat(2) { index ->
+            val challenge = Random.nextBytes(32)
+            val assertionJson = authenticator.signIn(
+                TestOptions.request(rpId = rpId, challenge = Base64Url.encode(challenge), allowCredentialIds = listOf(firstId)),
+            )
+            val assertion = manager.parseAuthenticationResponseJSON(assertionJson)
+            assertEquals(firstId, Base64Url.encode(assertion.credentialId))
+            manager.verify(assertion, AuthenticationParameters(serverProperty(challenge), record, null, true, true))
+            val signCount = assertion.authenticatorData!!.signCount
+            assertEquals(index + 1L, signCount)
+            record.counter = signCount
+        }
     }
 }

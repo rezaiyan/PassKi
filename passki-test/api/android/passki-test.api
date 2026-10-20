@@ -1,0 +1,102 @@
+public final class com/alirezaiyan/passki/test/FakeAuthenticator {
+	public fun <init> (Ljava/lang/String;Lkotlin/random/Random;)V
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/random/Random;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getOrigin ()Ljava/lang/String;
+	public final fun getStoredCredentials ()Ljava/util/List;
+	public final fun register (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun register$default (Lcom/alirezaiyan/passki/test/FakeAuthenticator;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun remove (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun retainOnly (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun signIn (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/alirezaiyan/passki/test/FakeCredential {
+	public final fun getId ()Ljava/lang/String;
+	public final fun getRpId ()Ljava/lang/String;
+	public final fun getSignCount ()I
+	public final fun getUserId ()Ljava/lang/String;
+	public final fun getUserName ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/test/FakePasskeys : com/alirezaiyan/passki/Passkeys {
+	public fun <init> (Ljava/lang/String;Lkotlin/random/Random;)V
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/random/Random;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun capabilities (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun failNextWith (Lcom/alirezaiyan/passki/PasskeyError;)V
+	public final fun getAuthenticator ()Lcom/alirezaiyan/passki/test/FakeAuthenticator;
+	public final fun getConditionalCreate ()Z
+	public final fun getImmediateSignIn ()Z
+	public final fun getReceivedSignals ()Ljava/util/List;
+	public final fun getSavedPasswords ()Ljava/util/Map;
+	public fun getSignals ()Lcom/alirezaiyan/passki/PasskeySignals;
+	public final fun getSignalsSupported ()Z
+	public final fun getUnifiedPasswordSignIn ()Z
+	public final fun isSupported ()Z
+	public fun register (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun setConditionalCreate (Z)V
+	public final fun setImmediateSignIn (Z)V
+	public final fun setSignalsSupported (Z)V
+	public final fun setSupported (Z)V
+	public final fun setUnifiedPasswordSignIn (Z)V
+	public fun signIn (Ljava/lang/String;Lcom/alirezaiyan/passki/SignInMode;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun signInOrPassword (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun upgrade (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class com/alirezaiyan/passki/test/FakeSignal {
+}
+
+public final class com/alirezaiyan/passki/test/FakeSignal$AcceptedCredentials : com/alirezaiyan/passki/test/FakeSignal {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)Lcom/alirezaiyan/passki/test/FakeSignal$AcceptedCredentials;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/test/FakeSignal$AcceptedCredentials;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lcom/alirezaiyan/passki/test/FakeSignal$AcceptedCredentials;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCredentialIds ()Ljava/util/List;
+	public final fun getRpId ()Ljava/lang/String;
+	public final fun getUserId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/test/FakeSignal$CurrentUserDetails : com/alirezaiyan/passki/test/FakeSignal {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcom/alirezaiyan/passki/test/FakeSignal$CurrentUserDetails;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/test/FakeSignal$CurrentUserDetails;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/alirezaiyan/passki/test/FakeSignal$CurrentUserDetails;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDisplayName ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getRpId ()Ljava/lang/String;
+	public final fun getUserId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/test/FakeSignal$UnknownCredential : com/alirezaiyan/passki/test/FakeSignal {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lcom/alirezaiyan/passki/test/FakeSignal$UnknownCredential;
+	public static synthetic fun copy$default (Lcom/alirezaiyan/passki/test/FakeSignal$UnknownCredential;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/alirezaiyan/passki/test/FakeSignal$UnknownCredential;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCredentialId ()Ljava/lang/String;
+	public final fun getRpId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/test/TestOptions {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/test/TestOptions;
+	public final fun creation (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public static synthetic fun creation$default (Lcom/alirezaiyan/passki/test/TestOptions;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Ljava/lang/String;
+	public final fun request (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public static synthetic fun request$default (Lcom/alirezaiyan/passki/test/TestOptions;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Ljava/lang/String;
+}
+

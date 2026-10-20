@@ -1,0 +1,137 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, js, wasmJs]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <PassKi:passki-test>
+sealed interface com.alirezaiyan.passki.test/FakeSignal { // com.alirezaiyan.passki.test/FakeSignal|null[0]
+    final class AcceptedCredentials : com.alirezaiyan.passki.test/FakeSignal { // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials|null[0]
+        constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String>) // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+
+        final val credentialIds // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.credentialIds|{}credentialIds[0]
+            final fun <get-credentialIds>(): kotlin.collections/List<kotlin/String> // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.credentialIds.<get-credentialIds>|<get-credentialIds>(){}[0]
+        final val rpId // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.rpId|{}rpId[0]
+            final fun <get-rpId>(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.rpId.<get-rpId>|<get-rpId>(){}[0]
+        final val userId // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.userId|{}userId[0]
+            final fun <get-userId>(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.userId.<get-userId>|<get-userId>(){}[0]
+
+        final fun component1(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.component1|component1(){}[0]
+        final fun component2(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.component2|component2(){}[0]
+        final fun component3(): kotlin.collections/List<kotlin/String> // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.component3|component3(){}[0]
+        final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin.collections/List<kotlin/String> = ...): com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.copy|copy(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.toString|toString(){}[0]
+    }
+
+    final class CurrentUserDetails : com.alirezaiyan.passki.test/FakeSignal { // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails|null[0]
+        constructor <init>(kotlin/String, kotlin/String, kotlin/String, kotlin/String) // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;kotlin.String){}[0]
+
+        final val displayName // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.displayName|{}displayName[0]
+            final fun <get-displayName>(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.displayName.<get-displayName>|<get-displayName>(){}[0]
+        final val name // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.name|{}name[0]
+            final fun <get-name>(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.name.<get-name>|<get-name>(){}[0]
+        final val rpId // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.rpId|{}rpId[0]
+            final fun <get-rpId>(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.rpId.<get-rpId>|<get-rpId>(){}[0]
+        final val userId // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.userId|{}userId[0]
+            final fun <get-userId>(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.userId.<get-userId>|<get-userId>(){}[0]
+
+        final fun component1(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.component1|component1(){}[0]
+        final fun component2(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.component2|component2(){}[0]
+        final fun component3(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.component3|component3(){}[0]
+        final fun component4(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.component4|component4(){}[0]
+        final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., kotlin/String = ...): com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.copy|copy(kotlin.String;kotlin.String;kotlin.String;kotlin.String){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.toString|toString(){}[0]
+    }
+
+    final class UnknownCredential : com.alirezaiyan.passki.test/FakeSignal { // com.alirezaiyan.passki.test/FakeSignal.UnknownCredential|null[0]
+        constructor <init>(kotlin/String, kotlin/String) // com.alirezaiyan.passki.test/FakeSignal.UnknownCredential.<init>|<init>(kotlin.String;kotlin.String){}[0]
+
+        final val credentialId // com.alirezaiyan.passki.test/FakeSignal.UnknownCredential.credentialId|{}credentialId[0]
+            final fun <get-credentialId>(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.UnknownCredential.credentialId.<get-credentialId>|<get-credentialId>(){}[0]
+        final val rpId // com.alirezaiyan.passki.test/FakeSignal.UnknownCredential.rpId|{}rpId[0]
+            final fun <get-rpId>(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.UnknownCredential.rpId.<get-rpId>|<get-rpId>(){}[0]
+
+        final fun component1(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.UnknownCredential.component1|component1(){}[0]
+        final fun component2(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.UnknownCredential.component2|component2(){}[0]
+        final fun copy(kotlin/String = ..., kotlin/String = ...): com.alirezaiyan.passki.test/FakeSignal.UnknownCredential // com.alirezaiyan.passki.test/FakeSignal.UnknownCredential.copy|copy(kotlin.String;kotlin.String){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.test/FakeSignal.UnknownCredential.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.test/FakeSignal.UnknownCredential.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.UnknownCredential.toString|toString(){}[0]
+    }
+}
+
+final class com.alirezaiyan.passki.test/FakeAuthenticator { // com.alirezaiyan.passki.test/FakeAuthenticator|null[0]
+    constructor <init>(kotlin/String, kotlin.random/Random = ...) // com.alirezaiyan.passki.test/FakeAuthenticator.<init>|<init>(kotlin.String;kotlin.random.Random){}[0]
+
+    final val origin // com.alirezaiyan.passki.test/FakeAuthenticator.origin|{}origin[0]
+        final fun <get-origin>(): kotlin/String // com.alirezaiyan.passki.test/FakeAuthenticator.origin.<get-origin>|<get-origin>(){}[0]
+    final val storedCredentials // com.alirezaiyan.passki.test/FakeAuthenticator.storedCredentials|{}storedCredentials[0]
+        final fun <get-storedCredentials>(): kotlin.collections/List<com.alirezaiyan.passki.test/FakeCredential> // com.alirezaiyan.passki.test/FakeAuthenticator.storedCredentials.<get-storedCredentials>|<get-storedCredentials>(){}[0]
+
+    final suspend fun register(kotlin/String, kotlin/Boolean = ...): kotlin/String // com.alirezaiyan.passki.test/FakeAuthenticator.register|register(kotlin.String;kotlin.Boolean){}[0]
+    final suspend fun remove(kotlin/String, kotlin/String) // com.alirezaiyan.passki.test/FakeAuthenticator.remove|remove(kotlin.String;kotlin.String){}[0]
+    final suspend fun retainOnly(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String>) // com.alirezaiyan.passki.test/FakeAuthenticator.retainOnly|retainOnly(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+    final suspend fun signIn(kotlin/String): kotlin/String // com.alirezaiyan.passki.test/FakeAuthenticator.signIn|signIn(kotlin.String){}[0]
+}
+
+final class com.alirezaiyan.passki.test/FakeCredential { // com.alirezaiyan.passki.test/FakeCredential|null[0]
+    final val id // com.alirezaiyan.passki.test/FakeCredential.id|{}id[0]
+        final fun <get-id>(): kotlin/String // com.alirezaiyan.passki.test/FakeCredential.id.<get-id>|<get-id>(){}[0]
+    final val rpId // com.alirezaiyan.passki.test/FakeCredential.rpId|{}rpId[0]
+        final fun <get-rpId>(): kotlin/String // com.alirezaiyan.passki.test/FakeCredential.rpId.<get-rpId>|<get-rpId>(){}[0]
+    final val userId // com.alirezaiyan.passki.test/FakeCredential.userId|{}userId[0]
+        final fun <get-userId>(): kotlin/String // com.alirezaiyan.passki.test/FakeCredential.userId.<get-userId>|<get-userId>(){}[0]
+
+    final var signCount // com.alirezaiyan.passki.test/FakeCredential.signCount|{}signCount[0]
+        final fun <get-signCount>(): kotlin/Int // com.alirezaiyan.passki.test/FakeCredential.signCount.<get-signCount>|<get-signCount>(){}[0]
+    final var userName // com.alirezaiyan.passki.test/FakeCredential.userName|{}userName[0]
+        final fun <get-userName>(): kotlin/String // com.alirezaiyan.passki.test/FakeCredential.userName.<get-userName>|<get-userName>(){}[0]
+
+    final fun toString(): kotlin/String // com.alirezaiyan.passki.test/FakeCredential.toString|toString(){}[0]
+}
+
+final class com.alirezaiyan.passki.test/FakePasskeys : com.alirezaiyan.passki/Passkeys { // com.alirezaiyan.passki.test/FakePasskeys|null[0]
+    constructor <init>(kotlin/String, kotlin.random/Random = ...) // com.alirezaiyan.passki.test/FakePasskeys.<init>|<init>(kotlin.String;kotlin.random.Random){}[0]
+
+    final val authenticator // com.alirezaiyan.passki.test/FakePasskeys.authenticator|{}authenticator[0]
+        final fun <get-authenticator>(): com.alirezaiyan.passki.test/FakeAuthenticator // com.alirezaiyan.passki.test/FakePasskeys.authenticator.<get-authenticator>|<get-authenticator>(){}[0]
+    final val receivedSignals // com.alirezaiyan.passki.test/FakePasskeys.receivedSignals|{}receivedSignals[0]
+        final fun <get-receivedSignals>(): kotlin.collections/MutableList<com.alirezaiyan.passki.test/FakeSignal> // com.alirezaiyan.passki.test/FakePasskeys.receivedSignals.<get-receivedSignals>|<get-receivedSignals>(){}[0]
+    final val savedPasswords // com.alirezaiyan.passki.test/FakePasskeys.savedPasswords|{}savedPasswords[0]
+        final fun <get-savedPasswords>(): kotlin.collections/MutableMap<kotlin/String, kotlin/String> // com.alirezaiyan.passki.test/FakePasskeys.savedPasswords.<get-savedPasswords>|<get-savedPasswords>(){}[0]
+    final val signals // com.alirezaiyan.passki.test/FakePasskeys.signals|{}signals[0]
+        final fun <get-signals>(): com.alirezaiyan.passki/PasskeySignals // com.alirezaiyan.passki.test/FakePasskeys.signals.<get-signals>|<get-signals>(){}[0]
+
+    final var conditionalCreate // com.alirezaiyan.passki.test/FakePasskeys.conditionalCreate|{}conditionalCreate[0]
+        final fun <get-conditionalCreate>(): kotlin/Boolean // com.alirezaiyan.passki.test/FakePasskeys.conditionalCreate.<get-conditionalCreate>|<get-conditionalCreate>(){}[0]
+        final fun <set-conditionalCreate>(kotlin/Boolean) // com.alirezaiyan.passki.test/FakePasskeys.conditionalCreate.<set-conditionalCreate>|<set-conditionalCreate>(kotlin.Boolean){}[0]
+    final var immediateSignIn // com.alirezaiyan.passki.test/FakePasskeys.immediateSignIn|{}immediateSignIn[0]
+        final fun <get-immediateSignIn>(): kotlin/Boolean // com.alirezaiyan.passki.test/FakePasskeys.immediateSignIn.<get-immediateSignIn>|<get-immediateSignIn>(){}[0]
+        final fun <set-immediateSignIn>(kotlin/Boolean) // com.alirezaiyan.passki.test/FakePasskeys.immediateSignIn.<set-immediateSignIn>|<set-immediateSignIn>(kotlin.Boolean){}[0]
+    final var isSupported // com.alirezaiyan.passki.test/FakePasskeys.isSupported|{}isSupported[0]
+        final fun <get-isSupported>(): kotlin/Boolean // com.alirezaiyan.passki.test/FakePasskeys.isSupported.<get-isSupported>|<get-isSupported>(){}[0]
+        final fun <set-isSupported>(kotlin/Boolean) // com.alirezaiyan.passki.test/FakePasskeys.isSupported.<set-isSupported>|<set-isSupported>(kotlin.Boolean){}[0]
+    final var signalsSupported // com.alirezaiyan.passki.test/FakePasskeys.signalsSupported|{}signalsSupported[0]
+        final fun <get-signalsSupported>(): kotlin/Boolean // com.alirezaiyan.passki.test/FakePasskeys.signalsSupported.<get-signalsSupported>|<get-signalsSupported>(){}[0]
+        final fun <set-signalsSupported>(kotlin/Boolean) // com.alirezaiyan.passki.test/FakePasskeys.signalsSupported.<set-signalsSupported>|<set-signalsSupported>(kotlin.Boolean){}[0]
+    final var unifiedPasswordSignIn // com.alirezaiyan.passki.test/FakePasskeys.unifiedPasswordSignIn|{}unifiedPasswordSignIn[0]
+        final fun <get-unifiedPasswordSignIn>(): kotlin/Boolean // com.alirezaiyan.passki.test/FakePasskeys.unifiedPasswordSignIn.<get-unifiedPasswordSignIn>|<get-unifiedPasswordSignIn>(){}[0]
+        final fun <set-unifiedPasswordSignIn>(kotlin/Boolean) // com.alirezaiyan.passki.test/FakePasskeys.unifiedPasswordSignIn.<set-unifiedPasswordSignIn>|<set-unifiedPasswordSignIn>(kotlin.Boolean){}[0]
+
+    final fun failNextWith(com.alirezaiyan.passki/PasskeyError) // com.alirezaiyan.passki.test/FakePasskeys.failNextWith|failNextWith(com.alirezaiyan.passki.PasskeyError){}[0]
+    final suspend fun capabilities(): com.alirezaiyan.passki/PasskeyCapabilities // com.alirezaiyan.passki.test/FakePasskeys.capabilities|capabilities(){}[0]
+    final suspend fun register(kotlin/String): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/PasskeyRegistration> // com.alirezaiyan.passki.test/FakePasskeys.register|register(kotlin.String){}[0]
+    final suspend fun signIn(kotlin/String, com.alirezaiyan.passki/SignInMode): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/PasskeyAssertion> // com.alirezaiyan.passki.test/FakePasskeys.signIn|signIn(kotlin.String;com.alirezaiyan.passki.SignInMode){}[0]
+    final suspend fun signInOrPassword(kotlin/String): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignInCredential> // com.alirezaiyan.passki.test/FakePasskeys.signInOrPassword|signInOrPassword(kotlin.String){}[0]
+    final suspend fun upgrade(kotlin/String): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/PasskeyRegistration> // com.alirezaiyan.passki.test/FakePasskeys.upgrade|upgrade(kotlin.String){}[0]
+}
+
+final object com.alirezaiyan.passki.test/TestOptions { // com.alirezaiyan.passki.test/TestOptions|null[0]
+    final fun creation(kotlin/String, kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., kotlin.collections/List<kotlin/String> = ...): kotlin/String // com.alirezaiyan.passki.test/TestOptions.creation|creation(kotlin.String;kotlin.String;kotlin.String;kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+    final fun request(kotlin/String, kotlin/String = ..., kotlin.collections/List<kotlin/String> = ...): kotlin/String // com.alirezaiyan.passki.test/TestOptions.request|request(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+}

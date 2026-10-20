@@ -23,6 +23,7 @@ internal class CborWriter {
 
     fun toByteArray(): ByteArray = out.toByteArray()
 
+    /** Writes a major type + argument; [value] is non-negative (for negative ints it is `-1 - n`). */
     private fun head(major: Int, value: Long) {
         val m = major shl 5
         when {
@@ -36,9 +37,13 @@ internal class CborWriter {
                 out += (value shr 8).toByte()
                 out += value.toByte()
             }
-            else -> {
+            value < 0x1_0000_0000L -> {
                 out += (m or 26).toByte()
-                for (shift in intArrayOf(24, 16, 8, 0)) out += (value shr shift).toByte()
+                for (shift in 24 downTo 0 step 8) out += (value shr shift).toByte()
+            }
+            else -> {
+                out += (m or 27).toByte()
+                for (shift in 56 downTo 0 step 8) out += (value shr shift).toByte()
             }
         }
     }

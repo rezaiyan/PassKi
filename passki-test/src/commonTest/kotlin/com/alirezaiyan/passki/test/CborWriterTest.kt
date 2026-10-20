@@ -36,4 +36,23 @@ class CborWriterTest {
         assertContentEquals(bytes(0xA5), CborWriter().mapHeader(5).toByteArray())
         assertContentEquals(bytes(0xA0), CborWriter().mapHeader(0).toByteArray())
     }
+
+    @Test
+    fun largestTwoByteLengthInt() = assertContentEquals(bytes(0x19, 0xFF, 0xFF), CborWriter().int(65535).toByteArray())
+
+    @Test
+    fun fourByteLengthInt() =
+        assertContentEquals(bytes(0x1A, 0x00, 0x01, 0x00, 0x00), CborWriter().int(65536).toByteArray())
+
+    @Test
+    fun eightByteLengthInt() = assertContentEquals(
+        bytes(0x1B, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00),
+        CborWriter().int(4294967296L).toByteArray(),
+    )
+
+    @Test
+    fun mostNegativeLong() = assertContentEquals(
+        bytes(0x3B, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF),
+        CborWriter().int(Long.MIN_VALUE).toByteArray(),
+    )
 }
