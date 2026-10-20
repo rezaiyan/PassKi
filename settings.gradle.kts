@@ -37,4 +37,4 @@ include(":shared")
 include(":webApp")
 
 include(":passki")
-//include(":passki-test")
+include(":passki-test")
