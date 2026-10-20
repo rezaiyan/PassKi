@@ -1,48 +1,86 @@
 package com.alirezaiyan.passki
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.resources.painterResource
-
-import passki.shared.generated.resources.Res
-import passki.shared.generated.resources.compose_multiplatform
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 @Composable
-@Preview
-fun App() {
+fun App(passkeys: Passkeys = remember { Passkeys() }) {
     MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
+        val scope = rememberCoroutineScope()
+        var log by remember { mutableStateOf("Ready. RP ID: ${DemoRelyingParty.RP_ID}") }
+
+        fun run(label: String, action: suspend () -> PasskeyResult<*>) {
+            scope.launch {
+                log = "$label…"
+                log = when (val result = action()) {
+                    is PasskeyResult.Success -> "$label ✓\n${result.value}"
+                    is PasskeyResult.Failure -> "$label ✗ ${result.error}\n${result.error.fixHint.orEmpty()}"
+                }
+                println("PASSKI_DEMO $log")
+            }
+        }
+
         Column(
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
+                .background(MaterialTheme.colorScheme.background)
                 .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
+            Button(onClick = { run("Capabilities") { PasskeyResult.Success(passkeys.capabilities()) } }) {
+                Text("Capabilities")
             }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
+            Button(onClick = {
+                run("Register") {
+                    passkeys.register(DemoRelyingParty.creationOptions())
+                        .onSuccess { DemoRelyingParty.credentialIds += it.credentialId }
                 }
+            }) { Text("Register passkey") }
+            Button(onClick = { run("Sign in") { passkeys.signIn(DemoRelyingParty.requestOptions()) } }) {
+                Text("Sign in")
+            }
+            Button(onClick = {
+                run("Sign in (device only)") {
+                    passkeys.signIn(DemoRelyingParty.requestOptions(), SignInMode.ImmediateOnly)
+                }
+            }) { Text("Sign in (device only)") }
+            Button(onClick = { run("Sign in or password") { passkeys.signInOrPassword(DemoRelyingParty.requestOptions()) } }) {
+                Text("Sign in (passkey or password)")
+            }
+            Button(onClick = { run("Upgrade") { passkeys.upgrade(DemoRelyingParty.creationOptions()) } }) {
+                Text("Upgrade (conditional create)")
+            }
+            Button(onClick = {
+                run("Signal unknown") {
+                    val id = DemoRelyingParty.credentialIds.lastOrNull() ?: "AA"
+                    passkeys.signals.unknownCredential(DemoRelyingParty.RP_ID, id)
+                }
+            }) { Text("Signal: forget last passkey") }
+            SelectionContainer {
+                Text(log, fontFamily = FontFamily.Monospace, modifier = Modifier.fillMaxWidth())
             }
         }
     }
