@@ -7,6 +7,7 @@ import kotlinx.cinterop.cValue
 import platform.Foundation.NSOperatingSystemVersion
 import platform.Foundation.NSProcessInfo
 import platform.UIKit.UIApplication
+import platform.UIKit.UISceneActivationStateForegroundActive
 import platform.UIKit.UIWindow
 import platform.UIKit.UIWindowScene
 
@@ -26,8 +27,14 @@ internal fun requireIos(major: Int, feature: String) {
 
 /** The window passkey sheets attach to; resolved automatically so callers never pass one. */
 internal fun keyWindow(): UIWindow? {
-    val windows = UIApplication.sharedApplication.connectedScenes
-        .filterIsInstance<UIWindowScene>()
-        .flatMap { scene -> scene.windows.filterIsInstance<UIWindow>() }
-    return windows.firstOrNull { it.isKeyWindow() } ?: windows.firstOrNull()
+    val scenes = UIApplication.sharedApplication.connectedScenes.filterIsInstance<UIWindowScene>()
+    val windows = scenes.flatMap { it.windowsList() }
+    return scenes
+        .firstOrNull { it.activationState == UISceneActivationStateForegroundActive }
+        ?.windowsList()
+        ?.firstOrNull { it.isKeyWindow() }
+        ?: windows.firstOrNull { it.isKeyWindow() }
+        ?: windows.firstOrNull()
 }
+
+private fun UIWindowScene.windowsList(): List<UIWindow> = windows.filterIsInstance<UIWindow>()

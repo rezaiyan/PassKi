@@ -2,6 +2,7 @@ package com.alirezaiyan.passki.android
 
 import androidx.credentials.exceptions.CreateCredentialCancellationException
 import androidx.credentials.exceptions.CreateCredentialInterruptedException
+import androidx.credentials.exceptions.CreateCredentialNoCreateOptionException
 import androidx.credentials.exceptions.CreateCredentialProviderConfigurationException
 import androidx.credentials.exceptions.CreateCredentialUnknownException
 import androidx.credentials.exceptions.GetCredentialCancellationException
@@ -12,6 +13,10 @@ import androidx.credentials.exceptions.domerrors.NotAllowedError
 import androidx.credentials.exceptions.domerrors.SecurityError
 import androidx.credentials.exceptions.publickeycredential.CreatePublicKeyCredentialDomException
 import androidx.credentials.exceptions.publickeycredential.GetPublicKeyCredentialDomException
+import androidx.credentials.exceptions.publickeycredential.SignalCredentialRateLimitExceededException
+import androidx.credentials.exceptions.publickeycredential.SignalCredentialSecurityException
+import androidx.credentials.exceptions.publickeycredential.SignalCredentialStateProviderConfigurationException
+import androidx.credentials.exceptions.publickeycredential.SignalCredentialUnknownException
 import com.alirezaiyan.passki.PasskeyError
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -79,5 +84,41 @@ class AndroidErrorMapperTest {
     @Test
     fun illegalArgumentIsInvalidOptions() {
         assertIs<PasskeyError.InvalidOptions>(IllegalArgumentException("bad json").toPasskeyError())
+    }
+
+    @Test
+    fun signalProviderConfigurationIsMisconfiguredWithProviderHint() {
+        val error = SignalCredentialStateProviderConfigurationException("no provider").toPasskeyError()
+        val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
+        assertEquals("no provider", misconfigured.message)
+        assertTrue("credential provider" in misconfigured.fixHint)
+    }
+
+    @Test
+    fun signalSecurityIsMisconfiguredWithAssetLinksHint() {
+        val error = SignalCredentialSecurityException("not allowed").toPasskeyError()
+        val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
+        assertEquals("not allowed", misconfigured.message)
+        assertTrue("assetlinks.json" in misconfigured.fixHint)
+    }
+
+    @Test
+    fun noCreateOptionIsMisconfiguredWithProviderHint() {
+        val error = CreateCredentialNoCreateOptionException("no option").toPasskeyError()
+        val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
+        assertTrue("credential provider" in misconfigured.fixHint)
+    }
+
+    @Test
+    fun signalRateLimitStaysUnknownWithType() {
+        val error = assertIs<PasskeyError.Unknown>(SignalCredentialRateLimitExceededException(1000L, "slow").toPasskeyError())
+        assertEquals("SignalCredentialRateLimitExceededException", error.platformCode)
+    }
+
+    @Test
+    fun signalUnknownStaysUnknownWithType() {
+        val error = assertIs<PasskeyError.Unknown>(SignalCredentialUnknownException("boom").toPasskeyError())
+        assertEquals("boom", error.message)
+        assertEquals("SignalCredentialUnknownException", error.platformCode)
     }
 }

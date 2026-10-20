@@ -40,6 +40,42 @@ class AppleErrorMapperTest {
 
     @Test
     fun authorizationExceptionGoesThroughMapper() {
-        assertEquals(PasskeyError.Cancelled, AppleAuthorizationException(1001, "x").toPasskeyError())
+        assertEquals(PasskeyError.Cancelled, AppleAuthorizationException(1001, "x", presented = true).toPasskeyError())
+    }
+
+    @Test
+    fun deviceNotConfiguredForPasskeyCreationIsNotSupported() {
+        val error = assertIs<PasskeyError.NotSupported>(appleErrorToPasskeyError(1010, "not configured"))
+        assertTrue("passcode" in error.message)
+    }
+
+    @Test
+    fun immediateOnlyCancelWithoutSheetIsNoCredentials() {
+        assertEquals(
+            PasskeyError.NoCredentials,
+            appleErrorToPasskeyError(1001, "canceled", immediateOnly = true, presented = false),
+        )
+    }
+
+    @Test
+    fun immediateOnlyCancelAfterSheetIsCancelled() {
+        assertEquals(
+            PasskeyError.Cancelled,
+            appleErrorToPasskeyError(1001, "canceled", immediateOnly = true, presented = true),
+        )
+    }
+
+    @Test
+    fun nonImmediateCancelWithoutSheetIsCancelled() {
+        assertEquals(
+            PasskeyError.Cancelled,
+            appleErrorToPasskeyError(1001, "canceled", immediateOnly = false, presented = false),
+        )
+    }
+
+    @Test
+    fun authorizationExceptionCarriesImmediateOnlyAndPresented() {
+        val error = AppleAuthorizationException(1001, "x", presented = false).toPasskeyError(immediateOnly = true)
+        assertEquals(PasskeyError.NoCredentials, error)
     }
 }

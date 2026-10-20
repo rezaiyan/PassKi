@@ -1,5 +1,7 @@
 package com.alirezaiyan.passki.apple
 
+import com.alirezaiyan.passki.PasskeyError
+import com.alirezaiyan.passki.PasskeyException
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -25,11 +27,15 @@ private val active = mutableSetOf<AuthorizationSession>()
 
 /** Bridges one ASAuthorizationController run to a suspend call. */
 internal class AuthorizationSession private constructor(
-    private val anchor: () -> UIWindow?,
+    private val window: UIWindow,
     private val continuation: CancellableContinuation<ASAuthorization>,
 ) : NSObject(),
     ASAuthorizationControllerDelegateProtocol,
     ASAuthorizationControllerPresentationContextProvidingProtocol {
+
+    // Set when iOS asks where to present: distinguishes "sheet shown, user cancelled" from
+    // "nothing to show" under preferImmediatelyAvailableCredentials (both report code 1001).
+    private var presented = false
 
     override fun authorizationController(
         controller: ASAuthorizationController,
@@ -43,13 +49,19 @@ internal class AuthorizationSession private constructor(
         active.remove(this)
         if (continuation.isActive) {
             continuation.resumeWithException(
-                AppleAuthorizationException(didCompleteWithError.code, didCompleteWithError.localizedDescription),
+                AppleAuthorizationException(
+                    code = didCompleteWithError.code,
+                    message = didCompleteWithError.localizedDescription,
+                    presented = presented,
+                ),
             )
         }
     }
 
-    override fun presentationAnchorForAuthorizationController(controller: ASAuthorizationController): ASPresentationAnchor =
-        anchor() ?: UIWindow()
+    override fun presentationAnchorForAuthorizationController(controller: ASAuthorizationController): ASPresentationAnchor {
+        presented = true
+        return window
+    }
 
     companion object {
         suspend fun perform(
@@ -57,8 +69,15 @@ internal class AuthorizationSession private constructor(
             anchor: () -> UIWindow?,
             preferImmediatelyAvailable: Boolean,
         ): ASAuthorization = withContext(Dispatchers.Main) {
+            // Resolve on the main thread (UIKit) and fail fast rather than present on a detached window.
+            val window = anchor() ?: throw PasskeyException(
+                PasskeyError.Misconfigured(
+                    "No foreground window to present the passkey sheet.",
+                    "Call PassKi while your app has a visible, foreground-active window scene.",
+                ),
+            )
             suspendCancellableCoroutine { continuation ->
-                val session = AuthorizationSession(anchor, continuation)
+                val session = AuthorizationSession(window, continuation)
                 active += session
                 val controller = ASAuthorizationController(authorizationRequests = requests)
                 controller.delegate = session

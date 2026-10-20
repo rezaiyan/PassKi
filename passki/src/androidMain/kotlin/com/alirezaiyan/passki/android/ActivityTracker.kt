@@ -42,7 +42,9 @@ internal object ActivityTracker : Application.ActivityLifecycleCallbacks {
 
     override fun onActivityPaused(activity: Activity) = Unit
 
-    override fun onActivityStopped(activity: Activity) = Unit
+    override fun onActivityStopped(activity: Activity) {
+        if (current?.get() === activity) current = null
+    }
 
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
 }

@@ -36,20 +36,22 @@ internal class IosPasskeys(private val anchor: () -> UIWindow? = ::keyWindow) : 
     override suspend fun upgrade(optionsJson: String): PasskeyResult<PasskeyRegistration> =
         createPasskey(optionsJson, conditional = true)
 
-    override suspend fun signIn(optionsJson: String, mode: SignInMode): PasskeyResult<PasskeyAssertion> =
-        passkeyCatching(Throwable::toPasskeyError) {
+    override suspend fun signIn(optionsJson: String, mode: SignInMode): PasskeyResult<PasskeyAssertion> {
+        val immediateOnly = mode == SignInMode.ImmediateOnly
+        return passkeyCatching({ it.toPasskeyError(immediateOnly) }) {
             requireIos(16, "Passkeys")
             val options = WebAuthnOptions.parseRequest(optionsJson).model
             val authorization = AuthorizationSession.perform(
                 requests = listOf(AppleRequests.assertion(options)),
                 anchor = anchor,
-                preferImmediatelyAvailable = mode == SignInMode.ImmediateOnly,
+                preferImmediatelyAvailable = immediateOnly,
             )
             when (val credential = authorization.credential) {
                 is ASAuthorizationPlatformPublicKeyCredentialAssertion -> parseAssertion(AppleRequests.assertionJson(credential))
                 else -> throw unexpected(credential)
             }
         }
+    }
 
     override suspend fun signInOrPassword(optionsJson: String): PasskeyResult<SignInCredential> =
         passkeyCatching(Throwable::toPasskeyError) {

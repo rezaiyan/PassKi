@@ -3,6 +3,7 @@ package com.alirezaiyan.passki.android
 import androidx.credentials.exceptions.CreateCredentialCancellationException
 import androidx.credentials.exceptions.CreateCredentialException
 import androidx.credentials.exceptions.CreateCredentialInterruptedException
+import androidx.credentials.exceptions.CreateCredentialNoCreateOptionException
 import androidx.credentials.exceptions.CreateCredentialProviderConfigurationException
 import androidx.credentials.exceptions.CreateCredentialUnsupportedException
 import androidx.credentials.exceptions.GetCredentialCancellationException
@@ -18,6 +19,8 @@ import androidx.credentials.exceptions.domerrors.NotSupportedError
 import androidx.credentials.exceptions.domerrors.SecurityError
 import androidx.credentials.exceptions.publickeycredential.CreatePublicKeyCredentialDomException
 import androidx.credentials.exceptions.publickeycredential.GetPublicKeyCredentialDomException
+import androidx.credentials.exceptions.publickeycredential.SignalCredentialSecurityException
+import androidx.credentials.exceptions.publickeycredential.SignalCredentialStateProviderConfigurationException
 import com.alirezaiyan.passki.PasskeyError
 
 internal const val ASSET_LINKS_HINT: String =
@@ -35,6 +38,12 @@ internal fun Throwable.toPasskeyError(): PasskeyError = when (this) {
     is CreateCredentialInterruptedException, is GetCredentialInterruptedException -> PasskeyError.Interrupted
     is CreateCredentialProviderConfigurationException, is GetCredentialProviderConfigurationException ->
         PasskeyError.Misconfigured(messageOr("No credential provider configured."), PROVIDER_HINT)
+    is CreateCredentialNoCreateOptionException ->
+        PasskeyError.Misconfigured(messageOr("No provider can create this credential."), PROVIDER_HINT)
+    is SignalCredentialStateProviderConfigurationException ->
+        PasskeyError.Misconfigured(messageOr("No credential provider configured."), PROVIDER_HINT)
+    is SignalCredentialSecurityException ->
+        PasskeyError.Misconfigured(messageOr("Signal rejected for this RP ID."), ASSET_LINKS_HINT)
     is CreateCredentialUnsupportedException, is GetCredentialUnsupportedException ->
         PasskeyError.NotSupported(messageOr("Passkeys are not supported on this device."))
     is CreatePublicKeyCredentialDomException -> domError.toPasskeyError(messageOr(domError.type))
@@ -42,6 +51,7 @@ internal fun Throwable.toPasskeyError(): PasskeyError = when (this) {
     is IllegalArgumentException -> PasskeyError.InvalidOptions(messageOr("Invalid request."))
     is CreateCredentialException -> PasskeyError.Unknown(messageOr(type), platformCode = type)
     is GetCredentialException -> PasskeyError.Unknown(messageOr(type), platformCode = type)
+    // Rate-limit and unknown signal exceptions land here; their `type` is restricted API, so report the class.
     else -> PasskeyError.Unknown(message ?: this::class.simpleName.orEmpty(), platformCode = this::class.simpleName)
 }
 

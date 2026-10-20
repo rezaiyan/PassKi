@@ -45,6 +45,9 @@ public interface Passkeys {
      * Requires [PasskeyCapabilities.conditionalCreate].
      * Typical errors: [PasskeyError.NotSupported], [PasskeyError.AlreadyRegistered], [PasskeyError.InvalidOptions],
      * [PasskeyError.Misconfigured].
+     *
+     * Conditional creation is opportunistic: providers may decline (e.g. iOS requires a recent password-autofill
+     * sign-in). Treat any failure as silent; never show an error to the user.
      */
     public suspend fun upgrade(optionsJson: String): PasskeyResult<PasskeyRegistration>
 

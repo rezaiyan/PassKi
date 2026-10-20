@@ -59,15 +59,20 @@ internal object AppleRequests {
         return request
     }
 
-    fun registrationJson(credential: ASAuthorizationPlatformPublicKeyCredentialRegistration): String =
-        WebAuthnResponses.registration(
+    // AuthenticationServices does not expose the WebAuthn L3 publicKey, publicKeyAlgorithm or authenticatorData
+    // response fields, so they are not emitted; servers read the credential public key from attestationObject.
+    fun registrationJson(credential: ASAuthorizationPlatformPublicKeyCredentialRegistration): String {
+        // `attachment` only exists on iOS 16.6+: guard the property read itself, not just the comparison.
+        val attachment = if (iosAtLeast(16, 6)) attachmentOf(credential.attachment) else "platform"
+        return WebAuthnResponses.registration(
             credentialId = credential.credentialID.toByteArray(),
             clientDataJson = credential.rawClientDataJSON.toByteArray(),
             attestationObject = credential.rawAttestationObject?.toByteArray() ?: throw missing("attestationObject"),
-            transports = listOf("hybrid", "internal"),
-            // `attachment` only exists on iOS 16.6+: guard the property read itself, not just the comparison.
-            attachment = if (iosAtLeast(16, 6)) attachmentOf(credential.attachment) else "platform",
+            // A cross-platform (security key / phone) credential was made over hybrid, not on this device.
+            transports = if (attachment == "cross-platform") listOf("hybrid") else listOf("hybrid", "internal"),
+            attachment = attachment,
         )
+    }
 
     fun assertionJson(credential: ASAuthorizationPlatformPublicKeyCredentialAssertion): String =
         WebAuthnResponses.authentication(
@@ -75,7 +80,7 @@ internal object AppleRequests {
             clientDataJson = credential.rawClientDataJSON.toByteArray(),
             authenticatorData = credential.rawAuthenticatorData?.toByteArray() ?: throw missing("authenticatorData"),
             signature = credential.signature?.toByteArray() ?: throw missing("signature"),
-            userHandle = credential.userID?.toByteArray(),
+            userHandle = credential.userID?.takeIf { it.length > 0uL }?.toByteArray(),
             attachment = if (iosAtLeast(16, 6)) attachmentOf(credential.attachment) else "platform",
         )
 
