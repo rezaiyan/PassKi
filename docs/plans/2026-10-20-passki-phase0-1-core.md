@@ -349,7 +349,7 @@ kotlin {
 }
 ```
 
-If `abiValidation` or `ExperimentalAbiValidation` doesn't resolve on Kotlin 2.4.20, remove that block. Then add plugin `org.jetbrains.kotlinx.binary-compatibility-validator` (latest) instead, and use `apiDump` / `apiCheck` wherever this plan says `updateLegacyAbi` / `checkLegacyAbi`.
+If `abiValidation` or `ExperimentalAbiValidation` doesn't resolve on Kotlin 2.4.20, remove that block. Then add plugin `org.jetbrains.kotlinx.binary-compatibility-validator` (latest) instead, and use `apiDump` / `apiCheck` wherever this plan says `updateKotlinAbi` / `checkKotlinAbi`.
 
 - [ ] **Step 2: Create `InternalPasskiApi.kt`**
 
@@ -3823,10 +3823,10 @@ Apache-2.0 © Ali Rezaiyan
 
 - [ ] **Step 3: Create the ABI baseline**
 
-Run: `./gradlew :passki:updateLegacyAbi :passki-test:updateLegacyAbi`. If the task names differ, find them with `./gradlew :passki:tasks --all | grep -i abi`.
+Run: `./gradlew :passki:updateKotlinAbi :passki-test:updateKotlinAbi`. If the task names differ, find them with `./gradlew :passki:tasks --all | grep -i abi`.
 Expected: `passki/api/` dump files are created.
 
-Run: `./gradlew :passki:checkLegacyAbi`
+Run: `./gradlew :passki:checkKotlinAbi`
 Expected: BUILD SUCCESSFUL.
 
 - [ ] **Step 4: Publish locally**
@@ -3836,7 +3836,7 @@ Expected: BUILD SUCCESSFUL. `ls ~/.m2/repository/com/alirezaiyan/passki/` lists 
 
 - [ ] **Step 5: Full gate**
 
-Run: `./gradlew :passki:jvmTest :passki:testAndroidHostTest :passki:iosSimulatorArm64Test :passki-test:jvmTest :passki-test:iosSimulatorArm64Test :passki:assemble :passki:checkLegacyAbi`
+Run: `./gradlew :passki:jvmTest :passki:testAndroidHostTest :passki:iosSimulatorArm64Test :passki-test:jvmTest :passki-test:iosSimulatorArm64Test :passki:assemble :passki:checkKotlinAbi`
 Expected: BUILD SUCCESSFUL, 0 failures.
 
 - [ ] **Step 6: Commit**
