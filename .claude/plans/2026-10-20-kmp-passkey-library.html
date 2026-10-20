@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PassKi: Passkey Library for Kotlin Multiplatform — Plan</title>
+  <style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.5; }
+a { color: inherit; text-decoration: none; }
+
+.layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+.sidebar { background: #0f172a; padding: 1.5rem 1rem; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.sidebar-title { color: #94a3b8; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 0 0.75rem; margin-bottom: 0.75rem; }
+.sidebar-link { display: block; color: #94a3b8; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.82rem; margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background 0.1s; }
+.sidebar-link:hover { background: #1e293b; color: #e2e8f0; }
+.sidebar-link.active { background: #1e293b; color: #f1f5f9; font-weight: 600; }
+.sidebar-index { display: block; color: #64748b; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.8rem; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+.sidebar-index:hover { color: #94a3b8; }
+
+.main { padding: 2.5rem 3rem; max-width: 920px; }
+
+.plan-header { margin-bottom: 2rem; }
+.plan-header-top { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+.badge { display: inline-block; padding: 0.2rem 0.7rem; border-radius: 9999px; font-size: 0.72rem; font-weight: 700; color: white; letter-spacing: 0.04em; text-transform: uppercase; }
+.plan-date { font-size: 0.8rem; color: #64748b; margin-left: auto; }
+.plan-title { font-size: 1.9rem; font-weight: 800; color: #0f172a; margin-bottom: 0.35rem; }
+.plan-meta { font-size: 0.78rem; color: #64748b; }
+.plan-meta span { margin-right: 1.25rem; }
+
+.section-card { background: white; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 1rem; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.section-card h2 { font-size: 1rem; font-weight: 700; color: #0f172a; padding: 0.9rem 1.25rem; border-left: 4px solid #64748b; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
+.section-card h2::after { content: '▾'; font-size: 0.8rem; color: #94a3b8; transition: transform 0.15s; }
+.section-card h2.collapsed::after { transform: rotate(-90deg); }
+.section-content { padding: 1.25rem 1.5rem; border-top: 1px solid #f1f5f9; }
+.section-content > *:last-child { margin-bottom: 0; }
+
+h3 { font-size: 0.95rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; margin-top: 1rem; }
+h4 { font-size: 0.875rem; font-weight: 600; color: #6b7280; margin-bottom: 0.35rem; margin-top: 0.75rem; }
+p { color: #374151; margin-bottom: 0.75rem; font-size: 0.9rem; }
+strong { color: #1e293b; }
+
+ul { padding-left: 1.4rem; margin-bottom: 0.75rem; }
+li { margin-bottom: 0.3rem; font-size: 0.9rem; color: #374151; line-height: 1.55; }
+
+ul.checklist { list-style: none; padding-left: 0; }
+ul.checklist li { display: flex; align-items: flex-start; gap: 0.5rem; }
+input[type=checkbox] { margin-top: 0.2rem; flex-shrink: 0; width: 15px; height: 15px; cursor: pointer; }
+input[type=checkbox]:checked + * { text-decoration: line-through; color: #94a3b8; }
+
+pre { background: #0f172a; color: #e2e8f0; padding: 1rem 1.25rem; border-radius: 8px; overflow-x: auto; font-size: 0.82rem; margin-bottom: 0.75rem; }
+code { font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace; }
+pre code { font-size: 0.82rem; }
+p code, li code { background: #f1f5f9; padding: 0.1em 0.4em; border-radius: 4px; font-size: 0.83em; color: #0f172a; }
+
+@media print {
+  .sidebar { display: none; }
+  .layout { grid-template-columns: 1fr; }
+  .section-card { box-shadow: none; break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-title">Plans</div>
+    <a href="index.html" class="sidebar-index">← All plans</a>
+    <a href="2026-10-20-kmp-passkey-library.html" class="sidebar-link active">2026-10-20-kmp-passkey-library</a>
+  </nav>
+  <main class="main">
+    <div class="plan-header">
+      <div class="plan-header-top">
+        <span class="badge" style="background:#3b82f6">Feature</span>
+        <span class="plan-date">2026-10-20</span>
+      </div>
+      <h1 class="plan-title">PassKi: Passkey Library for Kotlin Multiplatform</h1>
+      <div class="plan-meta">
+        <span>📁 PassKi</span>
+        <span title="/Users/ali/projects/deblock/PassKi">/Users/ali/projects/deblock/PassKi</span>
+      </div>
+    </div>
+    <h1>PassKi: Passkey Library for Kotlin Multiplatform</h1>
+<div class="section-card"><h2 style="border-left-color:#3b82f6">Goal</h2><div class="section-content">
+<p>Ship a Kotlin Multiplatform library that lets an app register and sign in with passkeys (WebAuthn / FIDO2) from shared code. Each platform uses its native authenticator. The library works with any server: the app passes in the server's WebAuthn options JSON and sends the response JSON back to the server's verifier (SimpleWebAuthn, webauthn4j, java-webauthn-server, py_webauthn, ...). First targets are Android and iOS. Web and desktop come later, with a fallback for each limitation listed below.</p>
+</div></div>
+<div class="section-card"><h2 style="border-left-color:#3b82f6">Background</h2><div class="section-content">
+<h3>Market check (Oct 2026): two KMP libraries already exist</h3>
+<p>| Library | Version | Targets | Notes |</p>
+<p>|---|---|---|---|</p>
+<p>| [AndroidPoet/passkeys-kmp](https://klibs.io/project/AndroidPoet/passkeys-kmp) | 0.2.0 (Jun 2026) | Android 28+, iOS 16+, macOS 13+, JVM/Compose Desktop, Wasm, Windows 1903+, Linux (libfido2) | Has a Compose module, browser handoff and a Ktor RP server module. Wide but young. |</p>
+<p>| [szijpeter/webauthn-kotlin-multiplatform](https://klibs.io/project/szijpeter/webauthn-kotlin-multiplatform) | 0.2.x | Android, iOS clients + JVM server | Follows the spec closely: typed models, strict validation, backend ceremony services |</p>
+<p><strong>Implication:</strong> a plain "wrapper around Credential Manager + AuthenticationServices" won't stand out. PassKi needs a clear reason to exist (see Open Questions #1). Possible angles:</p>
+<ul>
+<li>quality and testing depth</li>
+<li>a working answer for Compose/Wasm conditional UI</li>
+<li>desktop packaging tooling for macOS entitlements</li>
+<li>minimal, JSON-first design with no server opinion</li>
+<li>an internal need, e.g. Deblock-grade fintech requirements: attestation, PRF, audit-friendly errors</li>
+</ul>
+<h3>Platform feasibility matrix</h3>
+<p>| Platform | Native API | Synced passkeys | Feasible? | Difficulty |</p>
+<p>|---|---|---|---|---|</p>
+<p>| <strong>Android</strong> | <code>androidx.credentials</code> 1.6.0 (stable Apr 2026), JSON in/out | ✅ Google PM + 3rd-party providers | ✅ Yes | Low |</p>
+<p>| <strong>iOS</strong> | <code>AuthenticationServices</code> (<code>ASAuthorizationPlatformPublicKeyCredentialProvider</code>), reached from Kotlin/Native <code>platform.AuthenticationServices</code> | ✅ iCloud Keychain + 3rd-party (iOS 17+) | ✅ Yes | Medium |</p>
+<p>| <strong>Web (JS + Wasm)</strong> | <code>navigator.credentials.create/get</code>, <code>PublicKeyCredential.parse*OptionsFromJSON</code> / <code>toJSON()</code> | ✅ (browser/OS) | ✅ Yes | Low–Medium (Compose canvas issues) |</p>
+<p>| <strong>Windows (JVM / mingwX64)</strong> | <code>webauthn.dll</code> (<code>WebAuthNAuthenticatorMakeCredential/GetAssertion</code>), Win10 1903+ | ✅ Windows Hello; hybrid phone; 3rd-party plugin managers (GA Nov 2025) | ✅ Yes | Medium |</p>
+<p>| <strong>macOS (JVM Compose Desktop)</strong> | Same AuthenticationServices, through a JNI/FFM bridge dylib | ✅ iCloud Keychain | ⚠️ Yes, but needs a signed <code>.app</code> with an Associated Domains entitlement and an embedded provisioning profile | <strong>High</strong> (packaging, not code) |</p>
+<p>| <strong>macOS (K/N native)</strong> | AuthenticationServices directly | ✅ | ⚠️ Same entitlement problem. A K/N executable is not an app bundle | High |</p>
+<p>| <strong>Linux</strong> | <strong>No OS passkey API</strong> | ❌ | ⚠️ Partial: libfido2 handles USB security keys only. Phone/hybrid needs a browser handoff | High / limited |</p>
+<p><strong>Answer to "web and desktop too, or only iOS/Android?"</strong></p>
+<ul>
+<li><strong>Web</strong>: yes, and it's easy. Browsers expose a stable API.</li>
+<li><strong>Windows</strong>: yes. The OS API gives full passkey UX, including Windows Hello, phone-as-authenticator, and 1Password/Bitwarden plugins.</li>
+<li><strong>macOS desktop</strong>: the API is possible, but it only works in a properly signed and provisioned <code>.app</code>. It fails under <code>./gradlew run</code>. The plan is to ship it together with packaging docs and Gradle tooling.</li>
+<li><strong>Linux</strong>: there is no real platform support. Offer a <strong>browser handoff</strong> (open the RP's web page, run WebAuthn there, return via loopback or deep link) plus optional libfido2 for hardware keys. Browser handoff also works as a universal fallback on every desktop OS.</li>
+</ul>
+</div></div>
+<div class="section-card"><h2 style="border-left-color:#3b82f6">Platform Deep Dive &amp; Challenges</h2><div class="section-content">
+<h3>Android</h3>
+<ul>
+<li><strong>API:</strong> <code>CredentialManager.createCredential(CreatePublicKeyCredentialRequest(json))</code> and <code>getCredential(GetCredentialRequest(listOf(GetPublicKeyCredentialOption(json))))</code>. Request and response are both WebAuthn JSON, so there's little to do here.</li>
+<li><strong>Needs an <code>Activity</code> context.</strong> This conflicts with a context-free common API. Solution: a <code>PasskeyClient</code> factory that takes a platform handle (<code>ActivityProvider</code>), or a Compose helper <code>rememberPasskeyClient()</code>.</li>
+<li><strong>Server setup:</strong> <code>/.well-known/assetlinks.json</code> with <code>delegate_permission/common.get_login_creds</code> plus the app signing cert SHA-256. Debug, release and Play App Signing certs differ, which is a common source of setup bugs. Ship a "doctor" checklist.</li>
+<li><strong>Origin:</strong> clientDataJSON origin = <code>android:apk-key-hash:&lt;b64url&gt;</code>, not <code>https://...</code>. The server must allow-list it. Document this; it's the #1 integration failure.</li>
+<li><strong>Extras:</strong></li>
+</ul>
+<p>  - <code>preferImmediatelyAvailableCredentials</code></p>
+<p>  - conditional create (<code>isConditional</code>, fixed in 1.5+)</p>
+<p>  - Restore Credentials (<code>CreateRestoreCredentialRequest</code>)</p>
+<p>  - Signal API (1.6)</p>
+<p>  - PRF and largeBlob extensions pass through as JSON</p>
+<ul>
+<li><strong>Error mapping:</strong> there are ~10 exception types (<code>CreateCredentialCancellationException</code>, <code>NoCredentialException</code>, <code>CreatePublicKeyCredentialDomException</code>, <code>...InterruptedException</code>, provider config errors, ...). Map them all to a common sealed <code>PasskeyError</code>.</li>
+<li><strong>minSdk:</strong> passkeys need API 28+ with Play services. Lower APIs return "unsupported".</li>
+</ul>
+<h3>iOS</h3>
+<ul>
+<li><strong>API:</strong> <code>ASAuthorizationController</code> + <code>ASAuthorizationControllerDelegate</code> + <code>ASAuthorizationControllerPresentationContextProviding</code>. All of these are ObjC protocols, so Kotlin/Native implements them as <code>NSObject()</code> subclasses.</li>
+<li><strong>No JSON API.</strong> Apple uses typed objects with <code>NSData</code> fields (challenge, userID, credentialID, rawClientDataJSON, rawAttestationObject, authenticatorData, signature). <strong>The library must parse server JSON → native params and build <code>RegistrationResponseJSON</code> / <code>AuthenticationResponseJSON</code> itself</strong>: base64url, transports, authenticatorAttachment, clientExtensionResults. This is the core value-add and the biggest testing surface.</li>
+<li><strong>Presentation anchor:</strong> needs a <code>UIWindow</code>. Resolve it from the key window scene by default and let the caller override.</li>
+<li><strong>Memory:</strong> the K/N delegate must be strongly referenced until the callback runs, or the GC/ARC bridge drops it and the coroutine never resumes. Bridge with <code>suspendCancellableCoroutine</code> and call <code>controller.cancel()</code> on cancellation (iOS 16+).</li>
+<li><strong>Server setup:</strong> Associated Domains <code>webcredentials:&lt;rp&gt;</code> entitlement plus the AASA file on the RP. Use <code>?mode=developer</code> for local testing.</li>
+<li><strong>Feature levels by OS version:</strong></li>
+</ul>
+<p>  - iOS 16: passkeys, autofill-assisted requests (<code>performAutoFillAssistedRequests</code>)</p>
+<p>  - iOS 17: security keys, largeBlob</p>
+<p>  - iOS 18: PRF, conditional registration (<code>requestStyle = .conditional</code>)</p>
+<p>  - iOS 26: account-creation / credential-update (signal) APIs</p>
+<ul>
+<li><strong>Swift-only API risk:</strong> newer Apple APIs may be Swift-only and invisible to K/N cinterop. Mitigation: a tiny Swift shim compiled into the framework, or Kotlin Swift Export once it's stable.</li>
+<li><strong>Binary data:</strong> <code>NSData</code> ↔ <code>ByteArray</code> copies via <code>usePinned</code> / <code>memcpy</code>. These are small payloads, so it's fine.</li>
+</ul>
+<h3>Web (Kotlin/JS + Kotlin/Wasm)</h3>
+<ul>
+<li><strong>API:</strong></li>
+</ul>
+<p>  - <code>navigator.credentials.create({publicKey})</code> / <code>get(...)</code></p>
+<p>  - Prefer <code>PublicKeyCredential.parseCreationOptionsFromJSON</code> / <code>parseRequestOptionsFromJSON</code> and <code>credential.toJSON()</code> (Chrome 129+, Firefox 119+, Safari 18.4+)</p>
+<p>  - Fall back to a manual base64url ↔ ArrayBuffer conversion</p>
+<ul>
+<li><strong>Wasm interop:</strong> <code>Promise&lt;JsAny?&gt;</code> → <code>await()</code>. <code>ArrayBuffer</code> ↔ <code>ByteArray</code> costs a copy, which is acceptable.</li>
+<li><strong>Challenge 1: conditional mediation / autofill UI.</strong> This needs a real DOM <code>&lt;input autocomplete="username webauthn"&gt;</code>. <strong>Compose for Web (Wasm) draws to a canvas, so there's no native input.</strong> Options:</li>
+</ul>
+<p>  - an HTML overlay input positioned over the Compose text field</p>
+<p>  - skip conditional UI on Wasm and only offer the modal flow</p>
+<p>  - Spike needed.</p>
+<ul>
+<li><strong>Challenge 2: user activation.</strong> Safari requires <code>create()</code> to run inside a user gesture. If the coroutine dispatch path breaks transient activation (e.g. an extra hop), Safari rejects with <code>NotAllowedError</code>. Rule: the API must start the call synchronously from the click handler. Fetch server options <em>before</em> the click, or accept the risk and document it.</li>
+<li><strong>Origin:</strong> the browser enforces RP ID ⊆ origin, so there's no extra setup. Feature detection: <code>PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()</code>, <code>isConditionalMediationAvailable()</code>, <code>getClientCapabilities()</code>.</li>
+</ul>
+<h3>Windows (JVM desktop first, mingwX64 optional)</h3>
+<ul>
+<li><strong>API:</strong> <code>webauthn.dll</code>. JVM access goes through <strong>Java FFM (Panama, JDK 22+)</strong> or <strong>JNA</strong> (works on older JDKs). Version-gate struct layouts with <code>WebAuthNGetApiVersionNumber()</code>: options structs gained fields across versions (v1 → v7+).</li>
+<li><strong>The caller builds clientDataJSON and passes its hash.</strong> The library must construct <code>{"type","challenge","origin","crossOrigin"}</code> itself and pick the origin. Use <code>https://&lt;rpId&gt;</code> to look like a browser, or a custom app origin that the server allow-lists.</li>
+<li><strong>Security note:</strong> the Win32 API <strong>does not check that the app is allowed to use the RP ID</strong>. Any desktop app can request assertions for any RP; browsers rely on exactly this. There's no app↔domain binding like on Android/iOS. Document this; the server can't fully verify the calling app.</li>
+<li><strong>HWND:</strong> the API needs a parent window handle. With Compose Desktop, get it from the AWT window via JNA <code>Native.getWindowPointer</code> or <code>WindowsWindow</code>.</li>
+<li><strong>UX gains:</strong> Windows Hello, security keys, hybrid (scan a QR with a phone) on Win11, and 3rd-party passkey managers through the plugin API (GA Nov 2025).</li>
+<li><strong>Threading:</strong> the calls block, so run them on <code>Dispatchers.IO</code> and support cancellation via <code>WebAuthNCancelCurrentOperation</code>.</li>
+</ul>
+<h3>macOS (JVM Compose Desktop / K/N)</h3>
+<ul>
+<li><strong>Same AuthenticationServices code as iOS</strong> (shared through an <code>appleMain</code> source set for K/N). JVM needs a bridge: a small ObjC/Swift dylib inside the jar, loaded via JNI or FFM, with a C ABI (<code>passki_register(json, cb)</code>).</li>
+<li><strong>Blocker:</strong> passkeys require the <code>com.apple.developer.associated-domains</code> entitlement. This is a <em>restricted</em> entitlement, so the app must be:</li>
+</ul>
+<p>  - signed with a Developer ID (or App Store) cert</p>
+<p>  - shipped with <code>embedded.provisionprofile</code> in <code>Contents/</code></p>
+<p>  - matched by an AASA file on the RP</p>
+<ul>
+<li><strong>What breaks:</strong></li>
+</ul>
+<p>  - <code>./gradlew run</code>: no bundle or entitlements, so passkeys are unavailable</p>
+<p>  - jpackage: it doesn't embed provisioning profiles by default</p>
+<p>  - the bundled JRE: it must be signed too (hardened runtime)</p>
+<p>  - notarization</p>
+<ul>
+<li><strong>Mitigation:</strong></li>
+</ul>
+<p>  - ship a Gradle plugin or doc recipe: Compose <code>nativeDistributions.macOS { entitlementsFile, provisioningProfile, signing }</code></p>
+<p>  - in dev mode, auto-fall back to browser handoff</p>
+<ul>
+<li><strong>Browser-style API</strong> (<code>ASAuthorizationWebBrowserPublicKeyCredentialManager</code>) is reserved for browsers and has its own entitlement. Not an option.</li>
+</ul>
+<h3>Linux</h3>
+<ul>
+<li>There is no OS passkey API and no platform authenticator. Freedesktop "credentials portal" efforts (e.g. linux-credentials / credentialsd) are experimental. Watch them, don't depend on them.</li>
+<li><strong>libfido2</strong> (CTAP2 over USB/NFC) gives <strong>security keys only</strong>. It needs udev permissions and libfido2 installed. Phone/hybrid (caBLE: BLE advert + tunnel server) means a huge reimplementation, so it's out of scope.</li>
+<li><strong>Recommended:</strong> browser handoff (see below). libfido2 can be an optional add-on module.</li>
+</ul>
+<h3>Universal fallback: browser handoff (all desktops)</h3>
+<p>1. The app starts a loopback HTTP server (<code>127.0.0.1:&lt;random&gt;</code>) or registers a custom URL scheme.</p>
+<p>2. It opens the system browser to <code>https://&lt;rp&gt;/passkey-handoff?session=...&amp;redirect=...</code>.</p>
+<p>3. The RP's web page runs WebAuthn natively, then posts the result to the RP backend or redirects to loopback with a one-time code.</p>
+<p>4. The app exchanges the code for a session.</p>
+<p>This needs RP cooperation (a hosted page). It's an OAuth-like pattern, similar to RFC 8252. The library provides the client half plus a reference page/JS snippet.</p>
+</div></div>
+<div class="section-card"><h2 style="border-left-color:#3b82f6">Proposed Architecture</h2><div class="section-content">
+<pre><code class="language-text">passki-core            (commonMain)  WebAuthn L3 JSON models (kotlinx.serialization), base64url,
+                                     PasskeyClient interface, PasskeyError sealed hierarchy,
+                                     capability detection API
+passki-android         androidx.credentials bridge
+passki-apple           iOS + macOS K/N via AuthenticationServices (appleMain)
+passki-web             js + wasmJs via navigator.credentials
+passki-desktop-windows JVM, FFM/JNA → webauthn.dll
+passki-desktop-macos   JVM, JNI/FFM → bundled dylib (AuthenticationServices)
+passki-desktop-handoff JVM, loopback browser handoff (all desktop OS, incl. Linux)
+passki-fido2           optional, JVM/Linux libfido2 for security keys
+passki-compose         rememberPasskeyClient(), Activity/UIWindow/HWND wiring
+passki-testing         fake PasskeyClient + recorded fixtures for app unit tests</code></pre>
+<p><strong>Common API sketch</strong></p>
+<pre><code class="language-kotlin">interface PasskeyClient {
+    suspend fun capabilities(): PasskeyCapabilities
+    suspend fun register(optionsJson: String): Result&lt;String&gt;          // RegistrationResponseJSON
+    suspend fun authenticate(optionsJson: String,
+                             mediation: Mediation = Mediation.Modal): Result&lt;String&gt; // AuthenticationResponseJSON
+}
+// typed overloads take/return PublicKeyCredentialCreationOptions etc.
+sealed class PasskeyError : Exception() {
+    object Cancelled; object NoCredentials; object NotSupported; object Timeout
+    data class DomainNotAssociated(val hint: String)   // assetlinks / AASA / entitlement misconfig
+    data class InvalidState(val msg: String)            // e.g. excludeCredentials hit
+    data class Platform(val code: String, val msg: String)
+}</code></pre>
+<p><strong>Design principles</strong></p>
+<ul>
+<li>JSON passthrough is the main path. That keeps it server-agnostic, and a server-side Ktor module stays optional and out of MVP.</li>
+<li>No crypto verification client-side, since the client is untrusted anyway.</li>
+<li>Every platform error maps to a stable error type, with a human-readable "setup doctor" hint.</li>
+</ul>
+</div></div>
+<div class="section-card"><h2 style="border-left-color:#3b82f6">User Stories</h2><div class="section-content">
+<ul class="checklist">
+<li><input type="checkbox" data-label="As a KMP app dev, I want to call `register(json)` / `authenticate(json)` from `commonMain`, so that I write passkey logic once."> As a KMP app dev, I want to call <code>register(json)</code> / <code>authenticate(json)</code> from <code>commonMain</code>, so that I write passkey logic once.</li>
+<li><input type="checkbox" data-label="As a dev, I want clear errors when assetlinks/AASA/entitlements are wrong, so that I don't lose a day to generic &quot;unknown error&quot;."> As a dev, I want clear errors when assetlinks/AASA/entitlements are wrong, so that I don't lose a day to generic "unknown error".</li>
+<li><input type="checkbox" data-label="As a dev, I want to plug any WebAuthn server, so that the library doesn't force a backend."> As a dev, I want to plug any WebAuthn server, so that the library doesn't force a backend.</li>
+<li><input type="checkbox" data-label="As a Compose Multiplatform dev, I want `rememberPasskeyClient()`, so that platform handles (Activity, UIWindow, HWND) are wired automatically."> As a Compose Multiplatform dev, I want <code>rememberPasskeyClient()</code>, so that platform handles (Activity, UIWindow, HWND) are wired automatically.</li>
+<li><input type="checkbox" data-label="As a desktop dev, I want an automatic browser-handoff fallback, so that Linux and unsigned dev builds still work."> As a desktop dev, I want an automatic browser-handoff fallback, so that Linux and unsigned dev builds still work.</li>
+<li><input type="checkbox" data-label="As a dev, I want a fake client + fixtures, so that I can unit-test my login flow without devices."> As a dev, I want a fake client + fixtures, so that I can unit-test my login flow without devices.</li>
+</ul>
+</div></div>
+<div class="section-card"><h2 style="border-left-color:#3b82f6">Implementation Steps (Roadmap)</h2><div class="section-content">
+<h3>Phase 0: Decide &amp; spike (≈1 week)</h3>
+<ul class="checklist">
+<li><input type="checkbox" data-label="Evaluate both existing libs hands-on. Decide: build, fork, or contribute (Open Q #1)."> Evaluate both existing libs hands-on. Decide: build, fork, or contribute (Open Q #1).</li>
+<li><input type="checkbox" data-label="Spike iOS from K/N: delegate retention, NSData ↔ ByteArray, building RegistrationResponseJSON."> Spike iOS from K/N: delegate retention, NSData ↔ ByteArray, building RegistrationResponseJSON.</li>
+<li><input type="checkbox" data-label="Spike Compose Wasm conditional UI (HTML overlay input) and Safari user-activation behaviour."> Spike Compose Wasm conditional UI (HTML overlay input) and Safari user-activation behaviour.</li>
+<li><input type="checkbox" data-label="Pick a test RP: local Ktor/Spring + webauthn4j, or SimpleWebAuthn example. Host assetlinks + AASA on a real HTTPS domain (tunnel or a VPS subdomain)."> Pick a test RP: local Ktor/Spring + webauthn4j, or SimpleWebAuthn example. Host assetlinks + AASA on a real HTTPS domain (tunnel or a VPS subdomain).</li>
+</ul>
+<h3>Phase 1: MVP Android + iOS (≈3–4 weeks)</h3>
+<ul class="checklist">
+<li><input type="checkbox" data-label="Gradle KMP setup: android, iosArm64, iosSimulatorArm64, iosX64. Publishing to Maven Central (vanniktech plugin). Binary-compatibility validator. Dokka."> Gradle KMP setup: android, iosArm64, iosSimulatorArm64, iosX64. Publishing to Maven Central (vanniktech plugin). Binary-compatibility validator. Dokka.</li>
+<li><input type="checkbox" data-label="`passki-core`: WebAuthn L3 JSON models, base64url, errors, capability API. Exhaustive serialization tests (round-trip, spec vectors)."> <code>passki-core</code>: WebAuthn L3 JSON models, base64url, errors, capability API. Exhaustive serialization tests (round-trip, spec vectors).</li>
+<li><input type="checkbox" data-label="`passki-android`: Credential Manager bridge, error mapping, Activity provider."> <code>passki-android</code>: Credential Manager bridge, error mapping, Activity provider.</li>
+<li><input type="checkbox" data-label="`passki-apple` (iOS): AuthenticationServices bridge, JSON ↔ native mapping, cancellation."> <code>passki-apple</code> (iOS): AuthenticationServices bridge, JSON ↔ native mapping, cancellation.</li>
+<li><input type="checkbox" data-label="Sample Compose Multiplatform app plus test RP. Manual E2E on real devices, Android emulator with Google account, and iOS simulator."> Sample Compose Multiplatform app plus test RP. Manual E2E on real devices, Android emulator with Google account, and iOS simulator.</li>
+<li><input type="checkbox" data-label="Docs: assetlinks/AASA setup, the Android origin allow-list, troubleshooting matrix."> Docs: assetlinks/AASA setup, the Android origin allow-list, troubleshooting matrix.</li>
+<li><input type="checkbox" data-label="Release 0.1.0."> Release 0.1.0.</li>
+</ul>
+<h3>Phase 2: Web (≈1–2 weeks)</h3>
+<ul class="checklist">
+<li><input type="checkbox" data-label="`passki-web` for js + wasmJs, with JSON-native browser APIs plus fallback conversion."> <code>passki-web</code> for js + wasmJs, with JSON-native browser APIs plus fallback conversion.</li>
+<li><input type="checkbox" data-label="Automated E2E with Chrome **virtual authenticator** (CDP `WebAuthn.addVirtualAuthenticator` via Playwright). This is the one platform with true CI E2E."> Automated E2E with Chrome <strong>virtual authenticator</strong> (CDP <code>WebAuthn.addVirtualAuthenticator</code> via Playwright). This is the one platform with true CI E2E.</li>
+<li><input type="checkbox" data-label="Conditional UI on Wasm (if the spike succeeded) or document the limitation."> Conditional UI on Wasm (if the spike succeeded) or document the limitation.</li>
+</ul>
+<h3>Phase 3: Windows desktop (≈2 weeks)</h3>
+<ul class="checklist">
+<li><input type="checkbox" data-label="`passki-desktop-windows`: FFM (JDK 22+) with a JNA fallback. Versioned structs. clientDataJSON builder. HWND from the Compose window."> <code>passki-desktop-windows</code>: FFM (JDK 22+) with a JNA fallback. Versioned structs. clientDataJSON builder. HWND from the Compose window.</li>
+<li><input type="checkbox" data-label="Test Windows Hello, a security key and hybrid phone flow on Win11."> Test Windows Hello, a security key and hybrid phone flow on Win11.</li>
+</ul>
+<h3>Phase 4: macOS desktop (≈2–3 weeks)</h3>
+<ul class="checklist">
+<li><input type="checkbox" data-label="macOS K/N target in `passki-apple` (shared appleMain)."> macOS K/N target in <code>passki-apple</code> (shared appleMain).</li>
+<li><input type="checkbox" data-label="JVM bridge dylib (universal arm64 + x64), packaged in the jar, loaded via JNI/FFM."> JVM bridge dylib (universal arm64 + x64), packaged in the jar, loaded via JNI/FFM.</li>
+<li><input type="checkbox" data-label="Gradle recipe/plugin for entitlements, provisioning profile, signing and notarization with Compose `nativeDistributions`."> Gradle recipe/plugin for entitlements, provisioning profile, signing and notarization with Compose <code>nativeDistributions</code>.</li>
+<li><input type="checkbox" data-label="Detect missing entitlement at runtime → `DomainNotAssociated` + auto handoff in dev."> Detect missing entitlement at runtime → <code>DomainNotAssociated</code> + auto handoff in dev.</li>
+</ul>
+<h3>Phase 5: Handoff + Linux (≈2 weeks)</h3>
+<ul class="checklist">
+<li><input type="checkbox" data-label="`passki-desktop-handoff`: loopback server, one-time code, PKCE-like binding, reference RP web page + JS."> <code>passki-desktop-handoff</code>: loopback server, one-time code, PKCE-like binding, reference RP web page + JS.</li>
+<li><input type="checkbox" data-label="Optional `passki-fido2` (libfido2 via FFM) for security keys on Linux."> Optional <code>passki-fido2</code> (libfido2 via FFM) for security keys on Linux.</li>
+</ul>
+<h3>Phase 6: Advanced features (ongoing)</h3>
+<ul class="checklist">
+<li><input type="checkbox" data-label="Autofill/conditional mediation on Android, iOS and web."> Autofill/conditional mediation on Android, iOS and web.</li>
+<li><input type="checkbox" data-label="Conditional create (password → passkey upgrade)."> Conditional create (password → passkey upgrade).</li>
+<li><input type="checkbox" data-label="Signal APIs: unknown credential, accepted credentials, current user details."> Signal APIs: unknown credential, accepted credentials, current user details.</li>
+<li><input type="checkbox" data-label="Extensions: PRF (E2E-encryption key derivation, relevant for fintech), largeBlob, credProps."> Extensions: PRF (E2E-encryption key derivation, relevant for fintech), largeBlob, credProps.</li>
+<li><input type="checkbox" data-label="Android Restore Credentials."> Android Restore Credentials.</li>
+<li><input type="checkbox" data-label="Optional `passki-server-ktor`, only if users want it."> Optional <code>passki-server-ktor</code>, only if users want it.</li>
+</ul>
+</div></div>
+<div class="section-card"><h2 style="border-left-color:#3b82f6">Testing Strategy &amp; Challenges</h2><div class="section-content">
+<ul>
+<li><strong>Real ceremonies can't run in CI on mobile/desktop.</strong> Biometric/OS UI blocks automation. Strategy:</li>
+</ul>
+<p>  - unit tests on all JSON/native mapping, with fixtures recorded from real devices</p>
+<p>  - contract tests that run responses through a real server verifier (webauthn4j) to prove the output is valid</p>
+<ul>
+<li><strong>Web</strong> gets full E2E via a CDP virtual authenticator.</li>
+<li><strong>Android emulator:</strong> a Google account plus screen lock enables passkeys. Can be semi-automated with UiAutomator for the bottom sheet.</li>
+<li><strong>iOS simulator:</strong> supports passkeys with Touch ID/Face ID enrolment simulated; needs an AASA-reachable domain.</li>
+<li>A device-lab manual checklist per release.</li>
+</ul>
+</div></div>
+<div class="section-card"><h2 style="border-left-color:#3b82f6">Open Questions</h2><div class="section-content">
+<p>1. <strong>Why build vs. use/contribute to <code>passkeys-kmp</code> or <code>webauthn-kotlin-multiplatform</code>?</strong> Is this for Deblock internal use (control, audit, security review) or a public OSS product? This decides scope.</p>
+<p>2. Which server verifier will the first consumer use? That affects origin/allow-list docs and fixtures.</p>
+<p>3. Minimum OS versions: iOS 16 vs 17? Android minSdk 28? JDK 17 (JNA) vs 22 (FFM) for desktop?</p>
+<p>4. Should the server-side module be in scope at all?</p>
+<p>5. Is browser handoff acceptable to the target RP? It requires hosting a page.</p>
+<p>6. Is the Compose Multiplatform helper required, or plain Kotlin only?</p>
+<p>7. License and publishing coordinates (<code>com.deblock.passki</code>? personal?).</p>
+</div></div>
+<div class="section-card"><h2 style="border-left-color:#3b82f6">Risks</h2><div class="section-content">
+<ul>
+<li><strong>Competition:</strong> two KMP libs already exist. Without a clear angle, effort is duplicated. Mitigation: settle Open Q #1 in Phase 0.</li>
+<li><strong>iOS JSON mapping bugs</strong> (base64url vs base64, missing <code>transports</code>, extension results) → server rejects. Mitigation: contract tests against a real verifier.</li>
+<li><strong>Configuration hell</strong> (assetlinks fingerprints, AASA caching by Apple CDN, entitlement signing) causes most support issues. Mitigation: "doctor" diagnostics and a troubleshooting guide.</li>
+<li><strong>macOS JVM packaging</strong> (signing nested JRE, provisioning profile, notarization) may eat more time than the code. Mitigation: timebox it and ship handoff first if needed.</li>
+<li><strong>Compose Wasm canvas</strong> can block autofill/conditional UI. Mitigation: HTML overlay or document as unsupported.</li>
+<li><strong>Safari user-activation</strong> rules can break <code>create()</code> after async hops. Mitigation: API design + docs.</li>
+<li><strong>Windows lacks app↔RP binding</strong>, a weaker trust model. Mitigation: document it; the server can't attest the app.</li>
+<li><strong>Apple Swift-only APIs</strong> may be unreachable from K/N. Mitigation: Swift shim.</li>
+<li><strong>API churn:</strong> WebAuthn L3, Credential Manager and iOS yearly changes. Mitigation: a thin bridge layer and the binary-compatibility validator.</li>
+</ul>
+</div></div>
+<div class="section-card"><h2 style="border-left-color:#3b82f6">Sources</h2><div class="section-content">
+<ul>
+<li>[AndroidPoet/passkeys-kmp (klibs)](https://klibs.io/project/AndroidPoet/passkeys-kmp)</li>
+<li>[szijpeter/webauthn-kotlin-multiplatform (klibs)](https://klibs.io/project/szijpeter/webauthn-kotlin-multiplatform)</li>
+<li>[androidx.credentials releases](https://developer.android.com/jetpack/androidx/releases/credentials)</li>
+<li>[Android: Create a passkey](https://developer.android.com/identity/passkeys/create-passkeys)</li>
+<li>[Apple: Supporting passkeys](https://developer.apple.com/documentation/authenticationservices/supporting-passkeys)</li>
+<li>[Apple forums: non-App Store Mac apps &amp; passkeys](https://developer.apple.com/forums/thread/767028)</li>
+<li>[Microsoft: webauthn.h](https://learn.microsoft.com/en-us/windows/win32/api/webauthn/)</li>
+<li>[Microsoft: WebAuthn APIs on Windows](https://learn.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/webauthn-apis)</li>
+<li>[Windows 11 3rd-party passkey managers](https://learn.microsoft.com/windows/apps/develop/security/third-party)</li>
+<li>[DSInternals webauthn-interop (Win32 wrapper reference)](https://github.com/MichaelGrafnetter/webauthn-interop)</li>
+</ul>
+</div></div>
+
+  </main>
+</div>
+<script>
+document.querySelectorAll('.section-card h2').forEach(h2 => {
+  h2.addEventListener('click', () => {
+    const content = h2.nextElementSibling;
+    const collapsed = content.style.display === 'none';
+    content.style.display = collapsed ? '' : 'none';
+    h2.classList.toggle('collapsed', !collapsed);
+  });
+});
+
+const STORAGE_KEY = 'plan-checks::' + location.pathname;
+try {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  document.querySelectorAll('input[type="checkbox"]').forEach((cb, i) => {
+    if (saved[i] !== undefined) cb.checked = saved[i];
+    cb.addEventListener('change', () => {
+      const state = {};
+      document.querySelectorAll('input[type="checkbox"]').forEach((c, j) => { state[j] = c.checked; });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    });
+  });
+} catch (_) { /* localStorage unavailable */ }
+</script>
+</body>
+</html>
