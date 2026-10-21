@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,6 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
@@ -78,6 +83,26 @@ fun App(passkeys: Passkeys = remember { Passkeys() }, autorun: Boolean = false) 
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            // Autofill spike: while the username field is focused, passkeys are offered in its keyboard.
+            var username by remember { mutableStateOf("") }
+            var usernameFocused by remember { mutableStateOf(false) }
+            LaunchedEffect(usernameFocused) {
+                if (!usernameFocused) return@LaunchedEffect
+                println("PASSKI_DEMO Autofill: waiting for a passkey suggestion")
+                execute("Sign in (autofill)") {
+                    passkeys.signIn(DemoRelyingParty.requestOptions(), SignInMode.Autofill)
+                }
+            }
+            OutlinedTextField(
+                value = username,
+                onValueChange = { username = it },
+                label = { Text("Username (passkey autofill)") },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { contentType = ContentType.Username }
+                    .onFocusChanged { usernameFocused = it.isFocused },
+            )
             Button(onClick = { run("Capabilities") { PasskeyResult.Success(passkeys.capabilities()) } }) {
                 Text("Capabilities")
             }

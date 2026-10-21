@@ -98,24 +98,35 @@ Run Gradle through `ctx_execute`; the Bash hook blocks `./gradlew`.
 
 **Task 3: `SignInMode.Autofill` core (Android + iOS)**
 - **Files:** `Passkeys.kt` (enum + KDoc, `PasskeyCapabilities.autofill`), `android/AndroidPasskeys.kt`, `apple/IosPasskeys.kt`, `apple/AuthorizationSession.kt`, ABI dumps, tests.
-- [ ] **Android:**
+- [x] **Android:**
   - Requires API 35+, else NotSupported.
   - Take `activity.currentFocus` and set `PendingGetCredentialRequest(GetCredentialRequest(listOf(GetPublicKeyCredentialOption(json))), callback)` on it via the androidx `View.setPendingGetCredentialRequest` extension. Verify the exact extension name in the 1.6.0 jar.
   - Resume the coroutine on the callback.
   - On cancellation, clear it with `clearPendingGetCredentialRequest`.
   - No focused view → `Misconfigured("Autofill needs a focused text field", hint: use PasskeyUsernameField or focus your username field first)`.
   - Callback errors are not delivered (documented by Google), so the coroutine just keeps waiting.
-- [ ] **iOS:**
+- [x] **iOS:**
   - `AuthorizationSession.performAutoFill(requests)` calls `performAutoFillAssistedRequests()`.
   - Cancellation calls `controller.cancel()`.
   - A 1001 after cancel is ignored.
   - Requires iOS 16+.
-- [ ] **FakePasskeys:** Autofill behaves like Modal; flag `autofillSupported`.
-- [ ] **Tests:**
+- [x] **FakePasskeys:** Autofill behaves like Modal; flag `autofillSupported`.
+- [x] **Tests:**
   - mapper and pure parts
   - capability flags
   - FakePasskeys
-- [ ] Commit: `feat(core): SignInMode.Autofill`
+- [x] Commit: `feat(core): SignInMode.Autofill`
+- **Outcome (2026-10-21).** Commits `4a1586f` (signals 1004), `3e1970e` (core), `6f09038` (Android session restart), sample hook.
+  - **API names (androidx.credentials 1.6.0, javap):** `PendingGetCredentialRequest(request: GetCredentialRequest, callback: (GetCredentialResponse) -> Unit)` and the extension property `var View.pendingGetCredentialRequest: PendingGetCredentialRequest?` (`CredentialManagerViewHandler.kt`); assigning `null` clears it (→ `View.clearPendingCredentialRequest()`). On API 35+ it calls `View.setPendingCredentialRequest(request, OutcomeReceiver)`; errors are not delivered.
+  - **Android implementation:** on the main thread, anchor = `ActivityTracker.currentActivity?.currentFocus` (none → `Misconfigured("Autofill needs a focused text field", …)`), attach the request, then **restart the autofill session** with `AutofillManager.cancel()` + `notifyViewEntered(view)`. The request is cleared (main thread) on success and on cancellation.
+  - **Emulator (API 36, GPM, passkey for alirezaiyan.com):**
+    - Compose `OutlinedTextField` with `Modifier.semantics { contentType = ContentType.Username }` (`androidx.compose.ui.autofill.ContentType`, `androidx.compose.ui.semantics.contentType`): **works.** Focusing the field shows a "PassKi Demo" passkey chip in the Gboard suggestion strip (inline suggestion). Tapping it opens the GPM sheet; after PIN, `PASSKI_DEMO Sign in (autofill) ✓ PasskeyAssertion(credentialId=P-Y0NwBAncnNqezQv1FMbg, …)`. Repeated twice from a fresh launch. The request sits on the `AndroidComposeView` (the activity's focused view) and GPM still offers it, so the Task 4 `AndroidView(EditText)` fallback is **not needed**.
+    - A native `EditText` (`AUTOFILL_HINT_USERNAME`) behaves the same (checked with a temporary spike, removed).
+    - Without the session restart, the chip only appears after the field is re-focused (the fill request runs at focus, before the request is attached), and the IME just shows the generic "Passwords" chip ("No saved passwords for PassKi"). `AutofillManager.requestAutofill(view)` is **not** enough: the chip shows, but the picked credential is dropped (`AutofillSession: setAuthenticationResultLocked: no responses`). `cancel()` + `notifyViewEntered()` fixed it.
+    - **Dismissal:** backing out of the GPM PIN prompt delivers nothing; the coroutine keeps waiting. The chip does **not** come back while the field stays focused (the session is used up); it comes back after a new `signIn(…, Autofill)` call. **Task 4:** `PasskeyUsernameField` should re-arm (cancel + call again) on each tap/IME show, not only on focus changes.
+    - A suggestion chip that stays visible for more than about a minute can be stale: tapping it fails in GPM with `Flow has timed out` (nothing is delivered).
+  - **iOS simulator 26.3 (window visible):** the sample builds and installs. Focusing the Compose username field starts `performAutoFillAssistedRequests()`, which fails fast with `Misconfigured: App VFCFJC7Y5J.com.alirezaiyan.passki.PassKi is not associated with alirezaiyan.com.` Modal `Sign in` fails the same way right now, so the simulator has no working association (AASA / developer mode). **The QuickType suggestion is not verified yet;** that moves to Task 6. A 1004 ends autofill (only a 1001 dismissal re-arms, after 500 ms).
+  - **Signals follow-up:** a bridge ERROR with `AuthorizationError 1004` or "not associated with domain" → `Misconfigured` with the concrete AASA hint when the message names the app/domain, otherwise the generic `AASA_HINT`. The real `iosSimulatorArm64Test` bridge run now reports `Misconfigured` instead of `Unknown`.
 
 ### Wave 3 (parallel)
 
