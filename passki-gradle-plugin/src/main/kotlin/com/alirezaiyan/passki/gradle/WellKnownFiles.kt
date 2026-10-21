@@ -14,18 +14,23 @@ internal object WellKnownFiles {
         "delegate_permission/common.get_login_creds",
     )
 
-    /** `assetlinks.json` granting [packageName] (signed by any of [fingerprints]) passkey access. */
-    fun assetLinks(packageName: String, fingerprints: List<String>): String {
-        val target = linkedMapOf<String, Any>(
-            "namespace" to "android_app",
-            "package_name" to packageName,
-            "sha256_cert_fingerprints" to fingerprints.distinct().sorted(),
-        )
-        val statement = linkedMapOf<String, Any>(
-            "relation" to RELATIONS,
-            "target" to target,
-        )
-        return render(listOf(statement))
+    /**
+     * `assetlinks.json` with one statement per package (sorted by package), granting each package —
+     * signed by any of its fingerprints — passkey access.
+     */
+    fun assetLinks(fingerprintsByPackage: Map<String, List<String>>): String {
+        val statements = fingerprintsByPackage.toSortedMap().map { (packageName, fingerprints) ->
+            val target = linkedMapOf<String, Any>(
+                "namespace" to "android_app",
+                "package_name" to packageName,
+                "sha256_cert_fingerprints" to fingerprints.distinct().sorted(),
+            )
+            linkedMapOf<String, Any>(
+                "relation" to RELATIONS,
+                "target" to target,
+            )
+        }
+        return render(statements)
     }
 
     /** `apple-app-site-association` listing [appIds] (`<TeamID>.<bundleId>`) under `webcredentials`. */

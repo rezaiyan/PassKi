@@ -13,7 +13,7 @@ internal class WellKnownFilesTest {
         // Test working dir is the plugin project; the golden lives in the repo docs.
         val golden = File("../docs/setup/well-known/assetlinks.json").readText()
 
-        assertEquals(golden, WellKnownFiles.assetLinks("com.alirezaiyan.passki", listOf(fingerprint)))
+        assertEquals(golden, WellKnownFiles.assetLinks(mapOf("com.alirezaiyan.passki" to listOf(fingerprint))))
     }
 
     @Test
@@ -40,7 +40,20 @@ internal class WellKnownFilesTest {
             ]
         """.trimIndent() + "\n"
 
-        assertEquals(expected, WellKnownFiles.assetLinks("com.example", listOf(b, a, b)))
+        assertEquals(expected, WellKnownFiles.assetLinks(mapOf("com.example" to listOf(b, a, b))))
+    }
+
+    @Test
+    fun assetLinksHasOneStatementPerPackageSortedByPackage() {
+        val a = List(32) { "AA" }.joinToString(":")
+        val b = List(32) { "BB" }.joinToString(":")
+
+        val json = WellKnownFiles.assetLinks(mapOf("com.example.debug" to listOf(a), "com.example" to listOf(b)))
+
+        @Suppress("UNCHECKED_CAST")
+        val statements = groovy.json.JsonSlurper().parseText(json) as List<Map<String, Map<String, Any>>>
+        assertEquals(listOf("com.example", "com.example.debug"), statements.map { it.getValue("target")["package_name"] })
+        assertEquals(listOf(listOf(b), listOf(a)), statements.map { it.getValue("target")["sha256_cert_fingerprints"] })
     }
 
     @Test

@@ -13,14 +13,13 @@ internal class WellKnownVerifierTest {
     private val fpB = List(32) { "BB" }.joinToString(":")
     private val expected = Expected(
         rpId = "example.com",
-        packageName = "com.example.app",
-        fingerprints = listOf(fpA, fpB),
+        fingerprintsByPackage = mapOf("com.example.app" to listOf(fpA, fpB), "com.example.app.debug" to listOf(fpB)),
         appleAppIds = listOf("ABCDE12345.com.example.app"),
     )
 
     private fun json(body: String, contentType: String? = "application/json") = Fetched(200, contentType, body, redirected = false)
 
-    private val goodAssetLinks = json(WellKnownFiles.assetLinks("com.example.app", listOf(fpA, fpB)))
+    private val goodAssetLinks = json(WellKnownFiles.assetLinks(expected.fingerprintsByPackage))
     private val goodAasa = json(WellKnownFiles.aasa(listOf("ABCDE12345.com.example.app")))
 
     private fun entitlements(vararg domains: String) = """
@@ -89,19 +88,38 @@ internal class WellKnownVerifierTest {
     fun missingGetLoginCredsRelation() {
         val body = goodAssetLinks.body.replace("\"delegate_permission/common.get_login_creds\"", "\"x\"")
 
-        verify(assetLinks = json(body)).single("delegate_permission/common.get_login_creds")
+        verify(assetLinks = json(body)).single("statement for com.example.app lacks relation delegate_permission/common.get_login_creds")
     }
 
     @Test
     fun missingPackage() {
-        val body = WellKnownFiles.assetLinks("com.other", listOf(fpA, fpB))
+        val body = WellKnownFiles.assetLinks(mapOf("com.other" to listOf(fpA, fpB), "com.example.app.debug" to listOf(fpB)))
 
-        verify(assetLinks = json(body)).single("com.example.app")
+        verify(assetLinks = json(body)).single("package com.example.app")
+    }
+
+    @Test
+    fun missingSuffixedPackageIsReportedOnItsOwn() {
+        val body = WellKnownFiles.assetLinks(mapOf("com.example.app" to listOf(fpA, fpB)))
+
+        val problem = verify(assetLinks = json(body)).single("com.example.app.debug")
+
+        assertTrue(problem.message.contains("no android_app statement"), problem.message)
+    }
+
+    @Test
+    fun fingerprintsAreCheckedPerPackage() {
+        // fpB is served, but only under the base package; the debug package must list it too.
+        val body = WellKnownFiles.assetLinks(mapOf("com.example.app" to listOf(fpA, fpB), "com.example.app.debug" to listOf(fpA)))
+
+        val problem = verify(assetLinks = json(body)).single("fingerprint")
+
+        assertTrue(problem.message.contains("com.example.app.debug: $fpB"), problem.message)
     }
 
     @Test
     fun listsExactlyTheMissingFingerprints() {
-        val body = WellKnownFiles.assetLinks("com.example.app", listOf(fpA)).replace(fpA, fpA.lowercase())
+        val body = WellKnownFiles.assetLinks(mapOf("com.example.app" to listOf(fpA), "com.example.app.debug" to listOf(fpB))).replace(fpA, fpA.lowercase())
 
         val problem = verify(assetLinks = json(body)).single("fingerprint")
 

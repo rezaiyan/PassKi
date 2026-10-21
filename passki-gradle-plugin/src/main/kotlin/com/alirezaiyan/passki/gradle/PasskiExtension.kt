@@ -39,10 +39,13 @@ public abstract class PasskiExtension @Inject constructor(objects: ObjectFactory
 
     /** Android settings for `assetlinks.json`. */
     public abstract class AndroidConfig {
-        /** Overrides the applicationId read from the Android build. */
+        /** Overrides the base applicationId read from the Android build; `applicationIdSuffix`es still apply. */
         public abstract val packageName: Property<String>
 
-        /** Fingerprints not derivable from local keystores (e.g. Play App Signing). Colon-hex SHA-256. */
+        /**
+         * Fingerprints not derivable from local keystores (e.g. Play App Signing). Colon-hex SHA-256.
+         * Added to the packages of non-debuggable variants (all packages if every variant is debuggable).
+         */
         public abstract val extraFingerprints: ListProperty<String>
     }
 

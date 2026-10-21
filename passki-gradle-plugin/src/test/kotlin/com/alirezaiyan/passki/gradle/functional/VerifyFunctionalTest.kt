@@ -69,7 +69,7 @@ internal class VerifyFunctionalTest {
     }
 
     private fun serve(fingerprints: List<String>) {
-        served["/.well-known/assetlinks.json"] = WellKnownFiles.assetLinks("com.example.app", fingerprints)
+        served["/.well-known/assetlinks.json"] = WellKnownFiles.assetLinks(mapOf("com.example.app" to fingerprints))
         served["/.well-known/apple-app-site-association"] = WellKnownFiles.aasa(listOf("ABCDE12345.com.example.app"))
     }
 

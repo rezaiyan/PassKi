@@ -28,18 +28,18 @@ public class PasskiPlugin : Plugin<Project> {
     private class AndroidWiring(private val project: Project, private val extension: PasskiExtension) {
         // Plain values captured in finalizeDsl; tasks only see these providers (configuration-cache safe).
         private val applicationId: Property<String> = project.objects.property(String::class.java)
-        private val keystores: ListProperty<KeystoreSpec> = project.objects.listProperty(KeystoreSpec::class.java)
+        private val variants: ListProperty<VariantSpec> = project.objects.listProperty(VariantSpec::class.java)
 
         fun wire() {
             val components = project.extensions.getByType(ApplicationAndroidComponentsExtension::class.java)
             components.finalizeDsl { dsl ->
                 AndroidSigning.applicationId(dsl)?.let(applicationId::set)
-                keystores.set(AndroidSigning.keystores(dsl))
+                variants.set(AndroidSigning.variants(dsl))
             }
 
             project.tasks.register("passkiFingerprints", PasskiFingerprintsTask::class.java) { task ->
                 task.group = GROUP
-                task.description = "Prints Android signing SHA-256 fingerprints and apk-key-hash origins."
+                task.description = "Prints Android packages, signing SHA-256 fingerprints and apk-key-hash origins."
                 configureSigning(task)
             }
             project.tasks.register("passkiWellKnown", PasskiWellKnownTask::class.java) { task ->
@@ -62,7 +62,7 @@ public class PasskiPlugin : Plugin<Project> {
 
         fun configureSigning(task: PasskiSigningTask) {
             task.packageName.set(extension.android.packageName.orElse(applicationId))
-            task.keystores.set(keystores)
+            task.variants.set(variants)
             task.extraFingerprints.set(
                 extension.android.extraFingerprints.map { values ->
                     values.map { value ->

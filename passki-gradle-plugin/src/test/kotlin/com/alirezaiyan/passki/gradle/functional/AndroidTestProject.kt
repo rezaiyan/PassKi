@@ -34,8 +34,11 @@ internal class AndroidTestProject(val dir: File) {
         File(dir, "gradle.properties").writeText("org.gradle.jvmargs=-Xmx1g\n")
     }
 
-    /** Writes build.gradle.kts with an Android app, a release signing config and [passkiBlock]. */
-    fun writeBuild(passkiBlock: String) {
+    /**
+     * Writes build.gradle.kts with an Android app, a release signing config and [passkiBlock];
+     * [androidExtra] is appended inside `android { }`.
+     */
+    fun writeBuild(passkiBlock: String, androidExtra: String = "") {
         // AGP is on the plugin-under-test classpath (see build.gradle.kts), so no version here.
         File(dir, "build.gradle.kts").writeText(
             """
@@ -64,6 +67,7 @@ internal class AndroidTestProject(val dir: File) {
                         signingConfig = signingConfigs.getByName("release")
                     }
                 }
+                $androidExtra
             }
 
             $passkiBlock
@@ -71,10 +75,10 @@ internal class AndroidTestProject(val dir: File) {
         )
     }
 
-    fun generateKeystore() {
+    fun generateKeystore(file: File = keystore, alias: String = "key0") {
         keytool(
-            "-genkeypair", "-keystore", keystore.absolutePath, "-storetype", "PKCS12",
-            "-storepass", "secret123", "-keypass", "secret123", "-alias", "key0",
+            "-genkeypair", "-keystore", file.absolutePath, "-storetype", "PKCS12",
+            "-storepass", "secret123", "-keypass", "secret123", "-alias", alias,
             "-keyalg", "RSA", "-keysize", "2048", "-validity", "1", "-dname", "CN=PassKi Functional",
         )
     }

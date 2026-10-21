@@ -25,8 +25,7 @@ public abstract class PasskiWellKnownTask : PasskiSigningTask() {
     @TaskAction
     public fun generate() {
         val dir = outputDir.get().asFile
-        val fingerprints = allFingerprints(resolveKeystores())
-        File(dir, ASSET_LINKS).writeText(WellKnownFiles.assetLinks(requirePackageName(), fingerprints))
+        File(dir, ASSET_LINKS).writeText(WellKnownFiles.assetLinks(fingerprintsByPackage(resolveVariants())))
         logger.lifecycle("passki: wrote ${File(dir, ASSET_LINKS)}")
 
         val aasa = File(dir, AASA)

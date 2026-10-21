@@ -13,7 +13,7 @@ import org.xml.sax.InputSource
  */
 internal object WellKnownVerifier {
     /** What the build says should be served for [rpId]. Fingerprints are canonical colon-hex. */
-    data class Expected(val rpId: String, val packageName: String, val fingerprints: List<String>, val appleAppIds: List<String>)
+    data class Expected(val rpId: String, val fingerprintsByPackage: Map<String, List<String>>, val appleAppIds: List<String>)
 
     /** An HTTP response; [redirected] is true for a 3xx (redirects are never followed). */
     data class Fetched(val status: Int, val contentType: String?, val body: String, val redirected: Boolean)
@@ -70,28 +70,31 @@ internal object WellKnownVerifier {
         val problems = mutableListOf<Problem>()
         val json = parse(expected, ASSET_LINKS, fetched, problems) ?: return problems
         val upload = "Upload build/passki/well-known/$ASSET_LINKS"
-        val statements = (json as? List<*>).orEmpty().filterIsInstance<Map<*, *>>().filter { statement ->
-            val target = statement["target"] as? Map<*, *>
-            target?.get("namespace") == "android_app" && target["package_name"] == expected.packageName
-        }
-        if (statements.isEmpty()) {
-            problems += Problem("$ASSET_LINKS has no android_app statement for package ${expected.packageName}", upload)
-            return problems
-        }
-        val relations = statements.flatMap { (it["relation"] as? List<*>).orEmpty() }.toSet()
-        if (LOGIN_CREDS !in relations) {
-            problems += Problem("$ASSET_LINKS statement for ${expected.packageName} lacks relation $LOGIN_CREDS", upload)
-        }
-        val served = statements
-            .flatMap { ((it["target"] as Map<*, *>)["sha256_cert_fingerprints"] as? List<*>).orEmpty() }
-            .map { canonical(it.toString()) }
-            .toSet()
-        val missing = expected.fingerprints.filter { it !in served }
-        if (missing.isNotEmpty()) {
-            problems += Problem(
-                "$ASSET_LINKS is missing signing fingerprint(s) for ${expected.packageName}: ${missing.joinToString(", ")}",
-                upload,
-            )
+        val all = (json as? List<*>).orEmpty().filterIsInstance<Map<*, *>>()
+        expected.fingerprintsByPackage.toSortedMap().forEach { (packageName, fingerprints) ->
+            val statements = all.filter { statement ->
+                val target = statement["target"] as? Map<*, *>
+                target?.get("namespace") == "android_app" && target["package_name"] == packageName
+            }
+            if (statements.isEmpty()) {
+                problems += Problem("$ASSET_LINKS has no android_app statement for package $packageName", upload)
+                return@forEach
+            }
+            val relations = statements.flatMap { (it["relation"] as? List<*>).orEmpty() }.toSet()
+            if (LOGIN_CREDS !in relations) {
+                problems += Problem("$ASSET_LINKS statement for $packageName lacks relation $LOGIN_CREDS", upload)
+            }
+            val served = statements
+                .flatMap { ((it["target"] as Map<*, *>)["sha256_cert_fingerprints"] as? List<*>).orEmpty() }
+                .map { canonical(it.toString()) }
+                .toSet()
+            val missing = fingerprints.filter { it !in served }
+            if (missing.isNotEmpty()) {
+                problems += Problem(
+                    "$ASSET_LINKS is missing signing fingerprint(s) for $packageName: ${missing.joinToString(", ")}",
+                    upload,
+                )
+            }
         }
         return problems
     }

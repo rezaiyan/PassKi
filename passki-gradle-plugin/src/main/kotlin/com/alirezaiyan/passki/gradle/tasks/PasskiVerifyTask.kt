@@ -56,8 +56,7 @@ public abstract class PasskiVerifyTask : PasskiSigningTask() {
         val rp = rpId.orNull ?: throw PasskiConfigException("passkiVerify needs passki { rpId = \"example.com\" }")
         val expected = WellKnownVerifier.Expected(
             rpId = rp,
-            packageName = requirePackageName(),
-            fingerprints = allFingerprints(resolveKeystores()),
+            fingerprintsByPackage = fingerprintsByPackage(resolveVariants()),
             appleAppIds = appleAppIds.get(),
         )
         val base = (baseUrl.orNull ?: "https://$rp").trimEnd('/')

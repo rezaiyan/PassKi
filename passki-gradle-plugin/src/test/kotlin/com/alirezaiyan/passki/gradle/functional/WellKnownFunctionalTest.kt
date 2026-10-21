@@ -1,6 +1,7 @@
 package com.alirezaiyan.passki.gradle.functional
 
 import com.alirezaiyan.passki.gradle.Fingerprints
+import groovy.json.JsonSlurper
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
@@ -55,6 +56,52 @@ internal class WellKnownFunctionalTest {
 
         assertEquals(TaskOutcome.UP_TO_DATE, second.task(":passkiWellKnown")?.outcome)
         assertTrue(second.output.contains("Reusing configuration cache"), second.output)
+    }
+
+    @Test
+    fun debugApplicationIdSuffixGetsItsOwnStatementWithOnlyTheDebugKey() {
+        val project = AndroidTestProject(tmp.root).apply {
+            generateKeystore()
+            generateKeystore(File(dir, "debug.jks"), alias = "dbg")
+            writeBuild(
+                """passki { android { extraFingerprints.add("$extra") } }""",
+                androidExtra = """
+                    signingConfigs {
+                        create("dbg") {
+                            storeFile = file("debug.jks")
+                            storePassword = "secret123"
+                            keyAlias = "dbg"
+                            keyPassword = "secret123"
+                        }
+                    }
+                    buildTypes {
+                        debug {
+                            applicationIdSuffix = ".debug"
+                            signingConfig = signingConfigs.getByName("dbg")
+                        }
+                    }
+                """.trimIndent(),
+            )
+        }
+        val release = Fingerprints.sha256(project.keystore, "secret123", "key0", "PKCS12")
+        val debug = Fingerprints.sha256(File(tmp.root, "debug.jks"), "secret123", "dbg", "PKCS12")
+
+        project.build("passkiWellKnown", "--configuration-cache")
+
+        @Suppress("UNCHECKED_CAST")
+        val statements = JsonSlurper().parseText(File(outputDir, "assetlinks.json").readText()) as List<Map<String, Map<String, Any>>>
+        val byPackage = statements.associate { it.getValue("target")["package_name"] as String to it.getValue("target")["sha256_cert_fingerprints"] }
+        assertEquals<Map<String, Any?>>(
+            mapOf(
+                "com.example.app" to listOf(release, extra).sorted(),
+                "com.example.app.debug" to listOf(debug),
+            ),
+            byPackage,
+        )
+
+        val table = project.build("passkiFingerprints", "--configuration-cache").output
+        assertTrue(table.lines().any { it.contains("com.example.app.debug") && it.contains("debug") && it.contains(debug) }, table)
+        assertTrue(table.lines().any { it.contains("com.example.app ") && it.contains("release") && it.contains(release) }, table)
     }
 
     @Test
