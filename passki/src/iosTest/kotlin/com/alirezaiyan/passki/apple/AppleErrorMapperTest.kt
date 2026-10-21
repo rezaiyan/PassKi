@@ -3,6 +3,7 @@ package com.alirezaiyan.passki.apple
 import com.alirezaiyan.passki.PasskeyError
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
@@ -90,5 +91,63 @@ class AppleErrorMapperTest {
     fun unknownAuthorizationErrorKeepsCause() {
         val original = AppleAuthorizationException(1004, "failed", presented = true)
         assertSame(original, assertIs<PasskeyError.Unknown>(original.toPasskeyError()).cause)
+    }
+
+    @Test
+    fun realSimulatorAssociationErrorProducesConcreteAasaHint() {
+        val error = appleErrorToPasskeyError(
+            1004,
+            "The operation couldn\u2019t be completed. Application with identifier " +
+                "VFCFJC7Y5J.com.alirezaiyan.passki.PassKi is not associated with domain alirezaiyan.com",
+        )
+        val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
+        assertEquals(
+            "App VFCFJC7Y5J.com.alirezaiyan.passki.PassKi is not associated with alirezaiyan.com.",
+            misconfigured.message,
+        )
+        val hint = misconfigured.fixHint
+        assertTrue("webcredentials:alirezaiyan.com" in hint, hint)
+        assertTrue("webcredentials:alirezaiyan.com?mode=developer" in hint, hint)
+        assertTrue("https://alirezaiyan.com/.well-known/apple-app-site-association" in hint, hint)
+        assertTrue(
+            "{\"webcredentials\":{\"apps\":[\"VFCFJC7Y5J.com.alirezaiyan.passki.PassKi\"]}}" in hint,
+            hint,
+        )
+        assertFalse("<" in hint, hint)
+    }
+
+    @Test
+    fun associationErrorToleratesStraightApostropheAndTrailingPeriod() {
+        val error = appleErrorToPasskeyError(
+            1004,
+            "The operation couldn't be completed. Application with identifier T.com.example is not associated " +
+                "with domain example.com.",
+        )
+        val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
+        assertEquals("App T.com.example is not associated with example.com.", misconfigured.message)
+        assertTrue("https://example.com/.well-known/apple-app-site-association" in misconfigured.fixHint)
+    }
+
+    @Test
+    fun unparseableAssociationErrorFallsBackToGenericHint() {
+        val error = appleErrorToPasskeyError(1004, "The app is not associated with domain")
+        val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
+        assertEquals(AASA_HINT, misconfigured.fixHint)
+    }
+
+    @Test
+    fun operationCouldNotBeCompletedBoilerplateIsStripped() {
+        val error = assertIs<PasskeyError.Unknown>(
+            appleErrorToPasskeyError(1004, "The operation couldn\u2019t be completed. Something specific broke."),
+        )
+        assertEquals("Something specific broke.", error.message)
+    }
+
+    @Test
+    fun boilerplateOnlyMessageIsKept() {
+        val error = assertIs<PasskeyError.Unknown>(
+            appleErrorToPasskeyError(1004, "The operation couldn't be completed."),
+        )
+        assertEquals("The operation couldn't be completed.", error.message)
     }
 }

@@ -35,7 +35,7 @@ fun App(passkeys: Passkeys = remember { Passkeys() }) {
                 log = "$label…"
                 log = when (val result = action()) {
                     is PasskeyResult.Success -> "$label ✓\n${result.value}"
-                    is PasskeyResult.Failure -> "$label ✗ ${result.error}\n${result.error.fixHint.orEmpty()}"
+                    is PasskeyResult.Failure -> failureLog(label, result.error)
                 }
                 println("PASSKI_DEMO $log")
             }
@@ -85,3 +85,7 @@ fun App(passkeys: Passkeys = remember { Passkeys() }) {
         }
     }
 }
+
+/** One log entry per failure: the message, then the fix hint on its own line when there is one. */
+internal fun failureLog(label: String, error: PasskeyError): String =
+    "$label ✗ ${error.message}" + error.fixHint?.let { "\nfix: $it" }.orEmpty()

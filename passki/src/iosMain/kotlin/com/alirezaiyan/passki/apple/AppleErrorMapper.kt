@@ -8,6 +8,26 @@ internal const val AASA_HINT: String =
         "For local testing use 'webcredentials:<rpId>?mode=developer' and enable Associated Domains Development in " +
         "Settings > Developer."
 
+private val BOILERPLATE = Regex("""^\s*The operation couldn['’]t be completed\.\s*""", RegexOption.IGNORE_CASE)
+
+private val NOT_ASSOCIATED = Regex("""identifier (\S+) is not associated with domain (\S+?)[.,;:!)\s]*$""", RegexOption.IGNORE_CASE)
+
+/** Removes Apple's generic "The operation couldn't be completed." prefix; keeps the message if nothing else remains. */
+internal fun stripAppleBoilerplate(message: String): String =
+    message.replaceFirst(BOILERPLATE, "").trim().ifEmpty { message }
+
+internal fun concreteAasaHint(appId: String, domain: String): String =
+    "Add the Associated Domains entitlement 'webcredentials:$domain' to the app target " +
+        "('webcredentials:$domain?mode=developer' for local testing, with Associated Domains Development enabled " +
+        "in Settings > Developer), and serve https://$domain/.well-known/apple-app-site-association containing " +
+        "{\"webcredentials\":{\"apps\":[\"$appId\"]}}."
+
+private fun associationError(message: String): PasskeyError.Misconfigured {
+    val match = NOT_ASSOCIATED.find(message) ?: return PasskeyError.Misconfigured(message, AASA_HINT)
+    val (appId, domain) = match.destructured
+    return PasskeyError.Misconfigured("App $appId is not associated with $domain.", concreteAasaHint(appId, domain))
+}
+
 /** [presented] is true once the system asked for a presentation anchor, i.e. a sheet was (about to be) shown. */
 internal class AppleAuthorizationException(val code: Long, message: String, val presented: Boolean) : Exception(message)
 
@@ -21,8 +41,16 @@ internal fun appleErrorToPasskeyError(
     immediateOnly: Boolean = false,
     presented: Boolean = true,
     cause: Throwable? = null,
+): PasskeyError = appleErrorToPasskeyErrorInternal(code, stripAppleBoilerplate(message), immediateOnly, presented, cause)
+
+private fun appleErrorToPasskeyErrorInternal(
+    code: Long,
+    message: String,
+    immediateOnly: Boolean,
+    presented: Boolean,
+    cause: Throwable?,
 ): PasskeyError = when {
-    message.contains("not associated with domain", ignoreCase = true) -> PasskeyError.Misconfigured(message, AASA_HINT)
+    message.contains("not associated with domain", ignoreCase = true) -> associationError(message)
     code == 1001L && immediateOnly && !presented -> PasskeyError.NoCredentials
     code == 1001L -> PasskeyError.Cancelled
     code == 1005L -> PasskeyError.NoCredentials

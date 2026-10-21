@@ -55,10 +55,12 @@ internal class AndroidPasskeys(private val tracker: ActivityTracker = ActivityTr
     override suspend fun upgrade(optionsJson: String): PasskeyResult<PasskeyRegistration> =
         createPasskey(optionsJson, conditional = true)
 
-    override suspend fun signIn(optionsJson: String, mode: SignInMode): PasskeyResult<PasskeyAssertion> =
-        passkeyCatching(Throwable::toPasskeyError) {
+    override suspend fun signIn(optionsJson: String, mode: SignInMode): PasskeyResult<PasskeyAssertion> {
+        var context = errorContext(rpId = null)
+        return passkeyCatching({ it.toPasskeyError(context = context) }) {
             requireSupported()
             val options = WebAuthnOptions.parseRequest(optionsJson)
+            context = errorContext(options.model.rpId)
             val request = GetCredentialRequest(
                 credentialOptions = listOf(GetPublicKeyCredentialOption(requestJson = options.json)),
                 preferImmediatelyAvailableCredentials = mode == SignInMode.ImmediateOnly,
@@ -68,11 +70,14 @@ internal class AndroidPasskeys(private val tracker: ActivityTracker = ActivityTr
                 else -> throw unexpected(credential)
             }
         }
+    }
 
-    override suspend fun signInOrPassword(optionsJson: String): PasskeyResult<SignInCredential> =
-        passkeyCatching(Throwable::toPasskeyError) {
+    override suspend fun signInOrPassword(optionsJson: String): PasskeyResult<SignInCredential> {
+        var context = errorContext(rpId = null)
+        return passkeyCatching({ it.toPasskeyError(context = context) }) {
             requireSupported()
             val options = WebAuthnOptions.parseRequest(optionsJson)
+            context = errorContext(options.model.rpId)
             val request = GetCredentialRequest(
                 credentialOptions = listOf(
                     GetPublicKeyCredentialOption(requestJson = options.json),
@@ -86,16 +91,17 @@ internal class AndroidPasskeys(private val tracker: ActivityTracker = ActivityTr
                 else -> throw unexpected(credential)
             }
         }
+    }
 
     override val signals: PasskeySignals = object : PasskeySignals {
         override suspend fun unknownCredential(rpId: String, credentialId: String): PasskeyResult<Unit> =
-            signal { SignalUnknownCredentialRequest(SignalRequests.unknownCredential(rpId, credentialId)) }
+            signal(rpId) { SignalUnknownCredentialRequest(SignalRequests.unknownCredential(rpId, credentialId)) }
 
         override suspend fun acceptedCredentials(
             rpId: String,
             userId: String,
             credentialIds: List<String>,
-        ): PasskeyResult<Unit> = signal {
+        ): PasskeyResult<Unit> = signal(rpId) {
             SignalAllAcceptedCredentialIdsRequest(SignalRequests.acceptedCredentials(rpId, userId, credentialIds))
         }
 
@@ -104,27 +110,33 @@ internal class AndroidPasskeys(private val tracker: ActivityTracker = ActivityTr
             userId: String,
             name: String,
             displayName: String,
-        ): PasskeyResult<Unit> = signal {
+        ): PasskeyResult<Unit> = signal(rpId) {
             SignalCurrentUserDetailsRequest(SignalRequests.currentUserDetails(rpId, userId, name, displayName))
         }
     }
 
-    private suspend fun createPasskey(optionsJson: String, conditional: Boolean): PasskeyResult<PasskeyRegistration> =
-        passkeyCatching({ it.toPasskeyError(conditional) }) {
+    private suspend fun createPasskey(optionsJson: String, conditional: Boolean): PasskeyResult<PasskeyRegistration> {
+        var context = errorContext(rpId = null)
+        return passkeyCatching({ it.toPasskeyError(conditional, context) }) {
             requireSupported()
             val options = WebAuthnOptions.parseCreation(optionsJson)
+            context = errorContext(options.model.rp.id)
             val request = CreatePublicKeyCredentialRequest(requestJson = options.json, isConditional = conditional)
             when (val response = manager.createCredential(requireActivity(), request)) {
                 is CreatePublicKeyCredentialResponse -> parseRegistration(response.registrationResponseJson)
                 else -> throw unexpected(response)
             }
         }
+    }
 
-    private suspend fun signal(build: () -> SignalCredentialStateRequest): PasskeyResult<Unit> =
-        passkeyCatching(Throwable::toPasskeyError) {
+    private suspend fun signal(rpId: String, build: () -> SignalCredentialStateRequest): PasskeyResult<Unit> =
+        passkeyCatching({ it.toPasskeyError(context = errorContext(rpId)) }) {
             requireSupported()
             manager.signalCredentialState(build())
         }
+
+    private fun errorContext(rpId: String?): AndroidErrorContext =
+        AndroidErrorContext(rpId = rpId, packageName = tracker.application?.packageName)
 
     private fun requireSupported() {
         if (!supported) throw PasskeyException(PasskeyError.NotSupported("Passkeys require Android 9 (API 28) or newer."))
