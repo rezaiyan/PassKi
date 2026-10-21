@@ -79,10 +79,13 @@ mavenPublishing {
             developer {
                 id.set("alirezaiyan")
                 name.set("Ali Rezaiyan")
+                url.set("https://alirezaiyan.com")
             }
         }
         scm {
             url.set("https://github.com/rezaiyan/PassKi")
+            connection.set("scm:git:git://github.com/rezaiyan/PassKi.git")
+            developerConnection.set("scm:git:ssh://git@github.com/rezaiyan/PassKi.git")
         }
     }
 }

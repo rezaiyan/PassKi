@@ -30,5 +30,7 @@ object DemoRelyingParty {
     fun requestOptions(): String =
         """{"challenge":"${challenge()}","rpId":"$RP_ID","userVerification":"preferred","timeout":60000}"""
 
+    // Demo only: real challenges must be generated and verified by your server.
+    // kotlin.random is not a cryptographically secure source.
     private fun challenge(): String = base64Url.encode(Random.nextBytes(32))
 }

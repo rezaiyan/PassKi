@@ -6,7 +6,7 @@ Passkeys for Kotlin Multiplatform. One dependency, one call, native authenticato
 |---|---|
 | Android 9+ (Credential Manager) | register, sign in, passkey-or-password, upgrade, signals |
 | iOS 16+ (AuthenticationServices) | register, sign in, passkey-or-password, upgrade (iOS 18+); signals return `NotSupported` for now |
-| Web, Windows, macOS, Linux | roadmap; returns `PasskeyError.NotSupported` today |
+| JVM desktop, browser (js / wasmJs) | compile and return `PasskeyError.NotSupported` today; native macOS/tvOS/watchOS/Linux/Windows targets are not published yet |
 
 ## Install
 
@@ -34,7 +34,12 @@ passkeys.signIn(api.authenticationOptions()).onSuccess { api.finishSignIn(it.jso
 passkeys.signInOrPassword(options)   // one sheet: passkeys + saved passwords
 passkeys.upgrade(options)            // silently add a passkey after password login
 passkeys.signals.unknownCredential(rpId, credentialId) // keep password managers in sync
+
+val caps = passkeys.capabilities()
+if (caps.unifiedPasswordSignIn) { /* offer the combined passkey + password button */ }
 ```
+
+PassKi initialises itself through `androidx.startup`. If your app removes that initializer, call `PasskiAndroid.init(application)` in `Application.onCreate()`.
 
 Options are your server's WebAuthn JSON, used as-is (a `{"publicKey": ...}` envelope is fine). Verify the returned `json` on your server with java-webauthn-server, webauthn4j, SimpleWebAuthn or py_webauthn.
 
@@ -42,6 +47,8 @@ Options are your server's WebAuthn JSON, used as-is (a `{"publicKey": ...}` enve
 
 - **`upgrade()` is opportunistic.** It uses conditional create, so the platform may decline without any UI. Treat every `upgrade()` failure as silent: do not show an error and do not block your login flow.
 - **Verifying upgrade responses.** A conditional-create response is created without a user prompt, so the user-presence (UP) flag may be 0. Servers verifying these responses must not require user presence.
+- **`excludeCredentials` on iOS < 17.4 is ignored** by the system, so a duplicate passkey may be created; dedupe on your server. `PasskeyError.AlreadyRegistered` is guaranteed on Android and iOS 17.4+.
+- **Android `upgrade()` and `signals` depend on the user's credential provider** and may return `PasskeyError.NotSupported` even when `capabilities()` reports them as available.
 - **Signals on iOS.** `passkeys.signals` returns `PasskeyError.NotSupported` on iOS for now.
 - **iOS registration responses** omit the WebAuthn Level 3 `publicKey` and `publicKeyAlgorithm` fields. Read the public key from `attestationObject`, which every server library already does.
 
