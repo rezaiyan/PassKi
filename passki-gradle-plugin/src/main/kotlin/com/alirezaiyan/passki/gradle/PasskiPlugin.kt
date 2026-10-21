@@ -2,6 +2,7 @@ package com.alirezaiyan.passki.gradle
 
 import com.alirezaiyan.passki.gradle.tasks.PasskiFingerprintsTask
 import com.alirezaiyan.passki.gradle.tasks.PasskiSigningTask
+import com.alirezaiyan.passki.gradle.tasks.PasskiVerifyTask
 import com.alirezaiyan.passki.gradle.tasks.PasskiWellKnownTask
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import org.gradle.api.Plugin
@@ -14,7 +15,7 @@ import org.gradle.api.provider.Provider
  * Gradle plugin `com.alirezaiyan.passki`.
  *
  * Registers the [PasskiExtension] (`passki { }`). When `com.android.application` is applied it also
- * registers `passkiFingerprints` and `passkiWellKnown`, fed from the finalized Android DSL.
+ * registers `passkiFingerprints`, `passkiWellKnown` and `passkiVerify`, fed from the finalized Android DSL.
  */
 public class PasskiPlugin : Plugin<Project> {
     override fun apply(project: Project) {
@@ -47,6 +48,15 @@ public class PasskiPlugin : Plugin<Project> {
                 configureSigning(task)
                 task.appleAppIds.set(appleAppIds())
                 task.outputDir.set(project.layout.buildDirectory.dir("passki/well-known"))
+            }
+            project.tasks.register("passkiVerify", PasskiVerifyTask::class.java) { task ->
+                task.group = GROUP
+                task.description = "Checks the hosted .well-known files and entitlements against this build (network)."
+                configureSigning(task)
+                task.rpId.set(extension.rpId)
+                task.appleAppIds.set(appleAppIds())
+                task.entitlementsFile.set(extension.apple.entitlementsFile)
+                task.baseUrl.set(project.providers.gradleProperty("passki.verify.baseUrl"))
             }
         }
 
