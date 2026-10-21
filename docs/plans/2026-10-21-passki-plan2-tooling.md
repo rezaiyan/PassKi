@@ -516,7 +516,7 @@ internal fun interface HttpGetter { suspend fun get(url: String): HttpResult }
 - `android/AndroidDoctorFacts.kt`
 - Host tests
 
-- [ ] **Checks, in order:**
+- [x] **Checks, in order:**
   1. **Platform:** API ≥ 28, else Fail.
   2. **PassKi initialised:** ActivityTracker has an application, else Fail with the INIT hint.
   3. **INTERNET permission:** `checkSelfPermission`. If it's missing, Warn and skip the network checks.
@@ -525,8 +525,8 @@ internal fun interface HttpGetter { suspend fun get(url: String): HttpResult }
      - Use `signingInfo.apkContentsSigners`, or `signingCertificateHistory` when `hasMultipleSigners()` is false.
      - SHA-256 → colon hex, then `AssetLinksCheck`.
   5. **Origin:** a Pass/info check listing `android:apk-key-hash:…` for each signer ("allow this origin on your server").
-- [ ] **Host tests:** cert bytes → fingerprint formatting, using a pure function; and a fake `HttpGetter` driving the report composition. Put the composition in a pure internal function: `composeAndroidReport(facts, getter)`.
-- [ ] **Commit:** `feat(doctor): Android setup diagnostics`
+- [x] **Host tests:** cert bytes → fingerprint formatting, using a pure function; and a fake `HttpGetter` driving the report composition. Put the composition in a pure internal function: `composeAndroidReport(facts, getter)`.
+- [x] **Commit:** `feat(doctor): Android setup diagnostics`
 
 ### Task B3: iOS doctor
 
@@ -535,7 +535,7 @@ internal fun interface HttpGetter { suspend fun get(url: String): HttpResult }
 - `apple/IosDoctorFacts.kt`
 - iosTest
 
-- [ ] **Checks:**
+- [x] **Checks:**
   1. iOS ≥ 16.
   2. A foreground key window is available. Warn if not; this is only needed at call time.
   3. **Entitlement:** report `Skipped`. iOS can't read its own entitlements at runtime. The fix hint points to the Gradle plugin's `passkiVerify` entitlements check.
@@ -543,8 +543,8 @@ internal fun interface HttpGetter { suspend fun get(url: String): HttpResult }
      - Use `NSURLSession.sharedSession.dataTaskWithRequest` bridged with `suspendCancellableCoroutine`, and cancel the task on cancellation.
      - Disable redirects with a delegate if feasible. Otherwise record the final URL and compare it with the requested one.
      - `bundleId` comes from `NSBundle.mainBundle.bundleIdentifier`. Run `AasaCheck`.
-- [ ] **iosTest:** compose the report with a fake getter. Real network is not used in tests.
-- [ ] **Commit:** `feat(doctor): iOS setup diagnostics`
+- [x] **iosTest:** compose the report with a fake getter. Real network is not used in tests.
+- [x] **Commit:** `feat(doctor): iOS setup diagnostics`
 
 ### Task B4: Sample "Doctor" button
 

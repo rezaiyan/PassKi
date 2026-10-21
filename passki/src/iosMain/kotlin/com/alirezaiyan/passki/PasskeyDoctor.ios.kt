@@ -1,9 +1,10 @@
 package com.alirezaiyan.passki
 
-import com.alirezaiyan.passki.internal.doctor.skippedDoctorReport
+import com.alirezaiyan.passki.apple.NSUrlSessionGetter
+import com.alirezaiyan.passki.apple.collectIosDoctorFacts
+import com.alirezaiyan.passki.apple.composeIosReport
 
-// Temporary: replaced by the real iOS diagnostics in Plan 2 Task B3.
 public actual object PasskeyDoctor {
     public actual suspend fun run(rpId: String): DoctorReport =
-        skippedDoctorReport(rpId, "Doctor for iOS lands in a later task")
+        composeIosReport(rpId, collectIosDoctorFacts(), NSUrlSessionGetter)
 }
