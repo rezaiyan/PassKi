@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "docsBase": "https://passki.alirezaiyan.com/checks/",
+  "docsRepo": "https://github.com/rezaiyan/PassKi/blob/main/docs/checks/",
+  "checks": [
+    { "id": "AND-01", "platform": "android", "severity": "error", "title": "assetlinks.json reachable", "fix": "Serve https://<rpId>/.well-known/assetlinks.json over HTTPS with status 200, Content-Type application/json and no redirects." },
+    { "id": "AND-02", "platform": "android", "severity": "error", "title": "Login credentials delegated to the app", "fix": "Add a statement with relation \"delegate_permission/common.get_login_creds\" for package <package> to assetlinks.json." },
+    { "id": "AND-03", "platform": "android", "severity": "error", "title": "Signing certificate listed", "fix": "Add the SHA-256 fingerprint <fingerprint> (run ./gradlew passkiFingerprints) to sha256_cert_fingerprints for <package>." },
+    { "id": "AND-04", "platform": "android", "severity": "warning", "title": "Google Digital Asset Links agrees", "fix": "Google's Digital Asset Links API doesn't see the statement yet. Check the file is public and valid; Google may cache for a while." },
+    { "id": "AND-05", "platform": "android", "severity": "warning", "title": "Play App Signing key listed", "fix": "For Play releases, copy the App signing key SHA-256 from Play Console > Test and release > App integrity, and add it via passki { android { extraFingerprints.add(\"...\") } }." },
+    { "id": "AND-06", "platform": "android", "severity": "error", "title": "PassKi initialised in the app", "fix": "Keep PassKi's androidx.startup initializer, or call PasskiAndroid.init(application) in Application.onCreate()." },
+    { "id": "IOS-01", "platform": "ios", "severity": "error", "title": "apple-app-site-association reachable", "fix": "Serve https://<rpId>/.well-known/apple-app-site-association over HTTPS with status 200, JSON body and no redirects." },
+    { "id": "IOS-02", "platform": "ios", "severity": "error", "title": "App listed under webcredentials", "fix": "Add \"<teamId>.<bundleId>\" to webcredentials.apps in the apple-app-site-association file." },
+    { "id": "IOS-03", "platform": "ios", "severity": "warning", "title": "Apple CDN has the app", "fix": "Apple's CDN can lag up to 24h. While testing use webcredentials:<rpId>?mode=developer and enable Settings > Developer > Associated Domains Development." },
+    { "id": "IOS-04", "platform": "ios", "severity": "error", "title": "Entitlements list webcredentials", "fix": "Add webcredentials:<rpId> to com.apple.developer.associated-domains in your .entitlements file (./gradlew passkiSetup writes it)." },
+    { "id": "IOS-05", "platform": "ios", "severity": "error", "title": "Entitlements wired into the Xcode build", "fix": "Set CODE_SIGN_ENTITLEMENTS = <path>.entitlements, e.g. in Configuration/Config.xcconfig (./gradlew passkiSetup does this without touching project.pbxproj)." },
+    { "id": "IOS-06", "platform": "ios", "severity": "error", "title": "Built app carries the entitlement", "fix": "The signed app does not contain the associated-domains entitlement. Rebuild after fixing IOS-05, and check signing (team, provisioning)." },
+    { "id": "SRV-01", "platform": "server", "severity": "error", "title": "Server RP ID matches", "fix": "Configure your WebAuthn server's RP ID as <rpId>." },
+    { "id": "SRV-02", "platform": "server", "severity": "error", "title": "Server allows all origins", "fix": "Allow https://<rpId> and every android:apk-key-hash:<hash> origin printed by ./gradlew passkiFingerprints." },
+    { "id": "SRV-03", "platform": "server", "severity": "error", "title": "Server options are valid WebAuthn", "fix": "Registration options must include rp.id, a base64url challenge of at least 16 bytes and a user.id of 1-64 bytes." },
+    { "id": "CFG-01", "platform": "config", "severity": "error", "title": "RP ID is a bare domain", "fix": "Pass the relying party ID as a bare domain such as example.com: no scheme, port, path or query (the same value as the WebAuthn rp.id)." },
+    { "id": "DEV-01", "platform": "device", "severity": "warning", "title": "Android device can store passkeys", "fix": "Set a screen lock and sign in to a Google account (or enable another credential provider) in Settings." },
+    { "id": "DEV-02", "platform": "device", "severity": "warning", "title": "iOS device can use passkeys", "fix": "Enrol Face ID/Touch ID (Simulator: Features > Face ID > Enrolled); for ?mode=developer enable Settings > Developer > Associated Domains Development." },
+    { "id": "DEV-03", "platform": "device", "severity": "error", "title": "Platform supports passkeys", "fix": "Passkeys need Android 9+ or iOS 16+." }
+  ]
+}
