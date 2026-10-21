@@ -558,12 +558,12 @@ internal fun interface HttpGetter { suspend fun get(url: String): HttpResult }
 
 ### Task C1: Dokka + README
 
-- [ ] Add the Dokka plugin (latest 2.x that resolves) to `:passki` and `:passki-test`, with module docs `passki/Module.md`. Gate: `./gradlew :passki:dokkaGenerate` succeeds and `build/dokka/html/index.html` exists.
-- [ ] README: a new **Setup tooling** section covering the plugin DSL, the three tasks, `PasskeyDoctor.run(rpId)` with example output, and "debug builds only".
-- [ ] Full gate:
+- [x] Add the Dokka plugin (latest 2.x that resolves) to `:passki` and `:passki-test`, with module docs `passki/Module.md`. Gate: `./gradlew :passki:dokkaGenerate` succeeds and `build/dokka/html/index.html` exists.
+- [x] README: a new **Setup tooling** section covering the plugin DSL, the three tasks, `PasskeyDoctor.run(rpId)` with example output, and "debug builds only".
+- [x] Full gate:
   - `./gradlew -p passki-gradle-plugin test`
   - `./gradlew :passki:jvmTest :passki:testAndroidHostTest :passki:iosSimulatorArm64Test :passki-test:jvmTest :passki:checkKotlinAbi :passki-test:checkKotlinAbi :androidApp:assembleDebug`
-- [ ] Commit: `docs: Dokka, setup tooling README`
+- [x] Commit: `docs: Dokka, setup tooling README`
 
 ---
 

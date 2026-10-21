@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.vanniktechPublish)
+    alias(libs.plugins.dokka)
 }
 
 kotlin {
@@ -80,6 +81,17 @@ mavenPublishing {
             url.set("https://github.com/rezaiyan/PassKi")
             connection.set("scm:git:git://github.com/rezaiyan/PassKi.git")
             developerConnection.set("scm:git:ssh://git@github.com/rezaiyan/PassKi.git")
+        }
+    }
+}
+
+dokka {
+    dokkaSourceSets.configureEach {
+        includes.from("Module.md")
+        perPackageOption {
+            // Implementation details; not part of the public API.
+            matchingRegex.set(".*\\.internal.*")
+            suppress.set(true)
         }
     }
 }

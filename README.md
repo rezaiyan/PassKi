@@ -69,6 +69,91 @@ Other capability flags: `isSupported`, `immediateSignIn`, `unifiedPasswordSignIn
 - **iOS:** add the Associated Domains `webcredentials:<rpId>` entitlement and serve `/.well-known/apple-app-site-association`.
 - See `docs/setup/well-known/` for templates.
 
+## Setup tooling
+
+Most passkey failures are configuration: a missing fingerprint, a wrong Team ID, a redirecting `.well-known` file. PassKi ships a Gradle plugin that generates and checks those files, and a runtime doctor that checks the same things on a device.
+
+### Gradle plugin
+
+Apply it in your Android application module (`com.android.application`):
+
+```kotlin
+plugins {
+    id("com.android.application")
+    id("com.alirezaiyan.passki") version "0.1.0-alpha01"
+}
+
+passki {
+    rpId = "example.com"
+    android {
+        // Fingerprints you can't derive from a local keystore, e.g. Play App Signing (colon-hex SHA-256).
+        extraFingerprints.add("AB:CD:...")
+    }
+    apple {
+        teamId = "ABCDE12345"
+        bundleId = "com.example.app"
+        entitlementsFile = rootProject.file("iosApp/iosApp/iosApp.entitlements") // optional
+    }
+}
+```
+
+The Android package and signing fingerprints are read from your Android build; `android { packageName = "..." }` overrides the base application ID. `assetlinks.json` gets one statement per package the build produces, so a build type with `applicationIdSuffix = ".debug"` gets its own `com.example.app.debug` statement with only the debug key. `extraFingerprints` go to the packages of non-debuggable variants.
+
+| Task | What it does |
+|---|---|
+| `passkiFingerprints` | Prints package, variant, keystore and SHA-256 per variant, plus the `android:apk-key-hash:` origins for your server allow-list |
+| `passkiWellKnown` | Writes `assetlinks.json` and `apple-app-site-association` to `build/passki/well-known/` |
+| `passkiVerify` | Fetches the hosted files from `https://<rpId>` and checks them (and the iOS entitlements file) against the build. Needs network and is not part of `check` |
+
+```
+$ ./gradlew :androidApp:passkiFingerprints
+passki signing fingerprints:
+  package                | variant | keystore                           | SHA-256
+  com.alirezaiyan.passki | debug   | /Users/ali/.android/debug.keystore | C9:64:0F:6A:...:79:49:03
+  com.alirezaiyan.passki | release | -                                  | (no signing config)
+Android WebAuthn origins (server allow-list):
+  android:apk-key-hash:yWQPamiQr2wmSdy7q5R5I5Nc_BCL3wMgeARgXFt5SQM
+
+$ ./gradlew :androidApp:passkiVerify
+passki: well-known files OK for alirezaiyan.com
+```
+
+`passkiVerify` fails the build with a fix hint per problem. Keystore passwords are read from your signing configs but are not tracked task inputs (up-to-date checks use the keystore file, alias and type). They are stored in the configuration-cache entry under `.gradle/configuration-cache/`, which stays on your machine: don't share or upload that directory.
+
+### PasskeyDoctor
+
+`PasskeyDoctor` runs the same checks on the device: platform support, PassKi initialisation, the `INTERNET` permission, your hosted `assetlinks.json` (Android) or `apple-app-site-association` (iOS), and the origin your server must allow.
+
+```kotlin
+if (BuildConfig.DEBUG) {
+    val report = PasskeyDoctor.run("example.com") // suspend; bare domain, never throws for setup problems
+    println(report)
+    report.failures.forEach { log(it.message, it.fixHint) } // passkeys won't work until fixed
+    report.warnings.forEach { log(it.message, it.fixHint) } // likely trouble, not blocking
+}
+```
+
+**Use it in debug builds only.** It makes network requests and never runs automatically. On platforms other than Android and iOS the report holds a single skipped check. Example output from the Android 16 emulator:
+
+```
+PassKi doctor for alirezaiyan.com: 0 failures, 0 warnings
+[PASS] Platform support - Android 16 (API 36)
+[PASS] PassKi initialised - package com.alirezaiyan.passki
+[PASS] INTERNET permission - granted
+[PASS] assetlinks.json - com.alirezaiyan.passki delegated with 1 fingerprint
+[PASS] Android origin - allow this origin on your server: android:apk-key-hash:yWQPamiQr2wmSdy7q5R5I5Nc_BCL3wMgeARgXFt5SQM
+```
+
+A failing check prints a `fix:` line under it. The text is for humans; read `report.checks` (`name`, `status`, `message`, `fixHint`) instead of parsing it.
+
+## Verified on
+
+Android 16 emulator (Google Password Manager) and iOS 26.3 simulator. Real registration responses were verified by webauthn4j; the fixtures live in `passki-test`.
+
+## API docs
+
+Generate the API reference with `./gradlew dokkaGenerate` (aggregated into `build/dokka/html/`, or per module with `:passki:dokkaGenerate`).
+
 ## License
 
 Apache-2.0 (c) Ali Rezaiyan

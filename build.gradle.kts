@@ -9,4 +9,14 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.kotlinSerialization) apply false
     alias(libs.plugins.vanniktechPublish) apply false
+    alias(libs.plugins.dokka)
+}
+
+dependencies {
+    dokka(project(":passki"))
+    dokka(project(":passki-test"))
+}
+
+dokka {
+    moduleName.set("PassKi")
 }
