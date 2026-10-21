@@ -1,6 +1,8 @@
 package com.alirezaiyan.passki
 
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -48,6 +50,23 @@ data class ServerVerdict(
 @Serializable
 data class ServerConfig(val rpId: String, val origins: List<String>)
 
+/**
+ * Default client: short timeouts plus retries on network errors. Emulators silently drop idle pooled connections,
+ * and the next request would otherwise hang until the socket timeout. A retried verify whose first attempt did
+ * reach the server fails with "already used challenge", which the log shows as is.
+ */
+fun demoHttpClient(): HttpClient = HttpClient {
+    install(HttpTimeout) {
+        connectTimeoutMillis = 8_000
+        socketTimeoutMillis = 8_000
+        requestTimeoutMillis = 20_000
+    }
+    install(HttpRequestRetry) {
+        retryOnException(maxRetries = 2, retryOnTimeout = true)
+        exponentialDelay(base = 2.0, maxDelayMs = 2_000)
+    }
+}
+
 /** The demo RP answered with an error (`{"error": …}`), or could not be reached ([status] null). */
 class DemoServerException(val status: Int?, message: String, cause: Throwable? = null) : Exception(message, cause)
 
@@ -61,7 +80,7 @@ data class DemoAccount(val userHandle: String, val credentialIds: List<String>)
  */
 class DemoRelyingParty(
     private val baseUrl: String = DEMO_RP_URL,
-    private val client: HttpClient = HttpClient(),
+    private val client: HttpClient = demoHttpClient(),
 ) {
     /** Set after a server-verified registration or sign-in; used for allowCredentials, PRF and signals. */
     var account: DemoAccount? = null
