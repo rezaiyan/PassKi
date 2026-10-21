@@ -27,7 +27,7 @@ internal class IosPasskeys(private val anchor: () -> UIWindow? = ::keyWindow) : 
         immediateSignIn = iosAtLeast(16),
         unifiedPasswordSignIn = iosAtLeast(16),
         conditionalCreate = iosAtLeast(18),
-        signals = false,
+        signals = iosAtLeast(26),
     )
 
     override suspend fun register(optionsJson: String): PasskeyResult<PasskeyRegistration> =
@@ -70,28 +70,7 @@ internal class IosPasskeys(private val anchor: () -> UIWindow? = ::keyWindow) : 
             }
         }
 
-    override val signals: PasskeySignals = object : PasskeySignals {
-        private val failure = PasskeyResult.Failure(
-            PasskeyError.NotSupported(
-                "The Signal API on iOS (ASCredentialUpdater, iOS 26) is Swift-only and is not available yet.",
-            ),
-        )
-
-        override suspend fun unknownCredential(rpId: String, credentialId: String): PasskeyResult<Unit> = failure
-
-        override suspend fun acceptedCredentials(
-            rpId: String,
-            userId: String,
-            credentialIds: List<String>,
-        ): PasskeyResult<Unit> = failure
-
-        override suspend fun currentUserDetails(
-            rpId: String,
-            userId: String,
-            name: String,
-            displayName: String,
-        ): PasskeyResult<Unit> = failure
-    }
+    override val signals: PasskeySignals = IosSignals
 
     private suspend fun createPasskey(optionsJson: String, conditional: Boolean): PasskeyResult<PasskeyRegistration> =
         passkeyCatching({ it.toPasskeyError(conditional = conditional) }) {

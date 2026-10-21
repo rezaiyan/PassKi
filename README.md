@@ -5,7 +5,7 @@ Passkeys for Kotlin Multiplatform. One dependency, one call, native authenticato
 | Platform | Status |
 |---|---|
 | Android 9+ (Credential Manager) | register, sign in, passkey-or-password, upgrade, signals |
-| iOS 16+ (AuthenticationServices) | register, sign in, passkey-or-password, upgrade (iOS 18+); signals return `NotSupported` for now |
+| iOS 16+ (AuthenticationServices) | register, sign in, passkey-or-password, upgrade (iOS 18+), signals (iOS 26+) |
 | JVM desktop, browser (js / wasmJs) | compile and return `PasskeyError.NotSupported` today; native macOS/tvOS/watchOS/Linux/Windows targets are not published yet |
 
 ## Install
@@ -50,7 +50,7 @@ Options are your server's WebAuthn JSON, used as-is (a `{"publicKey": ...}` enve
 - **`excludeCredentials` on iOS < 17.4 is ignored** by the system, so a duplicate passkey may be created; dedupe on your server. `PasskeyError.AlreadyRegistered` is guaranteed on Android and iOS 17.4+.
 - **Duplicate registration on Android shows a sheet first.** When `excludeCredentials` matches, Google Password Manager still shows its create sheet; `PasskeyError.AlreadyRegistered` is returned only after the user taps Continue.
 - **Android `upgrade()` and `signals` depend on the user's credential provider** and may return `PasskeyError.NotSupported` even when `capabilities()` reports them as available.
-- **Signals on iOS.** `passkeys.signals` returns `PasskeyError.NotSupported` on iOS for now.
+- **Signals on iOS** need iOS 26 (`ASCredentialUpdater`); older versions return `PasskeyError.NotSupported`. iOS only takes one name, so `currentUserDetails` reports `name` and ignores `displayName`. No app-side setup or linker flags are needed.
 - **iOS registration responses** omit the WebAuthn Level 3 `publicKey` and `publicKeyAlgorithm` fields. Read the public key from `attestationObject`, which every server library already does.
 
 ## Test without devices

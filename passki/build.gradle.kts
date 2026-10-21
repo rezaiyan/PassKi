@@ -33,8 +33,24 @@ kotlin {
         withHostTest {}
     }
 
-    iosArm64()
-    iosSimulatorArm64()
+    listOf(
+        iosArm64() to ("iphoneos" to "arm64-apple-ios16.0"),
+        iosSimulatorArm64() to ("iphonesimulator" to "arm64-apple-ios16.0-simulator"),
+    ).forEach { (target, sdk) ->
+        val outDir = layout.buildDirectory.dir("passkiSwift/${target.name}")
+        val buildSwift = tasks.register<Exec>("buildPassKiSwift${target.name.replaceFirstChar { it.uppercase() }}") {
+            val script = rootProject.file("passki-ios-bridge/build.sh")
+            inputs.dir(rootProject.file("passki-ios-bridge"))
+            outputs.dir(outDir)
+            commandLine(script.absolutePath, sdk.first, sdk.second, outDir.get().asFile.absolutePath)
+        }
+        target.compilations.getByName("main").cinterops.create("passkiSwift") {
+            definitionFile.set(project.file("src/nativeInterop/cinterop/passkiSwift.def"))
+            includeDirs(rootProject.file("passki-ios-bridge"))
+            extraOpts("-libraryPath", outDir.get().asFile.absolutePath)
+            tasks.named(interopProcessingTaskName) { dependsOn(buildSwift) }
+        }
+    }
 
     jvm()
 

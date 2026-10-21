@@ -1,0 +1,3 @@
+package = com.alirezaiyan.passki.apple.swift
+headers = passki_swift.h
+staticLibraries = libPassKiSwift.a

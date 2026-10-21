@@ -55,19 +55,27 @@ Run Gradle through `ctx_execute`; the Bash hook blocks `./gradlew`.
 
 **Task 1: iOS Swift bridge spike**
 - **Files:** new `passki-ios-bridge/` with `PassKiSignals.swift`, a build script, and `passki/src/nativeInterop/cinterop/passkiSwift.def`; `passki/build.gradle.kts` (cinterop for ios targets only).
-- [ ] Write a Swift file:
+- [x] Write a Swift file:
   - `@_cdecl("passki_report_unknown")`, `passki_report_all_accepted`, `passki_report_details`
   - each takes C strings or bytes plus a C callback `(int32 status, const char* message, void* ctx)`
   - internally calls `ASCredentialUpdater().reportUnknownPublicKeyCredential(relyingPartyIdentifier:credentialID:)`, `reportAllAcceptedPublicKeyCredentials(...)`, `reportPublicKeyCredentialUpdate(...)` inside a `Task`
   - guarded by `if #available(iOS 26, *)`; otherwise calls back with status `NOT_AVAILABLE`
   - Verify the exact Swift signatures against the SDK `.swiftinterface` / Xcode docs.
-- [ ] Build `libPassKiSwift.a` for `iphoneos` (arm64) and `iphonesimulator` (arm64) with `xcrun swiftc -parse-as-library -emit-library -static -target arm64-apple-ios16.0[-simulator]`, wired as a Gradle `Exec` task feeding cinterop.
-- [ ] Use `.def` `staticLibraries` / `libraryPaths` so the `.a` is embedded in the klib.
-- [ ] Link test: the sample `iosApp` (static framework, SwiftUI app) must link with **no extra flags** in Xcode, and also the passki test binary (`iosSimulatorArm64Test`). If the K/N test binary needs `-L<toolchain>/usr/lib/swift/iphonesimulator` plus swift compatibility libs, record which `linkerOpts` it needs.
-- [ ] **Decision gate.** Record the outcome in this plan:
+- [x] Build `libPassKiSwift.a` for `iphoneos` (arm64) and `iphonesimulator` (arm64) with `xcrun swiftc -parse-as-library -emit-library -static -target arm64-apple-ios16.0[-simulator]`, wired as a Gradle `Exec` task feeding cinterop.
+- [x] Use `.def` `staticLibraries` / `libraryPaths` so the `.a` is embedded in the klib.
+- [x] Link test: the sample `iosApp` (static framework, SwiftUI app) must link with **no extra flags** in Xcode, and also the passki test binary (`iosSimulatorArm64Test`). If the K/N test binary needs `-L<toolchain>/usr/lib/swift/iphonesimulator` plus swift compatibility libs, record which `linkerOpts` it needs.
+- [x] **Decision gate.** Record the outcome in this plan:
   - If consumers need **zero** extra configuration, go with A.
   - Otherwise go with B, and delete the spike code.
-- [ ] Commit (A or B): `feat(ios): Signal API via Swift bridge`
+- [x] Commit (A or B): `feat(ios): Signal API via Swift bridge`
+- **Outcome (2026-10-21): A ships.** Evidence:
+  - Swift signatures (demangled from the SDK `.tbd`, iOS SDK 26.2): `reportUnknownPublicKeyCredential(relyingPartyIdentifier: String, credentialID: Data)`, `reportAllAcceptedPublicKeyCredentials(relyingPartyIdentifier: String, userHandle: Data, acceptedCredentialIDs: [Data])`, `reportPublicKeyCredentialUpdate(relyingPartyIdentifier: String, userHandle: Data, newName: String)`, all `async throws`.
+  - `passki-ios-bridge/build.sh` compiles with `-swift-version 5 -runtime-compatibility-version none`; the latter drops the toolchain-only `swiftCompatibilityPacks` autolink, so only SDK `/usr/lib/swift` dylibs are referenced. The `.a` is embedded in the cinterop klib (`.../included/libPassKiSwift.a`).
+  - `iosSimulatorArm64Test` links with **no `linkerOpts`**. On the iOS 26.3 simulator the real updater runs (`Failure(Unknown(... AuthorizationError 1004 ...))`, as expected without associated domains); the same `test.kexe` on an iOS 17.5 simulator returns `NotSupported(Requires iOS 26.)`. The iOS 26 symbols are weak, so it back-deploys without crashing.
+  - A temporary dynamic framework (`isStatic = false`) linked for `iosSimulatorArm64` and `iosArm64`.
+  - The sample `iosApp` (static `Shared`, Xcode project unchanged) builds with xcodebuild. `-passkiAutorun` logs `PASSKI_DEMO Signal unknown ✓` and `signals=true`.
+  - The only build change is `kotlin.mpp.enableCInteropCommonization=true` in `gradle.properties`, so the shared `iosMain` sees the cinterop. It is library-internal; consumers need nothing.
+  - On iOS, `currentUserDetails` passes `name` as `newName` and ignores `displayName`.
 
 **Task 2: `passki-compose` module, headless state, sign-in button**
 - **Files:** `passki-compose/build.gradle.kts`, `src/commonMain/.../compose/{RememberPasskeys,PasskeySignInState,PasskeySignInButton}.kt`, tests; `settings.gradle.kts`.
