@@ -107,9 +107,9 @@ One versioned list of checks with stable IDs, used by the Gradle plugin, the on-
 - [ ] E2E on both emulators with server verification green.
 
 ### Phase 3: Web dashboard
-- [ ] Generator (zip download), Verifier (server-side fetches, live re-check), report pages with shareable links (7-day TTL).
-- [ ] SRV checks against the developer's options endpoint.
-- [ ] Self-service iOS demo registration (Team ID → demo AASA, 7-day TTL, rate limits).
+- [x] Generator (zip download), Verifier (server-side fetches, live re-check), report pages with shareable links (7-day TTL).
+- [x] SRV checks against the developer's options endpoint.
+- [x] Self-service iOS demo registration (Team ID → demo AASA, 7-day TTL, rate limits).
 
 ### Phase 4: Polish
 - [ ] `passkiCheck --device` (adb/simctl doctor run).

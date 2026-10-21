@@ -1,0 +1,6 @@
+# NOT APPLIED. Proposed Caddy site block (needs DNS A record passki.alirezaiyan.com -> VPS first).
+passki.alirezaiyan.com {
+	encode zstd gzip
+	# Caddy sets X-Forwarded-For to the real client IP (used for rate limits); keep trusted_proxies unset.
+	reverse_proxy 127.0.0.1:3100
+}

@@ -1,0 +1,19 @@
+# NOT APPLIED. Proposed service for the VPS compose file (needs the user's confirmation).
+# Mirrors the alirezaiyan.com service: bound to localhost, Caddy terminates TLS in front.
+services:
+  passki-web:
+    build:
+      context: ./passki-web          # path to this directory on the VPS
+      dockerfile: Dockerfile
+    env_file:
+      - ./passki-web/.env.production # see README "Environment"
+    environment:
+      PASSKI_DB_PATH: /app/data/passki.db
+    volumes:
+      - passki-data:/app/data
+    ports:
+      - "127.0.0.1:3100:3000"
+    restart: always
+
+volumes:
+  passki-data:
