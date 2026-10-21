@@ -197,10 +197,10 @@ Run Gradle through `ctx_execute`; the Bash hook blocks `./gradlew`.
 - [ ] Commit: `test(sample): autofill, PRF, signals verified on emulators` (Android done; iOS rerun pending)
 
 **Task 7: Docs + review**
-- [ ] README: Compose section, autofill, PRF/largeBlob, the iOS signals status (A or B).
-- [ ] Update the capability table.
-- [ ] Dokka for `passki-compose`.
-- [ ] Full gate:
+- [x] README: Compose section, autofill, PRF/largeBlob, the iOS signals status (A or B).
+- [x] Update the capability table.
+- [x] Dokka for `passki-compose`.
+- [x] Full gate:
 
   ```
   :passki:jvmTest :passki:testAndroidHostTest :passki:iosSimulatorArm64Test
@@ -208,8 +208,17 @@ Run Gradle through `ctx_execute`; the Bash hook blocks `./gradlew`.
   :*:checkKotlinAbi :androidApp:assembleDebug
   ```
 
-- [ ] Final review agent.
-- [ ] Commit: `docs: Plan 3 README, compose docs`
+- [x] Final review agent.
+- [x] Commit: `docs: Plan 3 README, compose docs`
+- **Outcome (2026-10-22).**
+  - README: Compose, autofill, PRF/largeBlob, iOS signals (A, no app setup), the demo RP + dashboard, the sample
+    app, capability tables and "Verified on". iOS server-verified register/sign-in/autofill/PRF are marked pending
+    (Task 6).
+  - `passki-compose/Module.md` is complete; Dokka has `reportUndocumented` on for `passki-compose` (0 warnings).
+  - Added CHANGELOG.md and CONTRIBUTING.md (Swift bridge needs Xcode `swiftc`); versions are now 0.1.0-alpha02.
+  - Gate: the full Gradle list plus `dokkaGenerate --configuration-cache --rerun-tasks` passed (passki 775,
+    passki-test 115, passki-compose 65, shared 14 tests, 0 failures; ABI checks and assembleDebug green). The plugin
+    `test` passed (114) and `passki-web` `npm test` passed (124).
 
 ---
 
