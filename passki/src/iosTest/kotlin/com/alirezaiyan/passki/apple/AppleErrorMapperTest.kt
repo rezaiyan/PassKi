@@ -4,6 +4,7 @@ import com.alirezaiyan.passki.PasskeyError
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class AppleErrorMapperTest {
@@ -77,5 +78,17 @@ class AppleErrorMapperTest {
     fun authorizationExceptionCarriesImmediateOnlyAndPresented() {
         val error = AppleAuthorizationException(1001, "x", presented = false).toPasskeyError(immediateOnly = true)
         assertEquals(PasskeyError.NoCredentials, error)
+    }
+
+    @Test
+    fun unknownKeepsOriginalCause() {
+        val original = RuntimeException("boom")
+        assertSame(original, assertIs<PasskeyError.Unknown>(original.toPasskeyError()).cause)
+    }
+
+    @Test
+    fun unknownAuthorizationErrorKeepsCause() {
+        val original = AppleAuthorizationException(1004, "failed", presented = true)
+        assertSame(original, assertIs<PasskeyError.Unknown>(original.toPasskeyError()).cause)
     }
 }

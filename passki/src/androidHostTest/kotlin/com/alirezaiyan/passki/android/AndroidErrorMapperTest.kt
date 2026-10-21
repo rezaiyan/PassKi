@@ -21,6 +21,7 @@ import com.alirezaiyan.passki.PasskeyError
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class AndroidErrorMapperTest {
@@ -126,5 +127,13 @@ class AndroidErrorMapperTest {
         val error = assertIs<PasskeyError.Unknown>(SignalCredentialUnknownException("boom").toPasskeyError())
         assertEquals("boom", error.message)
         assertEquals("SignalCredentialUnknownException", error.platformCode)
+    }
+
+    @Test
+    fun unknownKeepsOriginalCause() {
+        val original = CreateCredentialUnknownException("boom")
+        assertSame(original, assertIs<PasskeyError.Unknown>(original.toPasskeyError()).cause)
+        val other = RuntimeException("x")
+        assertSame(other, assertIs<PasskeyError.Unknown>(other.toPasskeyError()).cause)
     }
 }

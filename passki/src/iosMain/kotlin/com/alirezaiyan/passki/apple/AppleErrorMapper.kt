@@ -20,6 +20,7 @@ internal fun appleErrorToPasskeyError(
     message: String,
     immediateOnly: Boolean = false,
     presented: Boolean = true,
+    cause: Throwable? = null,
 ): PasskeyError = when {
     message.contains("not associated with domain", ignoreCase = true) -> PasskeyError.Misconfigured(message, AASA_HINT)
     code == 1001L && immediateOnly && !presented -> PasskeyError.NoCredentials
@@ -29,11 +30,11 @@ internal fun appleErrorToPasskeyError(
     code == 1010L -> PasskeyError.NotSupported(
         "This device is not configured for passkey creation (e.g. no passcode or iCloud Keychain off).",
     )
-    else -> PasskeyError.Unknown(message, platformCode = "ASAuthorizationError.$code")
+    else -> PasskeyError.Unknown(message, platformCode = "ASAuthorizationError.$code", cause = cause)
 }
 
 internal fun Throwable.toPasskeyError(immediateOnly: Boolean = false): PasskeyError = when (this) {
-    is AppleAuthorizationException -> appleErrorToPasskeyError(code, message.orEmpty(), immediateOnly, presented)
+    is AppleAuthorizationException -> appleErrorToPasskeyError(code, message.orEmpty(), immediateOnly, presented, cause = this)
     is IllegalArgumentException -> PasskeyError.InvalidOptions(message ?: "Invalid request.")
-    else -> PasskeyError.Unknown(message ?: this::class.simpleName.orEmpty(), platformCode = null)
+    else -> PasskeyError.Unknown(message ?: this::class.simpleName.orEmpty(), platformCode = null, cause = this)
 }

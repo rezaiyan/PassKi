@@ -83,8 +83,10 @@ public final class com/alirezaiyan/passki/PasskeyError$NotSupported : com/alirez
 }
 
 public final class com/alirezaiyan/passki/PasskeyError$Unknown : com/alirezaiyan/passki/PasskeyError {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCause ()Ljava/lang/Throwable;
 	public fun getMessage ()Ljava/lang/String;
 	public final fun getPlatformCode ()Ljava/lang/String;
 	public fun hashCode ()I

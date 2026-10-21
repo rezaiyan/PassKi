@@ -51,21 +51,25 @@ internal fun Throwable.toPasskeyError(conditional: Boolean = false): PasskeyErro
         PasskeyError.Misconfigured(messageOr("Signal rejected for this RP ID."), ASSET_LINKS_HINT)
     is CreateCredentialUnsupportedException, is GetCredentialUnsupportedException ->
         PasskeyError.NotSupported(messageOr("Passkeys are not supported on this device."))
-    is CreatePublicKeyCredentialDomException -> domError.toPasskeyError(messageOr(domError.type))
-    is GetPublicKeyCredentialDomException -> domError.toPasskeyError(messageOr(domError.type))
+    is CreatePublicKeyCredentialDomException -> domError.toPasskeyError(messageOr(domError.type), this)
+    is GetPublicKeyCredentialDomException -> domError.toPasskeyError(messageOr(domError.type), this)
     is IllegalArgumentException -> PasskeyError.InvalidOptions(messageOr("Invalid request."))
-    is CreateCredentialException -> PasskeyError.Unknown(messageOr(type), platformCode = type)
-    is GetCredentialException -> PasskeyError.Unknown(messageOr(type), platformCode = type)
+    is CreateCredentialException -> PasskeyError.Unknown(messageOr(type), platformCode = type, cause = this)
+    is GetCredentialException -> PasskeyError.Unknown(messageOr(type), platformCode = type, cause = this)
     // Rate-limit and unknown signal exceptions land here; their `type` is restricted API, so report the class.
-    else -> PasskeyError.Unknown(message ?: this::class.simpleName.orEmpty(), platformCode = this::class.simpleName)
+    else -> PasskeyError.Unknown(
+        message ?: this::class.simpleName.orEmpty(),
+        platformCode = this::class.simpleName,
+        cause = this,
+    )
 }
 
-private fun DomError.toPasskeyError(message: String): PasskeyError = when (this) {
+private fun DomError.toPasskeyError(message: String, cause: Throwable): PasskeyError = when (this) {
     is InvalidStateError -> PasskeyError.AlreadyRegistered
     is NotAllowedError -> PasskeyError.Cancelled
     is SecurityError -> PasskeyError.Misconfigured(message, ASSET_LINKS_HINT)
     is NotSupportedError -> PasskeyError.NotSupported(message)
-    else -> PasskeyError.Unknown(message, platformCode = type)
+    else -> PasskeyError.Unknown(message, platformCode = type, cause = cause)
 }
 
 private fun Throwable.messageOr(fallback: String): String = message?.takeIf { it.isNotBlank() } ?: fallback

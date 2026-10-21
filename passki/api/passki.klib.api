@@ -598,8 +598,10 @@ sealed class com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/Pas
     }
 
     final class Unknown : com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/PasskeyError.Unknown|null[0]
-        constructor <init>(kotlin/String, kotlin/String?) // com.alirezaiyan.passki/PasskeyError.Unknown.<init>|<init>(kotlin.String;kotlin.String?){}[0]
+        constructor <init>(kotlin/String, kotlin/String?, kotlin/Throwable? = ...) // com.alirezaiyan.passki/PasskeyError.Unknown.<init>|<init>(kotlin.String;kotlin.String?;kotlin.Throwable?){}[0]
 
+        final val cause // com.alirezaiyan.passki/PasskeyError.Unknown.cause|{}cause[0]
+            final fun <get-cause>(): kotlin/Throwable? // com.alirezaiyan.passki/PasskeyError.Unknown.cause.<get-cause>|<get-cause>(){}[0]
         final val message // com.alirezaiyan.passki/PasskeyError.Unknown.message|{}message[0]
             final fun <get-message>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.Unknown.message.<get-message>|<get-message>(){}[0]
         final val platformCode // com.alirezaiyan.passki/PasskeyError.Unknown.platformCode|{}platformCode[0]

@@ -70,12 +70,18 @@ public sealed class PasskeyError {
         override val message: String,
         /** The raw platform error code or type name, if the platform provided one. */
         public val platformCode: String?,
+        /**
+         * The original platform throwable, for logging and crash reporting. Not part of [equals] / [hashCode]
+         * because Throwables have no value equality.
+         */
+        public val cause: Throwable? = null,
     ) : PasskeyError() {
         override fun equals(other: Any?): Boolean =
             other is Unknown && message == other.message && platformCode == other.platformCode
 
         override fun hashCode(): Int = 31 * message.hashCode() + (platformCode?.hashCode() ?: 0)
-        override fun toString(): String = "Unknown(message=$message, platformCode=$platformCode)"
+        override fun toString(): String =
+            "Unknown(message=$message, platformCode=$platformCode, cause=${cause?.let { it::class.simpleName }})"
     }
 }
 
