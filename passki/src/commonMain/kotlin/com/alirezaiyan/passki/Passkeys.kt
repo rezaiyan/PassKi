@@ -159,6 +159,18 @@ public class PasskeyRegistration @InternalPasskiApi constructor(
     public val transports: List<String>,
     /** "platform" or "cross-platform" when known, otherwise null. */
     public val authenticatorAttachment: String?,
+    /**
+     * Whether the new passkey supports the `prf` extension, when it was requested
+     * ([PasskeyExtensions.withPrf]); null if not requested or the platform did not answer.
+     */
+    public val prfEnabled: Boolean? = null,
+    /** PRF results, when salts were given at registration and the provider evaluated them; otherwise null. */
+    public val prf: PrfResults? = null,
+    /**
+     * Whether the new passkey has large-blob storage, when it was requested ([PasskeyExtensions.withLargeBlob]);
+     * null if not requested or the platform did not answer.
+     */
+    public val largeBlobSupported: Boolean? = null,
 ) {
     override fun toString(): String = "PasskeyRegistration(credentialId=$credentialId, json=<${json.length} chars>)"
 }
@@ -174,6 +186,18 @@ public class PasskeyAssertion @InternalPasskiApi constructor(
     public val credentialId: String,
     /** The user handle (user.id) stored with the passkey, base64url, if any. */
     public val userHandle: String?,
+    /** PRF results for the salts from [PasskeyExtensions.withPrf]; null if not requested or not supported. */
+    public val prf: PrfResults? = null,
+    /**
+     * The passkey's large blob read with [PasskeyExtensions.withLargeBlobRead]; null if not requested, not
+     * supported, or none is stored. Treat it as a secret.
+     */
+    public val largeBlob: ByteArray? = null,
+    /**
+     * Whether the blob from [PasskeyExtensions.withLargeBlobWrite] was stored; null if no write was requested or
+     * the platform did not answer.
+     */
+    public val largeBlobWritten: Boolean? = null,
 ) {
     override fun toString(): String = "PasskeyAssertion(credentialId=$credentialId, json=<${json.length} chars>)"
 }

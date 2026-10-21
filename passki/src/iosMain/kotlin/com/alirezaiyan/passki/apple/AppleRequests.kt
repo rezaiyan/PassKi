@@ -5,8 +5,10 @@ import com.alirezaiyan.passki.PasskeyException
 import com.alirezaiyan.passki.internal.Base64Url
 import com.alirezaiyan.passki.internal.CreationOptionsJson
 import com.alirezaiyan.passki.internal.CredentialDescriptorJson
+import com.alirezaiyan.passki.internal.ExtensionsJson
 import com.alirezaiyan.passki.internal.RequestOptionsJson
 import com.alirezaiyan.passki.internal.WebAuthnResponses
+import kotlinx.serialization.json.JsonObject
 import platform.AuthenticationServices.ASAuthorizationPlatformPublicKeyCredentialAssertion
 import platform.AuthenticationServices.ASAuthorizationPlatformPublicKeyCredentialAssertionRequest
 import platform.AuthenticationServices.ASAuthorizationPlatformPublicKeyCredentialDescriptor
@@ -15,6 +17,13 @@ import platform.AuthenticationServices.ASAuthorizationPlatformPublicKeyCredentia
 import platform.AuthenticationServices.ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest
 import platform.AuthenticationServices.ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle
 import platform.AuthenticationServices.ASAuthorizationPublicKeyCredentialAttachment
+import platform.AuthenticationServices.ASAuthorizationPublicKeyCredentialLargeBlobAssertionInput
+import platform.AuthenticationServices.ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation
+import platform.AuthenticationServices.ASAuthorizationPublicKeyCredentialLargeBlobRegistrationInput
+import platform.AuthenticationServices.ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement
+import platform.AuthenticationServices.ASAuthorizationPublicKeyCredentialPRFAssertionInput
+import platform.AuthenticationServices.ASAuthorizationPublicKeyCredentialPRFAssertionInputValues
+import platform.AuthenticationServices.ASAuthorizationPublicKeyCredentialPRFRegistrationInput
 import platform.AuthenticationServices.ASAuthorizationWebBrowserPlatformPublicKeyCredentialRegistrationRequestProtocol
 
 /** Maps WebAuthn JSON options to AuthenticationServices requests and back. */
@@ -45,6 +54,17 @@ internal object AppleRequests {
             request.requestStyle =
                 ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle.ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyleConditional
         }
+        // Extensions the OS can't handle are omitted silently, as browsers do (PRF: iOS 18, largeBlob: iOS 17).
+        ExtensionsJson.prfInput(options.extensions)?.takeIf { iosAtLeast(18) }?.let { request.prf = prfRegistrationInput(it) }
+        ExtensionsJson.largeBlobSupport(options.extensions)?.takeIf { iosAtLeast(17) }?.let { support ->
+            request.largeBlob = ASAuthorizationPublicKeyCredentialLargeBlobRegistrationInput(
+                supportRequirement = if (support == "required") {
+                    ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement.ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirementRequired
+                } else {
+                    ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement.ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirementPreferred
+                },
+            )
+        }
         return request
     }
 
@@ -56,6 +76,27 @@ internal object AppleRequests {
             request.allowedCredentials = options.allowCredentials.map { it.toApple() }
         }
         options.userVerification?.let { request.userVerificationPreference = it }
+        ExtensionsJson.prfInput(options.extensions)?.takeIf { iosAtLeast(18) }?.let { prf ->
+            val perCredential = buildMap<Any?, Any?> {
+                prf.evalByCredential.forEach { (id, values) -> put(Base64Url.decode(id).toNSData(), values.toApple()) }
+            }
+            if (prf.eval != null || perCredential.isNotEmpty()) {
+                request.prf = ASAuthorizationPublicKeyCredentialPRFAssertionInput(
+                    inputValues = prf.eval?.toApple(),
+                    perCredentialInputValues = perCredential.takeIf { it.isNotEmpty() },
+                )
+            }
+        }
+        ExtensionsJson.largeBlobAssertion(options.extensions)?.takeIf { iosAtLeast(17) }?.let { largeBlob ->
+            request.largeBlob = when (largeBlob) {
+                ExtensionsJson.LargeBlobAssertion.Read -> ASAuthorizationPublicKeyCredentialLargeBlobAssertionInput(
+                    operation = ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation.ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperationRead,
+                )
+                is ExtensionsJson.LargeBlobAssertion.Write -> ASAuthorizationPublicKeyCredentialLargeBlobAssertionInput(
+                    operation = ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation.ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperationWrite,
+                ).apply { dataToWrite = largeBlob.blob.toNSData() }
+            }
+        }
         return request
     }
 
@@ -71,10 +112,23 @@ internal object AppleRequests {
             // A cross-platform (security key / phone) credential was made over hybrid, not on this device.
             transports = if (attachment == "cross-platform") listOf("hybrid") else listOf("hybrid", "internal"),
             attachment = attachment,
+            extensions = registrationExtensions(credential),
         )
     }
 
-    fun assertionJson(credential: ASAuthorizationPlatformPublicKeyCredentialAssertion): String =
+    private fun registrationExtensions(credential: ASAuthorizationPlatformPublicKeyCredentialRegistration) =
+        ExtensionsJson.registrationOutputs(
+            prfEnabled = if (iosAtLeast(18)) credential.prf?.isSupported else null,
+            prf = if (iosAtLeast(18)) {
+                credential.prf?.let { prf -> prf.first?.let { ExtensionsJson.PrfValues(it.toByteArray(), prf.second?.toByteArray()) } }
+            } else {
+                null
+            },
+            largeBlobSupported = if (iosAtLeast(17)) credential.largeBlob?.isSupported else null,
+        )
+
+    /** [requested] is the assertion's options `extensions`, so a largeBlob read and write report the right field. */
+    fun assertionJson(credential: ASAuthorizationPlatformPublicKeyCredentialAssertion, requested: JsonObject?): String =
         WebAuthnResponses.authentication(
             credentialId = credential.credentialID.toByteArray(),
             clientDataJson = credential.rawClientDataJSON.toByteArray(),
@@ -82,7 +136,39 @@ internal object AppleRequests {
             signature = credential.signature?.toByteArray() ?: throw missing("signature"),
             userHandle = credential.userID?.takeIf { it.length > 0uL }?.toByteArray(),
             attachment = if (iosAtLeast(16, 6)) attachmentOf(credential.attachment) else "platform",
+            extensions = assertionExtensions(credential, requested),
         )
+
+    private fun assertionExtensions(
+        credential: ASAuthorizationPlatformPublicKeyCredentialAssertion,
+        requested: JsonObject?,
+    ): JsonObject {
+        val prf = if (iosAtLeast(18)) {
+            credential.prf?.let { ExtensionsJson.PrfValues(it.first.toByteArray(), it.second?.toByteArray()) }
+        } else {
+            null
+        }
+        val largeBlob = if (iosAtLeast(17)) credential.largeBlob else null
+        val op = ExtensionsJson.largeBlobAssertion(requested)
+        return ExtensionsJson.assertionOutputs(
+            prf = prf,
+            largeBlob = if (op == ExtensionsJson.LargeBlobAssertion.Read) largeBlob?.readData?.toByteArray() else null,
+            largeBlobWritten = if (op is ExtensionsJson.LargeBlobAssertion.Write) largeBlob?.didWrite else null,
+        )
+    }
+
+    /**
+     * Salts given → evaluate at registration (iOS then also reports support); none → only check support.
+     * Note: the request's `prf` getter does not hand `inputValues` back, so tests check this function instead.
+     */
+    fun prfRegistrationInput(prf: ExtensionsJson.PrfInput): ASAuthorizationPublicKeyCredentialPRFRegistrationInput =
+        prf.eval?.let { ASAuthorizationPublicKeyCredentialPRFRegistrationInput(inputValues = it.toApple()) }
+            ?: ASAuthorizationPublicKeyCredentialPRFRegistrationInput.checkForSupport()
+
+    private fun ExtensionsJson.PrfValues.toApple() = ASAuthorizationPublicKeyCredentialPRFAssertionInputValues(
+        saltInput1 = first.toNSData(),
+        saltInput2 = second?.toNSData(),
+    )
 
     private fun attachmentOf(value: ASAuthorizationPublicKeyCredentialAttachment): String =
         if (value == ASAuthorizationPublicKeyCredentialAttachment.ASAuthorizationPublicKeyCredentialAttachmentCrossPlatform) {

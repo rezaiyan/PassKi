@@ -30,10 +30,22 @@ public final class com/alirezaiyan/passki/DoctorStatus : java/lang/Enum {
 public abstract interface annotation class com/alirezaiyan/passki/InternalPasskiApi : java/lang/annotation/Annotation {
 }
 
+public final class com/alirezaiyan/passki/LargeBlobSupport : java/lang/Enum {
+	public static final field Preferred Lcom/alirezaiyan/passki/LargeBlobSupport;
+	public static final field Required Lcom/alirezaiyan/passki/LargeBlobSupport;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/alirezaiyan/passki/LargeBlobSupport;
+	public static fun values ()[Lcom/alirezaiyan/passki/LargeBlobSupport;
+}
+
 public final class com/alirezaiyan/passki/PasskeyAssertion {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/alirezaiyan/passki/PrfResults;[BLjava/lang/Boolean;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/alirezaiyan/passki/PrfResults;[BLjava/lang/Boolean;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getCredentialId ()Ljava/lang/String;
 	public final fun getJson ()Ljava/lang/String;
+	public final fun getLargeBlob ()[B
+	public final fun getLargeBlobWritten ()Ljava/lang/Boolean;
+	public final fun getPrf ()Lcom/alirezaiyan/passki/PrfResults;
 	public final fun getUserHandle ()Ljava/lang/String;
 	public fun toString ()Ljava/lang/String;
 }
@@ -133,11 +145,26 @@ public final class com/alirezaiyan/passki/PasskeyException : java/lang/Exception
 	public final fun getError ()Lcom/alirezaiyan/passki/PasskeyError;
 }
 
+public final class com/alirezaiyan/passki/PasskeyExtensions {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/PasskeyExtensions;
+	public final fun withLargeBlob (Ljava/lang/String;Lcom/alirezaiyan/passki/LargeBlobSupport;)Ljava/lang/String;
+	public static synthetic fun withLargeBlob$default (Lcom/alirezaiyan/passki/PasskeyExtensions;Ljava/lang/String;Lcom/alirezaiyan/passki/LargeBlobSupport;ILjava/lang/Object;)Ljava/lang/String;
+	public final fun withLargeBlobRead (Ljava/lang/String;)Ljava/lang/String;
+	public final fun withLargeBlobWrite (Ljava/lang/String;[B)Ljava/lang/String;
+	public final fun withPrf (Ljava/lang/String;)Ljava/lang/String;
+	public final fun withPrf (Ljava/lang/String;[B[B)Ljava/lang/String;
+	public static synthetic fun withPrf$default (Lcom/alirezaiyan/passki/PasskeyExtensions;Ljava/lang/String;[B[BILjava/lang/Object;)Ljava/lang/String;
+}
+
 public final class com/alirezaiyan/passki/PasskeyRegistration {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/Boolean;Lcom/alirezaiyan/passki/PrfResults;Ljava/lang/Boolean;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/Boolean;Lcom/alirezaiyan/passki/PrfResults;Ljava/lang/Boolean;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getAuthenticatorAttachment ()Ljava/lang/String;
 	public final fun getCredentialId ()Ljava/lang/String;
 	public final fun getJson ()Ljava/lang/String;
+	public final fun getLargeBlobSupported ()Ljava/lang/Boolean;
+	public final fun getPrf ()Lcom/alirezaiyan/passki/PrfResults;
+	public final fun getPrfEnabled ()Ljava/lang/Boolean;
 	public final fun getTransports ()Ljava/util/List;
 	public fun toString ()Ljava/lang/String;
 }
@@ -197,6 +224,15 @@ public final class com/alirezaiyan/passki/Passkeys$DefaultImpls {
 
 public final class com/alirezaiyan/passki/Passkeys_jvmKt {
 	public static final fun Passkeys ()Lcom/alirezaiyan/passki/Passkeys;
+}
+
+public final class com/alirezaiyan/passki/PrfResults {
+	public fun <init> ([B[B)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFirst ()[B
+	public final fun getSecond ()[B
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class com/alirezaiyan/passki/SignInCredential {
@@ -443,6 +479,39 @@ public final synthetic class com/alirezaiyan/passki/internal/CredentialDescripto
 
 public final class com/alirezaiyan/passki/internal/CredentialDescriptorJson$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/alirezaiyan/passki/internal/ExtensionsJson {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/ExtensionsJson;
+	public final fun assertionOutputs (Lcom/alirezaiyan/passki/internal/ExtensionsJson$PrfValues;[BLjava/lang/Boolean;)Lkotlinx/serialization/json/JsonObject;
+	public final fun largeBlobAssertion (Lkotlinx/serialization/json/JsonObject;)Lcom/alirezaiyan/passki/internal/ExtensionsJson$LargeBlobAssertion;
+	public final fun largeBlobSupport (Lkotlinx/serialization/json/JsonObject;)Ljava/lang/String;
+	public final fun prfInput (Lkotlinx/serialization/json/JsonObject;)Lcom/alirezaiyan/passki/internal/ExtensionsJson$PrfInput;
+	public final fun registrationOutputs (Ljava/lang/Boolean;Lcom/alirezaiyan/passki/internal/ExtensionsJson$PrfValues;Ljava/lang/Boolean;)Lkotlinx/serialization/json/JsonObject;
+}
+
+public abstract interface class com/alirezaiyan/passki/internal/ExtensionsJson$LargeBlobAssertion {
+}
+
+public final class com/alirezaiyan/passki/internal/ExtensionsJson$LargeBlobAssertion$Read : com/alirezaiyan/passki/internal/ExtensionsJson$LargeBlobAssertion {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/ExtensionsJson$LargeBlobAssertion$Read;
+}
+
+public final class com/alirezaiyan/passki/internal/ExtensionsJson$LargeBlobAssertion$Write : com/alirezaiyan/passki/internal/ExtensionsJson$LargeBlobAssertion {
+	public fun <init> ([B)V
+	public final fun getBlob ()[B
+}
+
+public final class com/alirezaiyan/passki/internal/ExtensionsJson$PrfInput {
+	public fun <init> (Lcom/alirezaiyan/passki/internal/ExtensionsJson$PrfValues;Ljava/util/Map;)V
+	public final fun getEval ()Lcom/alirezaiyan/passki/internal/ExtensionsJson$PrfValues;
+	public final fun getEvalByCredential ()Ljava/util/Map;
+}
+
+public final class com/alirezaiyan/passki/internal/ExtensionsJson$PrfValues {
+	public fun <init> ([B[B)V
+	public final fun getFirst ()[B
+	public final fun getSecond ()[B
 }
 
 public final class com/alirezaiyan/passki/internal/NormalizedOptions {

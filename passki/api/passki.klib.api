@@ -23,6 +23,17 @@ final enum class com.alirezaiyan.passki/DoctorStatus : kotlin/Enum<com.alirezaiy
     final fun values(): kotlin/Array<com.alirezaiyan.passki/DoctorStatus> // com.alirezaiyan.passki/DoctorStatus.values|values#static(){}[0]
 }
 
+final enum class com.alirezaiyan.passki/LargeBlobSupport : kotlin/Enum<com.alirezaiyan.passki/LargeBlobSupport> { // com.alirezaiyan.passki/LargeBlobSupport|null[0]
+    enum entry Preferred // com.alirezaiyan.passki/LargeBlobSupport.Preferred|null[0]
+    enum entry Required // com.alirezaiyan.passki/LargeBlobSupport.Required|null[0]
+
+    final val entries // com.alirezaiyan.passki/LargeBlobSupport.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.alirezaiyan.passki/LargeBlobSupport> // com.alirezaiyan.passki/LargeBlobSupport.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): com.alirezaiyan.passki/LargeBlobSupport // com.alirezaiyan.passki/LargeBlobSupport.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.alirezaiyan.passki/LargeBlobSupport> // com.alirezaiyan.passki/LargeBlobSupport.values|values#static(){}[0]
+}
+
 final enum class com.alirezaiyan.passki/SignInMode : kotlin/Enum<com.alirezaiyan.passki/SignInMode> { // com.alirezaiyan.passki/SignInMode|null[0]
     enum entry Autofill // com.alirezaiyan.passki/SignInMode.Autofill|null[0]
     enum entry ImmediateOnly // com.alirezaiyan.passki/SignInMode.ImmediateOnly|null[0]
@@ -549,12 +560,18 @@ final class com.alirezaiyan.passki/DoctorReport { // com.alirezaiyan.passki/Doct
 }
 
 final class com.alirezaiyan.passki/PasskeyAssertion { // com.alirezaiyan.passki/PasskeyAssertion|null[0]
-    constructor <init>(kotlin/String, kotlin/String, kotlin/String?) // com.alirezaiyan.passki/PasskeyAssertion.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?){}[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String?, com.alirezaiyan.passki/PrfResults? = ..., kotlin/ByteArray? = ..., kotlin/Boolean? = ...) // com.alirezaiyan.passki/PasskeyAssertion.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;com.alirezaiyan.passki.PrfResults?;kotlin.ByteArray?;kotlin.Boolean?){}[0]
 
     final val credentialId // com.alirezaiyan.passki/PasskeyAssertion.credentialId|{}credentialId[0]
         final fun <get-credentialId>(): kotlin/String // com.alirezaiyan.passki/PasskeyAssertion.credentialId.<get-credentialId>|<get-credentialId>(){}[0]
     final val json // com.alirezaiyan.passki/PasskeyAssertion.json|{}json[0]
         final fun <get-json>(): kotlin/String // com.alirezaiyan.passki/PasskeyAssertion.json.<get-json>|<get-json>(){}[0]
+    final val largeBlob // com.alirezaiyan.passki/PasskeyAssertion.largeBlob|{}largeBlob[0]
+        final fun <get-largeBlob>(): kotlin/ByteArray? // com.alirezaiyan.passki/PasskeyAssertion.largeBlob.<get-largeBlob>|<get-largeBlob>(){}[0]
+    final val largeBlobWritten // com.alirezaiyan.passki/PasskeyAssertion.largeBlobWritten|{}largeBlobWritten[0]
+        final fun <get-largeBlobWritten>(): kotlin/Boolean? // com.alirezaiyan.passki/PasskeyAssertion.largeBlobWritten.<get-largeBlobWritten>|<get-largeBlobWritten>(){}[0]
+    final val prf // com.alirezaiyan.passki/PasskeyAssertion.prf|{}prf[0]
+        final fun <get-prf>(): com.alirezaiyan.passki/PrfResults? // com.alirezaiyan.passki/PasskeyAssertion.prf.<get-prf>|<get-prf>(){}[0]
     final val userHandle // com.alirezaiyan.passki/PasskeyAssertion.userHandle|{}userHandle[0]
         final fun <get-userHandle>(): kotlin/String? // com.alirezaiyan.passki/PasskeyAssertion.userHandle.<get-userHandle>|<get-userHandle>(){}[0]
 
@@ -588,7 +605,7 @@ final class com.alirezaiyan.passki/PasskeyException : kotlin/Exception { // com.
 }
 
 final class com.alirezaiyan.passki/PasskeyRegistration { // com.alirezaiyan.passki/PasskeyRegistration|null[0]
-    constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String>, kotlin/String?) // com.alirezaiyan.passki/PasskeyRegistration.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.String?){}[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String>, kotlin/String?, kotlin/Boolean? = ..., com.alirezaiyan.passki/PrfResults? = ..., kotlin/Boolean? = ...) // com.alirezaiyan.passki/PasskeyRegistration.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.String?;kotlin.Boolean?;com.alirezaiyan.passki.PrfResults?;kotlin.Boolean?){}[0]
 
     final val authenticatorAttachment // com.alirezaiyan.passki/PasskeyRegistration.authenticatorAttachment|{}authenticatorAttachment[0]
         final fun <get-authenticatorAttachment>(): kotlin/String? // com.alirezaiyan.passki/PasskeyRegistration.authenticatorAttachment.<get-authenticatorAttachment>|<get-authenticatorAttachment>(){}[0]
@@ -596,10 +613,29 @@ final class com.alirezaiyan.passki/PasskeyRegistration { // com.alirezaiyan.pass
         final fun <get-credentialId>(): kotlin/String // com.alirezaiyan.passki/PasskeyRegistration.credentialId.<get-credentialId>|<get-credentialId>(){}[0]
     final val json // com.alirezaiyan.passki/PasskeyRegistration.json|{}json[0]
         final fun <get-json>(): kotlin/String // com.alirezaiyan.passki/PasskeyRegistration.json.<get-json>|<get-json>(){}[0]
+    final val largeBlobSupported // com.alirezaiyan.passki/PasskeyRegistration.largeBlobSupported|{}largeBlobSupported[0]
+        final fun <get-largeBlobSupported>(): kotlin/Boolean? // com.alirezaiyan.passki/PasskeyRegistration.largeBlobSupported.<get-largeBlobSupported>|<get-largeBlobSupported>(){}[0]
+    final val prf // com.alirezaiyan.passki/PasskeyRegistration.prf|{}prf[0]
+        final fun <get-prf>(): com.alirezaiyan.passki/PrfResults? // com.alirezaiyan.passki/PasskeyRegistration.prf.<get-prf>|<get-prf>(){}[0]
+    final val prfEnabled // com.alirezaiyan.passki/PasskeyRegistration.prfEnabled|{}prfEnabled[0]
+        final fun <get-prfEnabled>(): kotlin/Boolean? // com.alirezaiyan.passki/PasskeyRegistration.prfEnabled.<get-prfEnabled>|<get-prfEnabled>(){}[0]
     final val transports // com.alirezaiyan.passki/PasskeyRegistration.transports|{}transports[0]
         final fun <get-transports>(): kotlin.collections/List<kotlin/String> // com.alirezaiyan.passki/PasskeyRegistration.transports.<get-transports>|<get-transports>(){}[0]
 
     final fun toString(): kotlin/String // com.alirezaiyan.passki/PasskeyRegistration.toString|toString(){}[0]
+}
+
+final class com.alirezaiyan.passki/PrfResults { // com.alirezaiyan.passki/PrfResults|null[0]
+    constructor <init>(kotlin/ByteArray, kotlin/ByteArray?) // com.alirezaiyan.passki/PrfResults.<init>|<init>(kotlin.ByteArray;kotlin.ByteArray?){}[0]
+
+    final val first // com.alirezaiyan.passki/PrfResults.first|{}first[0]
+        final fun <get-first>(): kotlin/ByteArray // com.alirezaiyan.passki/PrfResults.first.<get-first>|<get-first>(){}[0]
+    final val second // com.alirezaiyan.passki/PrfResults.second|{}second[0]
+        final fun <get-second>(): kotlin/ByteArray? // com.alirezaiyan.passki/PrfResults.second.<get-second>|<get-second>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki/PrfResults.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.alirezaiyan.passki/PrfResults.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.alirezaiyan.passki/PrfResults.toString|toString(){}[0]
 }
 
 sealed class com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/PasskeyError|null[0]
@@ -702,6 +738,43 @@ final object com.alirezaiyan.passki.internal/Base64Url { // com.alirezaiyan.pass
     final fun encode(kotlin/ByteArray): kotlin/String // com.alirezaiyan.passki.internal/Base64Url.encode|encode(kotlin.ByteArray){}[0]
 }
 
+final object com.alirezaiyan.passki.internal/ExtensionsJson { // com.alirezaiyan.passki.internal/ExtensionsJson|null[0]
+    final fun assertionOutputs(com.alirezaiyan.passki.internal/ExtensionsJson.PrfValues?, kotlin/ByteArray?, kotlin/Boolean?): kotlinx.serialization.json/JsonObject // com.alirezaiyan.passki.internal/ExtensionsJson.assertionOutputs|assertionOutputs(com.alirezaiyan.passki.internal.ExtensionsJson.PrfValues?;kotlin.ByteArray?;kotlin.Boolean?){}[0]
+    final fun largeBlobAssertion(kotlinx.serialization.json/JsonObject?): com.alirezaiyan.passki.internal/ExtensionsJson.LargeBlobAssertion? // com.alirezaiyan.passki.internal/ExtensionsJson.largeBlobAssertion|largeBlobAssertion(kotlinx.serialization.json.JsonObject?){}[0]
+    final fun largeBlobSupport(kotlinx.serialization.json/JsonObject?): kotlin/String? // com.alirezaiyan.passki.internal/ExtensionsJson.largeBlobSupport|largeBlobSupport(kotlinx.serialization.json.JsonObject?){}[0]
+    final fun prfInput(kotlinx.serialization.json/JsonObject?): com.alirezaiyan.passki.internal/ExtensionsJson.PrfInput? // com.alirezaiyan.passki.internal/ExtensionsJson.prfInput|prfInput(kotlinx.serialization.json.JsonObject?){}[0]
+    final fun registrationOutputs(kotlin/Boolean?, com.alirezaiyan.passki.internal/ExtensionsJson.PrfValues?, kotlin/Boolean?): kotlinx.serialization.json/JsonObject // com.alirezaiyan.passki.internal/ExtensionsJson.registrationOutputs|registrationOutputs(kotlin.Boolean?;com.alirezaiyan.passki.internal.ExtensionsJson.PrfValues?;kotlin.Boolean?){}[0]
+
+    sealed interface LargeBlobAssertion { // com.alirezaiyan.passki.internal/ExtensionsJson.LargeBlobAssertion|null[0]
+        final class Write : com.alirezaiyan.passki.internal/ExtensionsJson.LargeBlobAssertion { // com.alirezaiyan.passki.internal/ExtensionsJson.LargeBlobAssertion.Write|null[0]
+            constructor <init>(kotlin/ByteArray) // com.alirezaiyan.passki.internal/ExtensionsJson.LargeBlobAssertion.Write.<init>|<init>(kotlin.ByteArray){}[0]
+
+            final val blob // com.alirezaiyan.passki.internal/ExtensionsJson.LargeBlobAssertion.Write.blob|{}blob[0]
+                final fun <get-blob>(): kotlin/ByteArray // com.alirezaiyan.passki.internal/ExtensionsJson.LargeBlobAssertion.Write.blob.<get-blob>|<get-blob>(){}[0]
+        }
+
+        final object Read : com.alirezaiyan.passki.internal/ExtensionsJson.LargeBlobAssertion // com.alirezaiyan.passki.internal/ExtensionsJson.LargeBlobAssertion.Read|null[0]
+    }
+
+    final class PrfInput { // com.alirezaiyan.passki.internal/ExtensionsJson.PrfInput|null[0]
+        constructor <init>(com.alirezaiyan.passki.internal/ExtensionsJson.PrfValues?, kotlin.collections/Map<kotlin/String, com.alirezaiyan.passki.internal/ExtensionsJson.PrfValues>) // com.alirezaiyan.passki.internal/ExtensionsJson.PrfInput.<init>|<init>(com.alirezaiyan.passki.internal.ExtensionsJson.PrfValues?;kotlin.collections.Map<kotlin.String,com.alirezaiyan.passki.internal.ExtensionsJson.PrfValues>){}[0]
+
+        final val eval // com.alirezaiyan.passki.internal/ExtensionsJson.PrfInput.eval|{}eval[0]
+            final fun <get-eval>(): com.alirezaiyan.passki.internal/ExtensionsJson.PrfValues? // com.alirezaiyan.passki.internal/ExtensionsJson.PrfInput.eval.<get-eval>|<get-eval>(){}[0]
+        final val evalByCredential // com.alirezaiyan.passki.internal/ExtensionsJson.PrfInput.evalByCredential|{}evalByCredential[0]
+            final fun <get-evalByCredential>(): kotlin.collections/Map<kotlin/String, com.alirezaiyan.passki.internal/ExtensionsJson.PrfValues> // com.alirezaiyan.passki.internal/ExtensionsJson.PrfInput.evalByCredential.<get-evalByCredential>|<get-evalByCredential>(){}[0]
+    }
+
+    final class PrfValues { // com.alirezaiyan.passki.internal/ExtensionsJson.PrfValues|null[0]
+        constructor <init>(kotlin/ByteArray, kotlin/ByteArray?) // com.alirezaiyan.passki.internal/ExtensionsJson.PrfValues.<init>|<init>(kotlin.ByteArray;kotlin.ByteArray?){}[0]
+
+        final val first // com.alirezaiyan.passki.internal/ExtensionsJson.PrfValues.first|{}first[0]
+            final fun <get-first>(): kotlin/ByteArray // com.alirezaiyan.passki.internal/ExtensionsJson.PrfValues.first.<get-first>|<get-first>(){}[0]
+        final val second // com.alirezaiyan.passki.internal/ExtensionsJson.PrfValues.second|{}second[0]
+            final fun <get-second>(): kotlin/ByteArray? // com.alirezaiyan.passki.internal/ExtensionsJson.PrfValues.second.<get-second>|<get-second>(){}[0]
+    }
+}
+
 final object com.alirezaiyan.passki.internal/SignalRequests { // com.alirezaiyan.passki.internal/SignalRequests|null[0]
     final fun acceptedCredentials(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String>): kotlin/String // com.alirezaiyan.passki.internal/SignalRequests.acceptedCredentials|acceptedCredentials(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
     final fun currentUserDetails(kotlin/String, kotlin/String, kotlin/String, kotlin/String): kotlin/String // com.alirezaiyan.passki.internal/SignalRequests.currentUserDetails|currentUserDetails(kotlin.String;kotlin.String;kotlin.String;kotlin.String){}[0]
@@ -720,6 +793,14 @@ final object com.alirezaiyan.passki.internal/WebAuthnResponses { // com.alirezai
 
 final object com.alirezaiyan.passki/PasskeyDoctor { // com.alirezaiyan.passki/PasskeyDoctor|null[0]
     final suspend fun run(kotlin/String): com.alirezaiyan.passki/DoctorReport // com.alirezaiyan.passki/PasskeyDoctor.run|run(kotlin.String){}[0]
+}
+
+final object com.alirezaiyan.passki/PasskeyExtensions { // com.alirezaiyan.passki/PasskeyExtensions|null[0]
+    final fun withLargeBlob(kotlin/String, com.alirezaiyan.passki/LargeBlobSupport = ...): kotlin/String // com.alirezaiyan.passki/PasskeyExtensions.withLargeBlob|withLargeBlob(kotlin.String;com.alirezaiyan.passki.LargeBlobSupport){}[0]
+    final fun withLargeBlobRead(kotlin/String): kotlin/String // com.alirezaiyan.passki/PasskeyExtensions.withLargeBlobRead|withLargeBlobRead(kotlin.String){}[0]
+    final fun withLargeBlobWrite(kotlin/String, kotlin/ByteArray): kotlin/String // com.alirezaiyan.passki/PasskeyExtensions.withLargeBlobWrite|withLargeBlobWrite(kotlin.String;kotlin.ByteArray){}[0]
+    final fun withPrf(kotlin/String): kotlin/String // com.alirezaiyan.passki/PasskeyExtensions.withPrf|withPrf(kotlin.String){}[0]
+    final fun withPrf(kotlin/String, kotlin/ByteArray, kotlin/ByteArray? = ...): kotlin/String // com.alirezaiyan.passki/PasskeyExtensions.withPrf|withPrf(kotlin.String;kotlin.ByteArray;kotlin.ByteArray?){}[0]
 }
 
 final val com.alirezaiyan.passki.internal/PasskiJson // com.alirezaiyan.passki.internal/PasskiJson|{}PasskiJson[0]

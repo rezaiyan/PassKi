@@ -72,6 +72,9 @@ public fun parseRegistration(json: String): PasskeyRegistration {
         credentialId = model.id,
         transports = model.response.transports,
         authenticatorAttachment = model.authenticatorAttachment,
+        prfEnabled = ExtensionsJson.prfEnabled(model.clientExtensionResults),
+        prf = ExtensionsJson.prfResults(model.clientExtensionResults),
+        largeBlobSupported = ExtensionsJson.largeBlobSupported(model.clientExtensionResults),
     )
 }
 
@@ -84,7 +87,15 @@ public fun parseAssertion(json: String): PasskeyAssertion {
     }
     requireBase64Url(model.id)
     model.response.userHandle?.let(::requireBase64Url)
-    return PasskeyAssertion(json = json, credentialId = model.id, userHandle = model.response.userHandle)
+    val extensions = model.clientExtensionResults
+    return PasskeyAssertion(
+        json = json,
+        credentialId = model.id,
+        userHandle = model.response.userHandle,
+        prf = ExtensionsJson.prfResults(extensions),
+        largeBlob = ExtensionsJson.largeBlob(extensions),
+        largeBlobWritten = ExtensionsJson.largeBlobWritten(extensions),
+    )
 }
 
 private fun requireBase64Url(value: String) {
