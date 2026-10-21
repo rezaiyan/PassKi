@@ -22,7 +22,7 @@ export interface DemoConfig {
 }
 
 /** Read per call so tests (and restarts with new env) see current values. */
-export function demoConfig(env: NodeJS.ProcessEnv = process.env): DemoConfig {
+export function demoConfig(env: Record<string, string | undefined> = process.env): DemoConfig {
   const rpId = (env.PASSKI_RP_ID || "passki.alirezaiyan.com").toLowerCase();
   const fps = list(env.PASSKI_ANDROID_FINGERPRINTS ?? DEFAULT_FINGERPRINT).map(
     (f) => {

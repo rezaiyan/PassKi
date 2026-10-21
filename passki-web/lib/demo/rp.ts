@@ -5,7 +5,8 @@ import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
   type AuthenticationResponseJSON,
-  type AuthenticatorTransportFuture,
+  type AuthenticatorTransport,
+  
   type RegistrationResponseJSON,
 } from "@simplewebauthn/server";
 import { clock, DAY, MINUTE, purgeExpired, type Db } from "@/lib/db";
@@ -191,7 +192,7 @@ export async function authenticationOptions(
 ) {
   purgeExpired(db, "credentials");
   let allow:
-    | { id: string; transports?: AuthenticatorTransportFuture[] }[]
+    | { id: string; transports?: AuthenticatorTransport[] }[]
     | undefined;
   let userId: string | null = null;
   if (typeof body.userHandle === "string" && body.userHandle) {

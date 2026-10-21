@@ -1,5 +1,5 @@
 import {
-  lookup as dnsLookup,
+  promises as dnsPromises,
   type LookupAddress as DnsLookupAddress,
   type LookupOptions,
 } from "node:dns";
@@ -7,7 +7,7 @@ import { request } from "node:https";
 import type { Fetched } from "@/lib/checks/types";
 import { MAX_WELL_KNOWN_BYTES } from "@/lib/checks/common";
 import {
-  isPublicAddress,
+  resolvePublic,
   UnsafeTargetError,
   validateDomain,
   validateUrl,
