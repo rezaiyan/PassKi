@@ -79,7 +79,8 @@ public enum class SignInMode {
      *
      * [Passkeys.signIn] suspends until the user picks a passkey suggestion. Dismissing the suggestion or the
      * sheet does not complete the call; it keeps waiting. Cancel the calling coroutine to withdraw the offer,
-     * e.g. when the field loses focus or leaves composition.
+     * e.g. when the field loses focus or leaves composition. On Android, after a dismissal the suggestion is
+     * offered again once you cancel and call again (e.g. on the next focus of the field).
      *
      * A username text field must be focused when you call it: use `PasskeyUsernameField` from passki-compose,
      * or focus your own username field (content type username) first. Without one, Android fails with

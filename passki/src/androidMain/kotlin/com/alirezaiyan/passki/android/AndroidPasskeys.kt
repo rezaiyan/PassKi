@@ -5,6 +5,7 @@ import android.app.Application
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.view.autofill.AutofillManager
 import androidx.credentials.CreatePublicKeyCredentialRequest
 import androidx.credentials.CreatePublicKeyCredentialResponse
 import androidx.credentials.CredentialManager
@@ -181,6 +182,14 @@ internal class AndroidPasskeys(private val tracker: ActivityTracker = ActivityTr
                     if (continuation.isActive) continuation.resume(response)
                 }
                 view.pendingGetCredentialRequest = pending
+                // The autofill session of the already-focused field started before the request was attached, so
+                // restart it: without this the suggestion only appears after re-focusing. requestAutofill(view)
+                // is not enough: the chip shows, but the picked credential is dropped ("no responses") — the
+                // session must be restarted (verified on an API 36 emulator with GPM, EditText and Compose fields).
+                view.context.getSystemService(AutofillManager::class.java)?.let { autofill ->
+                    autofill.cancel()
+                    autofill.notifyViewEntered(view)
+                }
                 continuation.invokeOnCancellation { main.post(::clear) }
             }
         }
