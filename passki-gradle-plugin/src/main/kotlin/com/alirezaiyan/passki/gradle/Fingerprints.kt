@@ -3,6 +3,7 @@ package com.alirezaiyan.passki.gradle
 import java.io.File
 import java.security.KeyStore
 import java.security.MessageDigest
+import java.util.Base64
 
 /** Thrown when the passki configuration or a referenced keystore is unusable. */
 public class PasskiConfigException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
@@ -25,6 +26,12 @@ internal object Fingerprints {
 
     /** Formats [digest] as uppercase colon-separated hex. */
     fun format(digest: ByteArray): String = digest.joinToString(":") { "%02X".format(it) }
+
+    /** WebAuthn origin Android reports for an app signed by [fingerprint]: `android:apk-key-hash:<base64url>`. */
+    fun androidOrigin(fingerprint: String): String {
+        val bytes = normalize(fingerprint).split(":").map { it.toInt(16).toByte() }.toByteArray()
+        return "android:apk-key-hash:" + Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
+    }
 
     /** Accepts "ab:cd…" or "abcd…"; returns canonical uppercase colon-hex. */
     fun normalize(value: String): String {

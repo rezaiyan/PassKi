@@ -91,6 +91,14 @@ internal class FingerprintsTest {
     }
 
     @Test
+    fun androidOriginIsBase64UrlOfDigestWithoutPadding() {
+        // 32 bytes 0xFB → "+" / "/" in plain base64, "-" / "_" in base64url; 43 chars, no '='.
+        val fingerprint = List(32) { "FB" }.joinToString(":")
+
+        assertEquals("android:apk-key-hash:" + "-_v7".repeat(10) + "-_s", Fingerprints.androidOrigin(fingerprint))
+    }
+
+    @Test
     fun normalizeRejectsInvalidInput() {
         assertFailsWith<IllegalArgumentException> { Fingerprints.normalize("AB:CD") }
         assertFailsWith<IllegalArgumentException> { Fingerprints.normalize("ZZ".repeat(32)) }

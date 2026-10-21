@@ -19,8 +19,14 @@ kotlin {
     }
 }
 
+// TestKit injects the plugin-under-test classpath into its own classloader; AGP resolved from the
+// fixture's plugins {} block would live elsewhere and be invisible to our plugin. Put AGP on the
+// injected classpath instead so both share one classloader (fixtures apply it without a version).
+val functionalTestPluginClasspath: Configuration by configurations.creating
+
 dependencies {
     compileOnly("com.android.tools.build:gradle-api:${libs.versions.agp.get()}")
+    functionalTestPluginClasspath("com.android.tools.build:gradle:${libs.versions.agp.get()}")
     testImplementation(libs.kotlin.test)
     testImplementation(libs.junit)
     testImplementation(gradleTestKit())
@@ -43,6 +49,10 @@ val androidSdkDir: String = providers.environmentVariable("ANDROID_HOME").orNull
         Properties().apply { file.inputStream().use { load(it) } }.getProperty("sdk.dir")
     }
     ?: (System.getProperty("user.home") + "/Library/Android/sdk")
+
+tasks.pluginUnderTestMetadata {
+    pluginClasspath.from(functionalTestPluginClasspath)
+}
 
 tasks.test {
     // Functional tests build a real Android project.
