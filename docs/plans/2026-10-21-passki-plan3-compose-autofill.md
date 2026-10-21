@@ -183,17 +183,18 @@ Run Gradle through `ctx_execute`; the Bash hook blocks `./gradlew`.
 ### Wave 4
 
 **Task 6: Sample + emulator verification**
-- [ ] Sample:
-  - use `PasskeyUsernameField` + `PasskeySignInButton`
-  - a "PRF" button showing the derived output (hex, first 8 bytes)
-  - autorun steps for the non-UI parts
-- [ ] **Android emulator (API 36):** focusing the username field shows the passkey suggestion in the keyboard; picking it signs in; PRF returns 32 bytes; the same salt gives the same output twice.
-- [ ] **iOS simulator 26.3:**
-  - focusing the field shows the QuickType passkey suggestion; picking it signs in
-  - PRF 32 bytes, stable
-  - Signals: `unknownCredential` then device-only sign-in → NoCredentials, if the provider honours it
-- [ ] **Record results** in this plan; add the fixtures (an assertion pair if feasible).
-- [ ] Commit: `test(sample): autofill, PRF, signals verified on emulators`
+- [x] Sample (now against the live demo RP, setup-experience Phase 2):
+  - use `PasskeyUsernameField` + `PasskeySignInButton`; every response verified by the server, verdict in the log
+  - a "PRF" button showing the derived output (hex, first 8 bytes) and whether it matches the previous run
+  - autorun steps for the non-UI parts (iOS `-passkiAutorun`, Android `--ez passkiAutorun true`)
+- [x] **Android emulator (API 36):** focusing the username field shows the passkey suggestion in the keyboard; picking it signs in (`Sign in (autofill) ✓ verified by server`); PRF returns 32 bytes; the same salt gives the same output twice (`60d4951e6da94aeb` both runs). Signals: `unknownCredential` then device-only sign-in → `NoCredentials` (GPM honours it).
+- [ ] **iOS simulator 26.3:** (2026-10-22, Mac screen locked, so no taps)
+  - focusing the field shows the QuickType passkey suggestion; picking it signs in: **not verified**
+  - PRF 32 bytes, stable: **not verified**
+  - Signals: `unknownCredential` → `Signal unknown ✓` (real ASCredentialUpdater call on iOS 26.3); the device-only follow-up has no credential to compare yet
+  - verified: build, `passkiCheck` IOS-04/05/06, doctor, SRV-01/02, the passkey sheet opens for passki.alirezaiyan.com (association OK)
+- [x] **Record results** in this plan; add the fixtures (an assertion pair if feasible). `android-20261022-registration.json` + `android-20261022-assertion.json` (same credential); `RecordedFixturesTest` verifies 3 registrations + 1 assertion against the paired public key.
+- [ ] Commit: `test(sample): autofill, PRF, signals verified on emulators` (Android done; iOS rerun pending)
 
 **Task 7: Docs + review**
 - [ ] README: Compose section, autofill, PRF/largeBlob, the iOS signals status (A or B).
