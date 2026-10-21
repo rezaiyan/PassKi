@@ -87,11 +87,10 @@ class AndroidErrorMapperTest {
     }
 
     @Test
-    fun signalProviderConfigurationIsMisconfiguredWithProviderHint() {
+    fun signalProviderConfigurationIsNotSupported() {
         val error = SignalCredentialStateProviderConfigurationException("no provider").toPasskeyError()
-        val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
-        assertEquals("no provider", misconfigured.message)
-        assertTrue("credential provider" in misconfigured.fixHint)
+        val notSupported = assertIs<PasskeyError.NotSupported>(error)
+        assertEquals("No credential provider on this device supports the Signal API.", notSupported.message)
     }
 
     @Test
@@ -103,10 +102,17 @@ class AndroidErrorMapperTest {
     }
 
     @Test
-    fun noCreateOptionIsMisconfiguredWithProviderHint() {
+    fun noCreateOptionFromRegisterIsMisconfiguredWithProviderHint() {
         val error = CreateCredentialNoCreateOptionException("no option").toPasskeyError()
         val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
         assertTrue("credential provider" in misconfigured.fixHint)
+    }
+
+    @Test
+    fun noCreateOptionFromUpgradeIsNotSupported() {
+        val error = CreateCredentialNoCreateOptionException("no option").toPasskeyError(conditional = true)
+        val notSupported = assertIs<PasskeyError.NotSupported>(error)
+        assertEquals("The credential provider declined conditional passkey creation.", notSupported.message)
     }
 
     @Test

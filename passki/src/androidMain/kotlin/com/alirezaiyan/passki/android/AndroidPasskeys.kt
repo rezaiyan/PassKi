@@ -110,7 +110,7 @@ internal class AndroidPasskeys(private val tracker: ActivityTracker = ActivityTr
     }
 
     private suspend fun createPasskey(optionsJson: String, conditional: Boolean): PasskeyResult<PasskeyRegistration> =
-        passkeyCatching(Throwable::toPasskeyError) {
+        passkeyCatching({ it.toPasskeyError(conditional) }) {
             requireSupported()
             val options = WebAuthnOptions.parseCreation(optionsJson)
             val request = CreatePublicKeyCredentialRequest(requestJson = options.json, isConditional = conditional)

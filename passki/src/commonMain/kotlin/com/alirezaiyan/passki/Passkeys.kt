@@ -109,9 +109,15 @@ public class PasskeyCapabilities @InternalPasskiApi constructor(
     public val immediateSignIn: Boolean,
     /** [Passkeys.signInOrPassword] is available. */
     public val unifiedPasswordSignIn: Boolean,
-    /** [Passkeys.upgrade] (conditional create) is available. */
+    /**
+     * [Passkeys.upgrade] (conditional create) is available.
+     * On Android this reflects OS support; the user's credential provider may still decline (operation then returns NotSupported).
+     */
     public val conditionalCreate: Boolean,
-    /** [PasskeySignals] calls are available. */
+    /**
+     * [PasskeySignals] calls are available.
+     * On Android this reflects OS support; the user's credential provider may still decline (operation then returns NotSupported).
+     */
     public val signals: Boolean,
 ) {
     override fun toString(): String =

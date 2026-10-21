@@ -32,16 +32,21 @@ private const val PROVIDER_HINT: String =
     "No credential provider is available. Make sure Google Play services is up to date and a provider " +
         "(Google Password Manager, 1Password, ...) is enabled in Settings > Passwords & accounts."
 
-internal fun Throwable.toPasskeyError(): PasskeyError = when (this) {
+/** [conditional] is true for conditional create (`upgrade()`), where a provider declining is not a setup problem. */
+internal fun Throwable.toPasskeyError(conditional: Boolean = false): PasskeyError = when (this) {
     is CreateCredentialCancellationException, is GetCredentialCancellationException -> PasskeyError.Cancelled
     is NoCredentialException -> PasskeyError.NoCredentials
     is CreateCredentialInterruptedException, is GetCredentialInterruptedException -> PasskeyError.Interrupted
     is CreateCredentialProviderConfigurationException, is GetCredentialProviderConfigurationException ->
         PasskeyError.Misconfigured(messageOr("No credential provider configured."), PROVIDER_HINT)
     is CreateCredentialNoCreateOptionException ->
-        PasskeyError.Misconfigured(messageOr("No provider can create this credential."), PROVIDER_HINT)
+        if (conditional) {
+            PasskeyError.NotSupported("The credential provider declined conditional passkey creation.")
+        } else {
+            PasskeyError.Misconfigured(messageOr("No provider can create this credential."), PROVIDER_HINT)
+        }
     is SignalCredentialStateProviderConfigurationException ->
-        PasskeyError.Misconfigured(messageOr("No credential provider configured."), PROVIDER_HINT)
+        PasskeyError.NotSupported("No credential provider on this device supports the Signal API.")
     is SignalCredentialSecurityException ->
         PasskeyError.Misconfigured(messageOr("Signal rejected for this RP ID."), ASSET_LINKS_HINT)
     is CreateCredentialUnsupportedException, is GetCredentialUnsupportedException ->
