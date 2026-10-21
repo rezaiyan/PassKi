@@ -144,4 +144,34 @@ class AndroidDoctorTest {
             sha256Fingerprint("abc".encodeToByteArray()),
         )
     }
+
+    @Test
+    fun rotatedSingleSignerUsesOnlyCurrentCertificate() {
+        val old = "old".encodeToByteArray()
+        val current = "current".encodeToByteArray()
+        val selected = currentSigningCertificates(hasMultipleSigners = false, apkContentsSigners = listOf(current), history = listOf(old, current))
+        assertEquals(listOf(current), selected)
+    }
+
+    @Test
+    fun multipleSignersUseApkContentsSigners() {
+        val a = "a".encodeToByteArray()
+        val b = "b".encodeToByteArray()
+        assertEquals(listOf(a, b), currentSigningCertificates(hasMultipleSigners = true, apkContentsSigners = listOf(a, b), history = emptyList()))
+    }
+
+    @Test
+    fun singleSignerWithoutHistoryFallsBackToContentsSigners() {
+        val a = "a".encodeToByteArray()
+        assertEquals(listOf(a), currentSigningCertificates(hasMultipleSigners = false, apkContentsSigners = listOf(a), history = emptyList()))
+    }
+
+    @Test
+    fun urlRpIdFailsWithoutFetching() = runTest {
+        val getter = RecordingGetter { ok(it, validAssetLinks) }
+        val report = composeAndroidReport("https://example.com/x", facts(), getter)
+        assertFalse(report.isHealthy)
+        assertEquals("rpId must be a bare domain (got https://example.com/x); use example.com", report.failures.single().message)
+        assertTrue(getter.urls.isEmpty())
+    }
 }

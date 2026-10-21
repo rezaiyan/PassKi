@@ -14,6 +14,9 @@ import kotlinx.serialization.json.JsonObject
 internal object AasaCheck {
     const val NAME: String = "apple-app-site-association"
 
+    /** Apple's CDN refuses AASA files larger than this. */
+    private const val APPLE_MAX_AASA_BYTES = 128 * 1024
+
     /**
      * @param direct `https://<rpId>/.well-known/apple-app-site-association`
      * @param cdn `https://app-site-association.cdn-apple.com/a/v1/<rpId>`
@@ -39,21 +42,40 @@ internal object AasaCheck {
         }
         val teamId = match.substringBefore('.')
 
-        val cdnProblem = cdn.fetchProblem()
-        val cdnDiffers = cdnProblem == null && parse(cdn.body.orEmpty()) != directJson
-        if (cdnProblem != null || cdnDiffers) {
+        val size = direct.body.orEmpty().encodeToByteArray().size
+        if (size > APPLE_MAX_AASA_BYTES) {
             return DoctorCheck(
                 NAME,
                 DoctorStatus.Warn,
-                if (cdnProblem != null) {
-                    "lists $match (team ID $teamId), but Apple's CDN copy is unavailable: $cdnProblem"
-                } else {
-                    "lists $match (team ID $teamId), but Apple's CDN copy at ${cdn.url} differs"
-                },
-                "Apple's CDN can lag up to 24h; use webcredentials:$rpId?mode=developer while testing",
+                "lists $match (team ID $teamId), but the file is ${size / 1024} KB; Apple ignores AASA files over 128 KB",
+                "shrink ${direct.url} below 128 KB (e.g. trim applinks paths)",
             )
         }
-        return DoctorCheck(NAME, DoctorStatus.Pass, "lists $match (team ID $teamId); Apple's CDN copy matches", fixHint = null)
+
+        val cdnHint = "Apple's CDN can lag up to 24h; while testing use webcredentials:$rpId?mode=developer and enable " +
+            "Settings > Developer > Associated Domains Development on the device"
+        // Only the webcredentials entry matters for passkeys; applinks or formatting differences are irrelevant here.
+        val cdnFetchProblem = cdn.fetchProblem()
+        val cdnJson = if (cdnFetchProblem == null) parse(cdn.body.orEmpty()) as? JsonObject else null
+        if (cdnJson == null) {
+            return DoctorCheck(
+                NAME,
+                DoctorStatus.Warn,
+                "lists $match (team ID $teamId), but Apple's CDN copy is unavailable: " +
+                    (cdnFetchProblem ?: "${cdn.url} is not a JSON object"),
+                cdnHint,
+            )
+        }
+        val cdnApps = (cdnJson["webcredentials"] as? JsonObject)?.get("apps").strings()
+        if (match !in cdnApps) {
+            return DoctorCheck(
+                NAME,
+                DoctorStatus.Warn,
+                "lists $match (team ID $teamId), but Apple's CDN copy at ${cdn.url} doesn't yet (CDN lagging)",
+                cdnHint,
+            )
+        }
+        return DoctorCheck(NAME, DoctorStatus.Pass, "lists $match (team ID $teamId); Apple's CDN copy lists it too", fixHint = null)
     }
 
     private fun fail(message: String, fixHint: String) = DoctorCheck(NAME, DoctorStatus.Fail, message, fixHint)

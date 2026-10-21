@@ -62,4 +62,20 @@ class DoctorReportTest {
     fun checkToStringIsReadable() {
         assertEquals("[WARN] INTERNET permission - not granted", warn.toString())
     }
+
+    @Test
+    fun failuresAndWarningsListMatchingChecksInOrder() {
+        val secondWarn = DoctorCheck("CDN", DoctorStatus.Warn, "lagging", fixHint = null)
+        val report = DoctorReport("example.com", listOf(pass, warn, fail, skipped, secondWarn))
+        assertEquals(listOf(fail), report.failures)
+        assertEquals(listOf(warn, secondWarn), report.warnings)
+    }
+
+    @Test
+    fun healthyReportCanStillCarryWarnings() {
+        val report = DoctorReport("example.com", listOf(pass, warn))
+        assertTrue(report.isHealthy)
+        assertTrue(report.failures.isEmpty())
+        assertEquals(listOf(warn), report.warnings)
+    }
 }

@@ -29,16 +29,23 @@ internal object AssetLinksCheck {
         val statements = parseStatements(result.body.orEmpty())
             ?: return fail("${result.url} is not a JSON array of statements", "fix the JSON syntax; passkiWellKnown generates a valid file")
 
+        // {"include": "<url>"} entries pull statements from another file; the doctor doesn't fetch them, so a
+        // problem that an include might resolve is a warning, not a failure.
+        val includes = statements.mapNotNull { it.include }
+        val problem: (String, String?) -> DoctorCheck = { message, hint ->
+            if (includes.isEmpty()) fail(message, hint) else unresolvedIncludes(message, hint, includes)
+        }
+
         val loginStatements = statements.filter { LOGIN_CREDS_RELATION in it.relations }
         if (loginStatements.isEmpty()) {
-            return fail(
+            return problem(
                 "no statement grants $LOGIN_CREDS_RELATION",
                 addStatementHint(result.url, packageName, certFingerprints),
             )
         }
         val ours = loginStatements.filter { it.namespace == "android_app" && it.packageName == packageName }
         if (ours.isEmpty()) {
-            return fail(
+            return problem(
                 "no $LOGIN_CREDS_RELATION statement for package $packageName",
                 addStatementHint(result.url, packageName, certFingerprints),
             )
@@ -49,7 +56,7 @@ internal object AssetLinksCheck {
         val listed = ours.flatMapTo(mutableSetOf()) { it.fingerprints.map(String::uppercase) }
         val missing = certFingerprints.filter { it.uppercase() !in listed }
         if (missing.isNotEmpty()) {
-            return fail(
+            return problem(
                 "${plural(missing.size, "fingerprint")} ${missing.joinToString()} missing for $packageName",
                 addStatementHint(result.url, packageName, missing),
             )
@@ -73,6 +80,13 @@ internal object AssetLinksCheck {
 
     private fun fail(message: String, fixHint: String?) = DoctorCheck(NAME, DoctorStatus.Fail, message, fixHint)
 
+    private fun unresolvedIncludes(message: String, fixHint: String?, includes: List<String>) = DoctorCheck(
+        NAME,
+        DoctorStatus.Warn,
+        "$message in this file; include statements are not followed by the doctor (${includes.joinToString()})",
+        listOfNotNull("make sure an included file covers it, or", fixHint).joinToString(" "),
+    )
+
     private fun addStatementHint(url: String, packageName: String, fingerprints: List<String>): String =
         "add this statement to $url:\n" + PasskiJson.encodeToString(JsonElement.serializer(), statement(packageName, fingerprints))
 
@@ -90,6 +104,7 @@ internal object AssetLinksCheck {
         val namespace: String?,
         val packageName: String?,
         val fingerprints: List<String>,
+        val include: String?,
     )
 
     /** Null when [body] isn't a JSON array. Malformed entries inside the array are skipped. */
@@ -108,6 +123,7 @@ internal object AssetLinksCheck {
                 namespace = (target?.get("namespace") as? JsonPrimitive)?.contentOrNullIfString(),
                 packageName = (target?.get("package_name") as? JsonPrimitive)?.contentOrNullIfString(),
                 fingerprints = target?.get("sha256_cert_fingerprints").strings(),
+                include = (obj["include"] as? JsonPrimitive)?.contentOrNullIfString(),
             )
         }
     }

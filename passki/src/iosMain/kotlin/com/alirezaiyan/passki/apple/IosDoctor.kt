@@ -6,6 +6,9 @@ import com.alirezaiyan.passki.DoctorStatus
 import com.alirezaiyan.passki.internal.doctor.AasaCheck
 import com.alirezaiyan.passki.internal.doctor.HttpGetter
 import com.alirezaiyan.passki.internal.doctor.PLATFORM_CHECK
+import com.alirezaiyan.passki.internal.doctor.rpIdCheck
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 internal const val KEY_WINDOW_CHECK: String = "Key window"
 internal const val ENTITLEMENT_CHECK: String = "Associated Domains entitlement"
@@ -13,10 +16,12 @@ internal const val ENTITLEMENT_CHECK: String = "Associated Domains entitlement"
 private const val MIN_PASSKEY_IOS = 16
 
 /**
- * Builds the iOS doctor report from [facts], fetching the AASA file directly and from Apple's CDN through [getter].
+ * Builds the iOS doctor report from [facts], fetching the AASA file directly and from Apple's CDN (concurrently)
+ * through [getter].
  * Stops early on iOS < 16, where nothing else matters.
  */
 internal suspend fun composeIosReport(rpId: String, facts: IosDoctorFacts, getter: HttpGetter): DoctorReport {
+    rpIdCheck(rpId)?.let { return DoctorReport(rpId, listOf(it)) }
     val checks = mutableListOf<DoctorCheck>()
     val version = "iOS ${facts.osVersion}"
     if (facts.osMajor < MIN_PASSKEY_IOS) {
@@ -59,8 +64,11 @@ internal suspend fun composeIosReport(rpId: String, facts: IosDoctorFacts, gette
         )
         return DoctorReport(rpId, checks)
     }
-    val direct = getter.get("https://$rpId/.well-known/apple-app-site-association")
-    val cdn = getter.get("https://app-site-association.cdn-apple.com/a/v1/$rpId")
+    val (direct, cdn) = coroutineScope {
+        val direct = async { getter.get("https://$rpId/.well-known/apple-app-site-association") }
+        val cdn = async { getter.get("https://app-site-association.cdn-apple.com/a/v1/$rpId") }
+        direct.await() to cdn.await()
+    }
     checks += AasaCheck.evaluate(direct, cdn, bundleId)
     return DoctorReport(rpId, checks)
 }

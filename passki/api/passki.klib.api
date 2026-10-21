@@ -535,10 +535,14 @@ final class com.alirezaiyan.passki/DoctorReport { // com.alirezaiyan.passki/Doct
 
     final val checks // com.alirezaiyan.passki/DoctorReport.checks|{}checks[0]
         final fun <get-checks>(): kotlin.collections/List<com.alirezaiyan.passki/DoctorCheck> // com.alirezaiyan.passki/DoctorReport.checks.<get-checks>|<get-checks>(){}[0]
+    final val failures // com.alirezaiyan.passki/DoctorReport.failures|{}failures[0]
+        final fun <get-failures>(): kotlin.collections/List<com.alirezaiyan.passki/DoctorCheck> // com.alirezaiyan.passki/DoctorReport.failures.<get-failures>|<get-failures>(){}[0]
     final val isHealthy // com.alirezaiyan.passki/DoctorReport.isHealthy|{}isHealthy[0]
         final fun <get-isHealthy>(): kotlin/Boolean // com.alirezaiyan.passki/DoctorReport.isHealthy.<get-isHealthy>|<get-isHealthy>(){}[0]
     final val rpId // com.alirezaiyan.passki/DoctorReport.rpId|{}rpId[0]
         final fun <get-rpId>(): kotlin/String // com.alirezaiyan.passki/DoctorReport.rpId.<get-rpId>|<get-rpId>(){}[0]
+    final val warnings // com.alirezaiyan.passki/DoctorReport.warnings|{}warnings[0]
+        final fun <get-warnings>(): kotlin.collections/List<com.alirezaiyan.passki/DoctorCheck> // com.alirezaiyan.passki/DoctorReport.warnings.<get-warnings>|<get-warnings>(){}[0]
 
     final fun toString(): kotlin/String // com.alirezaiyan.passki/DoctorReport.toString|toString(){}[0]
 }

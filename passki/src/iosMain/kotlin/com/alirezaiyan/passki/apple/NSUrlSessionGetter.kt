@@ -2,6 +2,7 @@ package com.alirezaiyan.passki.apple
 
 import com.alirezaiyan.passki.internal.doctor.HttpGetter
 import com.alirezaiyan.passki.internal.doctor.HttpResult
+import com.alirezaiyan.passki.internal.doctor.MAX_BODY_BYTES
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
@@ -23,7 +24,6 @@ import platform.posix.memcpy
 import kotlin.coroutines.resume
 
 private const val TIMEOUT_SECONDS = 10.0
-private const val MAX_BODY_BYTES = 1 shl 20
 
 /**
  * [HttpGetter] on NSURLSession: redirects are reported, never followed, and failures become [HttpResult.error].
@@ -52,8 +52,14 @@ internal object NSUrlSessionGetter : HttpGetter {
                         status = status,
                         contentType = http?.valueForHTTPHeaderField("Content-Type"),
                         body = data?.toCappedString(),
-                        redirectedTo = if (status in 300..399) http?.valueForHTTPHeaderField("Location") else null,
+                        redirectedTo = redirectTarget(
+                            requestedUrl = nsUrl.absoluteString ?: url, // same normalisation as finalUrl
+                            status = status,
+                            location = http?.valueForHTTPHeaderField("Location"),
+                            finalUrl = http?.URL?.absoluteString,
+                        ),
                         error = if (http == null) "not an HTTP response" else null,
+                        truncated = (data?.length ?: 0UL) > MAX_BODY_BYTES.toULong(),
                     )
                 }
                 session.finishTasksAndInvalidate()
@@ -69,6 +75,16 @@ internal object NSUrlSessionGetter : HttpGetter {
 
     private fun failure(url: String, error: String) =
         HttpResult(url, status = -1, contentType = null, body = null, redirectedTo = null, error = error)
+}
+
+/**
+ * Where [requestedUrl] redirected to: the `Location` of a 3xx response, or the response's [finalUrl] when it differs
+ * from the request (the redirect delegate should prevent that, but a followed redirect must never look like a 200).
+ */
+internal fun redirectTarget(requestedUrl: String, status: Int, location: String?, finalUrl: String?): String? = when {
+    status in 300..399 -> location
+    finalUrl != null && finalUrl != requestedUrl -> finalUrl
+    else -> null
 }
 
 /** Completes redirects with a null request, so the task finishes with the 3xx response itself. */

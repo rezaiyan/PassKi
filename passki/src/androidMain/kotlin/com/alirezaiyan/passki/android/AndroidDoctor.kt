@@ -7,6 +7,7 @@ import com.alirezaiyan.passki.internal.doctor.AssetLinksCheck
 import com.alirezaiyan.passki.internal.doctor.HttpGetter
 import com.alirezaiyan.passki.internal.doctor.PLATFORM_CHECK
 import com.alirezaiyan.passki.internal.doctor.androidOrigin
+import com.alirezaiyan.passki.internal.doctor.rpIdCheck
 
 internal const val PASSKI_INIT_CHECK: String = "PassKi initialised"
 internal const val INTERNET_CHECK: String = "INTERNET permission"
@@ -19,6 +20,7 @@ private const val MIN_PASSKEY_SDK = 28
  * Stops early when later checks can't produce meaningful results (old Android, PassKi not initialised).
  */
 internal suspend fun composeAndroidReport(rpId: String, facts: AndroidDoctorFacts, getter: HttpGetter): DoctorReport {
+    rpIdCheck(rpId)?.let { return DoctorReport(rpId, listOf(it)) }
     val checks = mutableListOf<DoctorCheck>()
     val version = "Android ${facts.release} (API ${facts.sdkInt})"
     if (facts.sdkInt < MIN_PASSKEY_SDK) {
@@ -66,7 +68,8 @@ private fun originCheck(fingerprints: List<String>): DoctorCheck {
     return DoctorCheck(
         ORIGIN_CHECK,
         DoctorStatus.Pass,
-        "allow ${if (origins.size == 1) "this origin" else "these origins"} on your server: ${origins.joinToString()}",
+        "allow ${if (origins.size == 1) "this origin" else "these origins"} (current signing " +
+            "${if (origins.size == 1) "key" else "keys"}) on your server: ${origins.joinToString()}",
         fixHint = null,
     )
 }

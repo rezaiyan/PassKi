@@ -11,7 +11,7 @@ import com.alirezaiyan.passki.internal.doctor.plural
  *
  * ```kotlin
  * val report = PasskeyDoctor.run("example.com")
- * if (!report.isHealthy) println(report)
+ * if (report.failures.isNotEmpty() || report.warnings.isNotEmpty()) println(report)
  * ```
  *
  * Supported on Android and iOS. On other platforms the report holds a single
@@ -36,8 +36,18 @@ public class DoctorReport @InternalPasskiApi constructor(
     /** Every check that ran, in order. */
     public val checks: List<DoctorCheck>,
 ) {
-    /** True when no check has status [DoctorStatus.Fail]. Warnings and skipped checks don't count. */
+    /**
+     * True when no check has status [DoctorStatus.Fail]. Warnings and skipped checks don't count, so a healthy
+     * report can still contain [warnings] or [DoctorStatus.Skipped] checks that were not verified; look at
+     * [failures] and [warnings] (or log the report) rather than relying on this flag alone.
+     */
     public val isHealthy: Boolean get() = checks.none { it.status == DoctorStatus.Fail }
+
+    /** Checks with status [DoctorStatus.Fail], in order. Passkeys won't work until each is fixed. */
+    public val failures: List<DoctorCheck> get() = checks.filter { it.status == DoctorStatus.Fail }
+
+    /** Checks with status [DoctorStatus.Warn], in order. Likely to cause trouble but not blocking. */
+    public val warnings: List<DoctorCheck> get() = checks.filter { it.status == DoctorStatus.Warn }
 
     /**
      * Multi-line, human-readable summary; safe to log (contains no secrets). Example:
@@ -53,11 +63,9 @@ public class DoctorReport @InternalPasskiApi constructor(
      * The exact format is for humans and may change; don't parse it, read [checks] instead.
      */
     override fun toString(): String {
-        val failures = checks.count { it.status == DoctorStatus.Fail }
-        val warnings = checks.count { it.status == DoctorStatus.Warn }
         return buildString {
             append("PassKi doctor for ").append(rpId).append(": ")
-            append(plural(failures, "failure")).append(", ").append(plural(warnings, "warning"))
+            append(plural(failures.size, "failure")).append(", ").append(plural(warnings.size, "warning"))
             checks.forEach { check ->
                 append('\n').append(check.toString())
                 check.fixHint?.let { hint ->

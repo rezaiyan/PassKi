@@ -127,4 +127,49 @@ class AasaCheckTest {
         val direct = HttpResult(directUrl, status = 404, contentType = null, body = null, redirectedTo = null, error = null)
         assertEquals(DoctorStatus.Fail, evaluate(direct, cdn).status)
     }
+
+    @Test
+    fun cdnDifferingOnlyOutsideWebcredentialsPasses() {
+        val cdnBody = """{"webcredentials":{"apps":["ABCDE12345.com.example.app"]},"applinks":{"details":[{"appIDs":["X"]}]}}"""
+        assertEquals(DoctorStatus.Pass, evaluate(ok(directUrl, body), ok(cdnUrl, cdnBody)).status)
+    }
+
+    @Test
+    fun cdnWithoutThisAppWarnsLaggingWithDeveloperSettingsHint() {
+        val check = evaluate(ok(directUrl, body), ok(cdnUrl, """{"webcredentials":{"apps":["OTHER.com.other"]}}"""))
+        assertEquals(DoctorStatus.Warn, check.status)
+        assertTrue("CDN lagging" in check.message)
+        assertTrue("Settings > Developer > Associated Domains Development" in check.fixHint!!)
+    }
+
+    @Test
+    fun cdnNotJsonWarnsUnavailable() {
+        val check = evaluate(ok(directUrl, body), ok(cdnUrl, "<html>"))
+        assertEquals(DoctorStatus.Warn, check.status)
+        assertTrue("unavailable" in check.message)
+    }
+
+    @Test
+    fun cdnUnavailableHintMentionsDeveloperSettings() {
+        val cdn = HttpResult(cdnUrl, status = 404, contentType = null, body = null, redirectedTo = null, error = null)
+        assertTrue("Settings > Developer > Associated Domains Development" in evaluate(ok(directUrl, body), cdn).fixHint!!)
+    }
+
+    @Test
+    fun truncatedDirectBodyReportsSizeNotJsonSyntax() {
+        val direct = HttpResult(directUrl, 200, "application/json", "{\"webcred", redirectedTo = null, error = null, truncated = true)
+        val check = evaluate(direct)
+        assertEquals(DoctorStatus.Fail, check.status)
+        assertTrue("larger than 1 MiB" in check.message, check.message)
+        assertTrue("not a JSON" !in check.message)
+    }
+
+    @Test
+    fun directBodyOverAppleLimitWarns() {
+        val padding = "x".repeat(130 * 1024)
+        val big = """{"webcredentials":{"apps":["ABCDE12345.com.example.app"]},"pad":"$padding"}"""
+        val check = evaluate(ok(directUrl, big), ok(cdnUrl, big))
+        assertEquals(DoctorStatus.Warn, check.status)
+        assertTrue("128 KB" in check.message, check.message)
+    }
 }

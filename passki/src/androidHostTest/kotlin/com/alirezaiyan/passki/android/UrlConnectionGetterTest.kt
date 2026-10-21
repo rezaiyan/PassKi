@@ -7,8 +7,10 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class UrlConnectionGetterTest {
     private lateinit var server: HttpServer
@@ -27,6 +29,16 @@ class UrlConnectionGetterTest {
                 exchange.responseHeaders.add("Location", "$base/ok")
                 exchange.sendResponseHeaders(301, -1)
                 exchange.close()
+            }
+            createContext("/huge") { exchange ->
+                val body = ByteArray((1 shl 20) + 10) { '['.code.toByte() }
+                exchange.sendResponseHeaders(200, body.size.toLong())
+                exchange.responseBody.use { it.write(body) }
+            }
+            createContext("/exact") { exchange ->
+                val body = ByteArray(1 shl 20) { ' '.code.toByte() }
+                exchange.sendResponseHeaders(200, body.size.toLong())
+                exchange.responseBody.use { it.write(body) }
             }
             createContext("/missing") { exchange ->
                 exchange.sendResponseHeaders(404, -1)
@@ -68,5 +80,24 @@ class UrlConnectionGetterTest {
         val result = UrlConnectionGetter.get("http://127.0.0.1:$port/ok")
         assertEquals(-1, result.status)
         assertNotNull(result.error)
+    }
+
+    @Test
+    fun bodyOverCapIsTruncatedAndFlagged() = runTest {
+        val result = UrlConnectionGetter.get("$base/huge")
+        assertEquals(1 shl 20, result.body!!.length)
+        assertTrue(result.truncated)
+    }
+
+    @Test
+    fun bodyExactlyAtCapIsNotFlagged() = runTest {
+        val result = UrlConnectionGetter.get("$base/exact")
+        assertEquals(1 shl 20, result.body!!.length)
+        assertFalse(result.truncated)
+    }
+
+    @Test
+    fun smallBodyIsNotTruncated() = runTest {
+        assertFalse(UrlConnectionGetter.get("$base/ok").truncated)
     }
 }

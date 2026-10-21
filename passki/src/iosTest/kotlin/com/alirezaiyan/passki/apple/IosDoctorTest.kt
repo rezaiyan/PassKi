@@ -5,11 +5,13 @@ import com.alirezaiyan.passki.internal.doctor.AasaCheck
 import com.alirezaiyan.passki.internal.doctor.HttpGetter
 import com.alirezaiyan.passki.internal.doctor.HttpResult
 import com.alirezaiyan.passki.internal.doctor.PLATFORM_CHECK
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
 
 class IosDoctorTest {
     private val bundleId = "com.example.app"
@@ -125,6 +127,32 @@ class IosDoctorTest {
 
         val aasa = report.checks.single { it.name == AasaCheck.NAME }
         assertEquals(DoctorStatus.Fail, aasa.status)
+        assertTrue(getter.urls.isEmpty())
+    }
+
+    @Test
+    fun directAndCdnAreFetchedConcurrently() = runTest(timeout = 5.seconds) {
+        val cdnStarted = CompletableDeferred<Unit>()
+        val directStarted = CompletableDeferred<Unit>()
+        val getter = HttpGetter { url ->
+            if (url == directUrl) {
+                directStarted.complete(Unit)
+                cdnStarted.await()
+            } else {
+                cdnStarted.complete(Unit)
+                directStarted.await()
+            }
+            ok(url, validAasa)
+        }
+        val report = composeIosReport("example.com", facts(), getter)
+        assertEquals(DoctorStatus.Pass, report.checks.single { it.name == AasaCheck.NAME }.status)
+    }
+
+    @Test
+    fun urlRpIdFailsWithoutFetching() = runTest {
+        val getter = RecordingGetter { ok(it, validAasa) }
+        val report = composeIosReport("https://example.com/x", facts(), getter)
+        assertEquals("rpId must be a bare domain (got https://example.com/x); use example.com", report.failures.single().message)
         assertTrue(getter.urls.isEmpty())
     }
 }

@@ -10,7 +10,9 @@ public final class com/alirezaiyan/passki/DoctorCheck {
 public final class com/alirezaiyan/passki/DoctorReport {
 	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
 	public final fun getChecks ()Ljava/util/List;
+	public final fun getFailures ()Ljava/util/List;
 	public final fun getRpId ()Ljava/lang/String;
+	public final fun getWarnings ()Ljava/util/List;
 	public final fun isHealthy ()Z
 	public fun toString ()Ljava/lang/String;
 }

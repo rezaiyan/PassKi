@@ -178,4 +178,38 @@ class AssetLinksCheckTest {
         val element = PasskiJson.parseToJsonElement(json)
         return (element as? JsonObject) ?: (element as JsonArray).first().jsonObject
     }
+
+    @Test
+    fun androidOriginMatchesRealDebugKeyObservedOnDevice() {
+        val debugKey = "C9:64:0F:6A:68:90:AF:6C:26:49:DC:BB:AB:94:79:23:93:5C:FC:10:8B:DF:03:20:78:04:60:5C:5B:79:49:03"
+        assertEquals("android:apk-key-hash:yWQPamiQr2wmSdy7q5R5I5Nc_BCL3wMgeARgXFt5SQM", androidOrigin(debugKey))
+    }
+
+    @Test
+    fun includeOnlyFileWarnsInsteadOfFailing() {
+        val check = evaluate(ok("""[{"include":"https://example.com/other-assetlinks.json"}]"""))
+        assertEquals(DoctorStatus.Warn, check.status)
+        assertTrue("include statements are not followed by the doctor" in check.message, check.message)
+        assertTrue("https://example.com/other-assetlinks.json" in check.message)
+    }
+
+    @Test
+    fun includeWithMissingFingerprintWarns() {
+        val body = """[${statement(fingerprints = listOf(fp2))},{"include":"https://example.com/more.json"}]"""
+        assertEquals(DoctorStatus.Warn, evaluate(ok(body)).status)
+    }
+
+    @Test
+    fun includeAlongsideCompleteStatementPasses() {
+        val body = """[${statement()},{"include":"https://example.com/more.json"}]"""
+        assertEquals(DoctorStatus.Pass, evaluate(ok(body)).status)
+    }
+
+    @Test
+    fun truncatedBodyReportsSizeNotJsonSyntax() {
+        val result = HttpResult(url, 200, "application/json", "[{\"rel", redirectedTo = null, error = null, truncated = true)
+        val check = evaluate(result)
+        assertEquals(DoctorStatus.Fail, check.status)
+        assertTrue("larger than 1 MiB" in check.message, check.message)
+    }
 }

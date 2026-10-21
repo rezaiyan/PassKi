@@ -11,7 +11,8 @@ import java.security.MessageDigest
  * [composeAndroidReport] stays pure and host-testable.
  *
  * @property packageName null when PassKi has no Application (not initialised).
- * @property certFingerprints SHA-256 of each signing certificate, colon hex; empty below API 28 or when unreadable.
+ * @property certFingerprints SHA-256 of each current signing certificate (rotated-out keys excluded), colon hex;
+ *   empty below API 28 or when unreadable.
  */
 internal class AndroidDoctorFacts(
     val sdkInt: Int,
@@ -48,6 +49,22 @@ private fun signingFingerprints(app: Application): List<String> {
         return emptyList()
     }
     val signing = info.signingInfo ?: return emptyList()
-    val signers = if (signing.hasMultipleSigners()) signing.apkContentsSigners else signing.signingCertificateHistory
-    return signers.orEmpty().map { sha256Fingerprint(it.toByteArray()) }.distinct()
+    val signers = currentSigningCertificates(
+        hasMultipleSigners = signing.hasMultipleSigners(),
+        apkContentsSigners = signing.apkContentsSigners.orEmpty().toList(),
+        history = signing.signingCertificateHistory.orEmpty().toList(),
+    )
+    return signers.map { sha256Fingerprint(it.toByteArray()) }.distinct()
 }
+
+/**
+ * The certificates the app is signed with *now*. With a single signer, [history] lists every rotated-out key
+ * (oldest first) and the current one last; requiring the old keys in assetlinks.json would be a false failure.
+ * With multiple signers there's no rotation, so every APK contents signer counts.
+ */
+internal fun <T> currentSigningCertificates(hasMultipleSigners: Boolean, apkContentsSigners: List<T>, history: List<T>): List<T> =
+    when {
+        hasMultipleSigners -> apkContentsSigners
+        history.isNotEmpty() -> listOf(history.last())
+        else -> apkContentsSigners
+    }
