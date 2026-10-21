@@ -2,6 +2,8 @@ package com.alirezaiyan.passki.test
 
 import com.alirezaiyan.passki.internal.Base64Url
 import com.webauthn4j.WebAuthnManager
+import com.webauthn4j.credential.CredentialRecordImpl
+import com.webauthn4j.data.AuthenticationParameters
 import com.webauthn4j.data.RegistrationParameters
 import com.webauthn4j.data.client.Origin
 import com.webauthn4j.data.client.challenge.DefaultChallenge
@@ -17,6 +19,10 @@ import kotlin.test.assertNotNull
  * Verifies real-device RegistrationResponseJSON fixtures (`fixtures/<platform>-<yyyymmdd>-registration.json`,
  * shaped `{"rpId": ..., "response": {...}}`) with webauthn4j. Origin and challenge come from the response's own
  * clientDataJSON. Fixtures are loaded from the test classpath (`src/jvmTest/resources/fixtures`).
+ *
+ * Assertion fixtures (`<platform>-<yyyymmdd>-assertion.json`, shaped `{"rpId", "registration": "<registration
+ * fixture file>", "response": AuthenticationResponseJSON}`) are verified against the public key of the paired
+ * registration.
  */
 class RecordedFixturesTest {
     private val manager = WebAuthnManager.createNonStrictWebAuthnManager()
@@ -41,6 +47,53 @@ class RecordedFixturesTest {
             }
         }
         println("Verified ${files.size} recorded registration fixture(s)")
+    }
+
+    @Test
+    fun recordedAssertionsVerifyAgainstTheirRegistration() {
+        val files = fixtureDir().listFiles { file -> file.name.endsWith("-assertion.json") }.orEmpty().sortedBy { it.name }
+        files.forEach { file ->
+            try {
+                verifyAssertion(file)
+            } catch (e: Exception) {
+                throw AssertionError("${file.name}: ${e.message}", e)
+            } catch (e: AssertionError) {
+                throw AssertionError("${file.name}: ${e.message}", e)
+            }
+        }
+        println("Verified ${files.size} recorded assertion fixture(s)")
+    }
+
+    private fun fixtureDir(): File = File(
+        assertNotNull(javaClass.getResource("/fixtures"), "Fixture directory /fixtures not found on the test classpath.").toURI(),
+    )
+
+    private fun verifyAssertion(file: File) {
+        val fixture = Json.parseToJsonElement(file.readText()).jsonObject
+        val rpId = fixture["rpId"]!!.jsonPrimitive.content
+        val registrationFile = File(fixtureDir(), fixture["registration"]!!.jsonPrimitive.content)
+        val registration = Json.parseToJsonElement(registrationFile.readText()).jsonObject["response"]!!.jsonObject
+        val registrationData = manager.parseRegistrationResponseJSON(registration.toString())
+        val record = CredentialRecordImpl(
+            registrationData.attestationObject!!,
+            registrationData.collectedClientData!!,
+            registrationData.clientExtensions,
+            registrationData.transports,
+        )
+        val response = fixture["response"]!!.jsonObject
+        val data = manager.parseAuthenticationResponseJSON(response.toString())
+        manager.verify(data, AuthenticationParameters(serverProperty(rpId, response), record, null, false, true))
+    }
+
+    private fun serverProperty(rpId: String, response: kotlinx.serialization.json.JsonObject): ServerProperty {
+        val clientData = Json.parseToJsonElement(
+            Base64Url.decode(response["response"]!!.jsonObject["clientDataJSON"]!!.jsonPrimitive.content).decodeToString(),
+        ).jsonObject
+        return ServerProperty.builder()
+            .origin(Origin(clientData["origin"]!!.jsonPrimitive.content))
+            .rpId(rpId)
+            .challenge(DefaultChallenge(Base64Url.decode(clientData["challenge"]!!.jsonPrimitive.content)))
+            .build()
     }
 
     private fun verify(file: File) {

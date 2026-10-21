@@ -1,0 +1,17 @@
+{
+  "rpId": "passki.alirezaiyan.com",
+  "registration": "android-20261022-registration.json",
+  "response": {
+    "rawId": "2hnq4zvzBdxhxuuBW2rXIA",
+    "authenticatorAttachment": "platform",
+    "type": "public-key",
+    "id": "2hnq4zvzBdxhxuuBW2rXIA",
+    "response": {
+      "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiemdmTi1XRW5PMEhEc1RBYjNwUlFUMXlVMkdJUFo1VWRBR1FhbmMzMlp0SSIsIm9yaWdpbiI6ImFuZHJvaWQ6YXBrLWtleS1oYXNoOldlV1NNazVzNXZwZjR2Q0tPUmdUTGFVZDNsMzV2Ukh3WE9nalY0amlCc0EiLCJhbmRyb2lkUGFja2FnZU5hbWUiOiJjb20uYWxpcmV6YWl5YW4ucGFzc2tpIn0",
+      "authenticatorData": "_SOLy3quES5Mbd5Gu7NZZ6nCI_MNhtEQg2rF31oRm6MdAAAAAA",
+      "signature": "MEQCIGs2u0eaBxBrS_QIYTTCA7YTcV8g0kzQGfOLHkxnOdqAAiAJWWKgSspzOzVCB6b-lh9W3ZvqssqnjC0CUbB9NrIxHg",
+      "userHandle": "EdnzXZFHFnFFtn2Lw0ZAuA"
+    },
+    "clientExtensionResults": {}
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "rpId": "passki.alirezaiyan.com",
+  "response": {
+    "rawId": "2hnq4zvzBdxhxuuBW2rXIA",
+    "authenticatorAttachment": "platform",
+    "type": "public-key",
+    "id": "2hnq4zvzBdxhxuuBW2rXIA",
+    "response": {
+      "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiSS1rZHduMmgtRmExbXI2QWhwclU1MzZLSzA1SXBUZ2Q1cXFzVzVvMUg5NCIsIm9yaWdpbiI6ImFuZHJvaWQ6YXBrLWtleS1oYXNoOldlV1NNazVzNXZwZjR2Q0tPUmdUTGFVZDNsMzV2Ukh3WE9nalY0amlCc0EiLCJhbmRyb2lkUGFja2FnZU5hbWUiOiJjb20uYWxpcmV6YWl5YW4ucGFzc2tpIn0",
+      "attestationObject": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YViU_SOLy3quES5Mbd5Gu7NZZ6nCI_MNhtEQg2rF31oRm6NdAAAAAOqbjWZNAR0hPOS2tIy1ddQAENoZ6uM78wXcYcbrgVtq1yClAQIDJiABIVggNTkje93_HgvbtN0t8XPLhgOwxUUNdGyyXw-_4IrRW-UiWCAdlBfwYx2zB2urqTGNqW7t0EbwJEBgmdTEEF8foMyGIQ",
+      "transports": [
+        "internal",
+        "hybrid"
+      ],
+      "authenticatorData": "_SOLy3quES5Mbd5Gu7NZZ6nCI_MNhtEQg2rF31oRm6NdAAAAAOqbjWZNAR0hPOS2tIy1ddQAENoZ6uM78wXcYcbrgVtq1yClAQIDJiABIVggNTkje93_HgvbtN0t8XPLhgOwxUUNdGyyXw-_4IrRW-UiWCAdlBfwYx2zB2urqTGNqW7t0EbwJEBgmdTEEF8foMyGIQ",
+      "publicKeyAlgorithm": -7,
+      "publicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAENTkje93_HgvbtN0t8XPLhgOwxUUNdGyyXw-_4IrRW-UdlBfwYx2zB2urqTGNqW7t0EbwJEBgmdTEEF8foMyGIQ"
+    },
+    "clientExtensionResults": {
+      "credProps": {
+        "rk": true
+      },
+      "prf": {
+        "enabled": true
+      }
+    }
+  }
+}
