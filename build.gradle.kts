@@ -15,6 +15,7 @@ plugins {
 dependencies {
     dokka(project(":passki"))
     dokka(project(":passki-test"))
+    dokka(project(":passki-compose"))
 }
 
 dokka {

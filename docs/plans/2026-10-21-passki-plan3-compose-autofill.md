@@ -71,20 +71,20 @@ Run Gradle through `ctx_execute`; the Bash hook blocks `./gradlew`.
 
 **Task 2: `passki-compose` module, headless state, sign-in button**
 - **Files:** `passki-compose/build.gradle.kts`, `src/commonMain/.../compose/{RememberPasskeys,PasskeySignInState,PasskeySignInButton}.kt`, tests; `settings.gradle.kts`.
-- [ ] Module: same targets as `passki`, plugins `kotlinMultiplatform`, `androidMultiplatformLibrary`, `composeMultiplatform`, `composeCompiler`; explicit API; ABI validation; Dokka; publishing (artifactId `passki-compose`).
-- [ ] `rememberPasskeys(): Passkeys`
-- [ ] `PasskeySignInState`, a `@Stable` class:
+- [x] Module: same targets as `passki`, plugins `kotlinMultiplatform`, `androidMultiplatformLibrary`, `composeMultiplatform`, `composeCompiler`; explicit API; ABI validation; Dokka; publishing (artifactId `passki-compose`).
+- [x] `rememberPasskeys(): Passkeys`
+- [x] `PasskeySignInState`, a `@Stable` class:
   - members: `isRunning`, `lastError: PasskeyError?`, `suspend fun signIn(): PasskeyResult<PasskeyAssertion>`
   - guards against double taps
   - `Cancelled` is not stored as `lastError`
-- [ ] `rememberPasskeySignIn(passkeys, requestOptions, mode)`
-- [ ] `PasskeySignInButton(state, onSignedIn, modifier, onError, content = default "Sign in with a passkey")`: a Material3 Button, disabled while running, shows a small progress indicator.
-- [ ] **Tests**, commonTest with `FakePasskeys` from `passki-test` (test dependency), using `runComposeUiTest` where the compose test artifact supports all targets, otherwise state-only tests on jvm:
+- [x] `rememberPasskeySignIn(passkeys, requestOptions, mode)`
+- [x] `PasskeySignInButton(state, onSignedIn, modifier, onError, content = default "Sign in with a passkey")`: a Material3 Button, disabled while running, shows a small progress indicator.
+- [x] **Tests**, commonTest with `FakePasskeys` from `passki-test` (test dependency), using `runComposeUiTest` where the compose test artifact supports all targets, otherwise state-only tests on jvm:
   - double tap → one call
   - `Cancelled` → no `lastError`
   - `Misconfigured` → `lastError` set
   - `isRunning` transitions
-- [ ] Commit: `feat(compose): passki-compose with sign-in state and button`
+- [x] Commit: `feat(compose): passki-compose with sign-in state and button`
 
 ### Wave 2
 

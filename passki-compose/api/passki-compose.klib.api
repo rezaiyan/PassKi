@@ -1,0 +1,23 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, js, wasmJs]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <PassKi:passki-compose>
+final class com.alirezaiyan.passki.compose/PasskeySignInState { // com.alirezaiyan.passki.compose/PasskeySignInState|null[0]
+    final var isRunning // com.alirezaiyan.passki.compose/PasskeySignInState.isRunning|{}isRunning[0]
+        final fun <get-isRunning>(): kotlin/Boolean // com.alirezaiyan.passki.compose/PasskeySignInState.isRunning.<get-isRunning>|<get-isRunning>(){}[0]
+    final var lastError // com.alirezaiyan.passki.compose/PasskeySignInState.lastError|{}lastError[0]
+        final fun <get-lastError>(): com.alirezaiyan.passki/PasskeyError? // com.alirezaiyan.passki.compose/PasskeySignInState.lastError.<get-lastError>|<get-lastError>(){}[0]
+
+    final suspend fun signIn(): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/PasskeyAssertion> // com.alirezaiyan.passki.compose/PasskeySignInState.signIn|signIn(){}[0]
+}
+
+final val com.alirezaiyan.passki.compose/com_alirezaiyan_passki_compose_PasskeySignInState$stableprop // com.alirezaiyan.passki.compose/com_alirezaiyan_passki_compose_PasskeySignInState$stableprop|#static{}com_alirezaiyan_passki_compose_PasskeySignInState$stableprop[0]
+
+final fun com.alirezaiyan.passki.compose/PasskeySignInButton(com.alirezaiyan.passki.compose/PasskeySignInState, kotlin/Function1<com.alirezaiyan.passki/PasskeyAssertion, kotlin/Unit>, androidx.compose.ui/Modifier?, kotlin/Function1<com.alirezaiyan.passki/PasskeyError, kotlin/Unit>?, kotlin/Boolean, kotlin/Function3<androidx.compose.foundation.layout/RowScope, androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // com.alirezaiyan.passki.compose/PasskeySignInButton|PasskeySignInButton(com.alirezaiyan.passki.compose.PasskeySignInState;kotlin.Function1<com.alirezaiyan.passki.PasskeyAssertion,kotlin.Unit>;androidx.compose.ui.Modifier?;kotlin.Function1<com.alirezaiyan.passki.PasskeyError,kotlin.Unit>?;kotlin.Boolean;kotlin.Function3<androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun com.alirezaiyan.passki.compose/com_alirezaiyan_passki_compose_PasskeySignInState$stableprop_getter(): kotlin/Int // com.alirezaiyan.passki.compose/com_alirezaiyan_passki_compose_PasskeySignInState$stableprop_getter|com_alirezaiyan_passki_compose_PasskeySignInState$stableprop_getter(){}[0]
+final fun com.alirezaiyan.passki.compose/rememberPasskeySignIn(com.alirezaiyan.passki/Passkeys?, com.alirezaiyan.passki/SignInMode?, kotlin.coroutines/SuspendFunction0<kotlin/String>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int): com.alirezaiyan.passki.compose/PasskeySignInState // com.alirezaiyan.passki.compose/rememberPasskeySignIn|rememberPasskeySignIn(com.alirezaiyan.passki.Passkeys?;com.alirezaiyan.passki.SignInMode?;kotlin.coroutines.SuspendFunction0<kotlin.String>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun com.alirezaiyan.passki.compose/rememberPasskeys(androidx.compose.runtime/Composer?, kotlin/Int): com.alirezaiyan.passki/Passkeys // com.alirezaiyan.passki.compose/rememberPasskeys|rememberPasskeys(androidx.compose.runtime.Composer?;kotlin.Int){}[0]

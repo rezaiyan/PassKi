@@ -39,3 +39,4 @@ include(":webApp")
 
 include(":passki")
 include(":passki-test")
+include(":passki-compose")

@@ -1,0 +1,25 @@
+public final class com/alirezaiyan/passki/compose/ComposableSingletons$PasskeySignInButtonKt {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/compose/ComposableSingletons$PasskeySignInButtonKt;
+	public fun <init> ()V
+	public final fun getLambda$1786743314$PassKi_passki_compose ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class com/alirezaiyan/passki/compose/PasskeySignInButtonKt {
+	public static final fun PasskeySignInButton (Lcom/alirezaiyan/passki/compose/PasskeySignInState;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;ZLkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/alirezaiyan/passki/compose/PasskeySignInState {
+	public static final field $stable I
+	public final fun getLastError ()Lcom/alirezaiyan/passki/PasskeyError;
+	public final fun isRunning ()Z
+	public final fun signIn (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/alirezaiyan/passki/compose/PasskeySignInStateKt {
+	public static final fun rememberPasskeySignIn (Lcom/alirezaiyan/passki/Passkeys;Lcom/alirezaiyan/passki/SignInMode;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)Lcom/alirezaiyan/passki/compose/PasskeySignInState;
+}
+
+public final class com/alirezaiyan/passki/compose/RememberPasskeysKt {
+	public static final fun rememberPasskeys (Landroidx/compose/runtime/Composer;I)Lcom/alirezaiyan/passki/Passkeys;
+}
+
