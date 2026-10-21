@@ -1,6 +1,8 @@
 public final class com/alirezaiyan/passki/DoctorCheck {
 	public fun <init> (Ljava/lang/String;Lcom/alirezaiyan/passki/DoctorStatus;Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Lcom/alirezaiyan/passki/DoctorStatus;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public final fun getFixHint ()Ljava/lang/String;
+	public final fun getId ()Ljava/lang/String;
 	public final fun getMessage ()Ljava/lang/String;
 	public final fun getName ()Ljava/lang/String;
 	public final fun getStatus ()Lcom/alirezaiyan/passki/DoctorStatus;

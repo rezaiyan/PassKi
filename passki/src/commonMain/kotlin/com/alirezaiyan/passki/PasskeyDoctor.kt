@@ -54,8 +54,8 @@ public class DoctorReport @InternalPasskiApi constructor(
      *
      * ```
      * PassKi doctor for example.com: 1 failure, 0 warnings
-     * [PASS] Platform support - Android 14 (API 34)
-     * [FAIL] assetlinks.json - fingerprint C9:64:... missing
+     * [PASS] DEV-03 Platform support - Android 14 (API 34)
+     * [FAIL] AND-03 assetlinks.json - fingerprint C9:64:... missing
      *        fix: add it to https://example.com/.well-known/assetlinks.json
      * ```
      *
@@ -99,9 +99,18 @@ public class DoctorCheck @InternalPasskiApi constructor(
     public val message: String,
     /** How to fix a [DoctorStatus.Fail] or [DoctorStatus.Warn]; may span several lines. Null when there's nothing to do. */
     public val fixHint: String?,
+    /**
+     * Stable ID from PassKi's setup check catalog (e.g. `AND-01`, `IOS-02`), shared with the Gradle plugin's
+     * `passkiCheck` and the setup docs (`docs/checks/<id>.md`). Null for checks without a catalog entry.
+     */
+    public val id: String?,
 ) {
-    /** One line: status marker, [name] and [message]. [fixHint] is left out; see [DoctorReport.toString]. */
-    override fun toString(): String = "${status.marker} $name - $message"
+    @InternalPasskiApi
+    public constructor(name: String, status: DoctorStatus, message: String, fixHint: String?) :
+        this(name, status, message, fixHint, id = null)
+
+    /** One line: status marker, [id] (when set), [name] and [message]. [fixHint] is left out; see [DoctorReport.toString]. */
+    override fun toString(): String = if (id == null) "${status.marker} $name - $message" else "${status.marker} $id $name - $message"
 }
 
 /**

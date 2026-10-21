@@ -50,7 +50,7 @@ internal fun hostOf(url: String): String = url.substringAfter("://").substringBe
 internal fun skippedDoctorReport(rpId: String, reason: String): DoctorReport =
     DoctorReport(
         rpId = rpId,
-        checks = listOf(DoctorCheck(PLATFORM_CHECK, DoctorStatus.Skipped, reason, fixHint = null)),
+        checks = listOf(DoctorCheck(PLATFORM_CHECK, DoctorStatus.Skipped, reason, fixHint = null, id = CheckIds.DEV_03)),
     )
 
 internal const val PLATFORM_CHECK: String = "Platform support"
@@ -64,7 +64,7 @@ internal const val RP_ID_CHECK: String = "Relying party ID"
 internal fun rpIdCheck(rpId: String): DoctorCheck? {
     val trimmed = rpId.trim()
     if (trimmed.isEmpty()) {
-        return DoctorCheck(RP_ID_CHECK, DoctorStatus.Fail, "rpId is empty", fixHint = "pass your domain, e.g. example.com")
+        return DoctorCheck(RP_ID_CHECK, DoctorStatus.Fail, "rpId is empty", fixHint = "pass your domain, e.g. example.com", id = CheckIds.CFG_01)
     }
     val bare = trimmed == rpId && trimmed.none { it in "/:?#@ " }
     if (bare) return null
@@ -75,5 +75,6 @@ internal fun rpIdCheck(rpId: String): DoctorCheck? {
         DoctorStatus.Fail,
         "rpId must be a bare domain (got $rpId)$use",
         fixHint = "pass the domain only: no scheme, port, path or query (the same value as the WebAuthn rp.id)",
+        id = CheckIds.CFG_01,
     )
 }

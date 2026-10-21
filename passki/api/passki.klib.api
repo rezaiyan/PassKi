@@ -529,9 +529,12 @@ final class com.alirezaiyan.passki.internal/UserJson { // com.alirezaiyan.passki
 
 final class com.alirezaiyan.passki/DoctorCheck { // com.alirezaiyan.passki/DoctorCheck|null[0]
     constructor <init>(kotlin/String, com.alirezaiyan.passki/DoctorStatus, kotlin/String, kotlin/String?) // com.alirezaiyan.passki/DoctorCheck.<init>|<init>(kotlin.String;com.alirezaiyan.passki.DoctorStatus;kotlin.String;kotlin.String?){}[0]
+    constructor <init>(kotlin/String, com.alirezaiyan.passki/DoctorStatus, kotlin/String, kotlin/String?, kotlin/String?) // com.alirezaiyan.passki/DoctorCheck.<init>|<init>(kotlin.String;com.alirezaiyan.passki.DoctorStatus;kotlin.String;kotlin.String?;kotlin.String?){}[0]
 
     final val fixHint // com.alirezaiyan.passki/DoctorCheck.fixHint|{}fixHint[0]
         final fun <get-fixHint>(): kotlin/String? // com.alirezaiyan.passki/DoctorCheck.fixHint.<get-fixHint>|<get-fixHint>(){}[0]
+    final val id // com.alirezaiyan.passki/DoctorCheck.id|{}id[0]
+        final fun <get-id>(): kotlin/String? // com.alirezaiyan.passki/DoctorCheck.id.<get-id>|<get-id>(){}[0]
     final val message // com.alirezaiyan.passki/DoctorCheck.message|{}message[0]
         final fun <get-message>(): kotlin/String // com.alirezaiyan.passki/DoctorCheck.message.<get-message>|<get-message>(){}[0]
     final val name // com.alirezaiyan.passki/DoctorCheck.name|{}name[0]

@@ -23,7 +23,8 @@ class IosDoctorTest {
         osMajor: Int = 17,
         bundleId: String? = this.bundleId,
         keyWindow: Boolean = true,
-    ) = IosDoctorFacts(osMajor = osMajor, osVersion = "$osMajor.0", bundleId = bundleId, hasKeyWindow = keyWindow)
+        auth: DeviceAuth? = null,
+    ) = IosDoctorFacts(osMajor = osMajor, osVersion = "$osMajor.0", bundleId = bundleId, hasKeyWindow = keyWindow, deviceAuth = auth)
 
     private class RecordingGetter(private val respond: (String) -> HttpResult) : HttpGetter {
         val urls = mutableListOf<String>()
@@ -154,5 +155,36 @@ class IosDoctorTest {
         val report = composeIosReport("https://example.com/x", facts(), getter)
         assertEquals("rpId must be a bare domain (got https://example.com/x); use example.com", report.failures.single().message)
         assertTrue(getter.urls.isEmpty())
+    }
+
+    @Test
+    fun checksCarryCatalogIds() = runTest {
+        val report = composeIosReport("example.com", facts(auth = DeviceAuth.Biometrics), RecordingGetter { ok(it, validAasa) })
+        val ids = report.checks.associate { it.name to it.id }
+        assertEquals("DEV-03", ids[PLATFORM_CHECK])
+        assertEquals("IOS-04", ids[ENTITLEMENT_CHECK])
+        assertEquals("IOS-03", ids[AasaCheck.NAME])
+        assertEquals("DEV-02", ids[DEVICE_AUTH_CHECK])
+        assertEquals(DoctorStatus.Pass, report.checks.single { it.id == "DEV-02" }.status)
+    }
+
+    @Test
+    fun noBiometricsOrPasscodeWarnsDev02() = runTest {
+        val report = composeIosReport("example.com", facts(auth = DeviceAuth.None), RecordingGetter { ok(it, validAasa) })
+        val check = report.checks.single { it.id == "DEV-02" }
+        assertEquals(DoctorStatus.Warn, check.status)
+        assertTrue("Face ID" in check.fixHint.orEmpty(), check.fixHint)
+    }
+
+    @Test
+    fun passcodeOnlyPassesDev02() = runTest {
+        val report = composeIosReport("example.com", facts(auth = DeviceAuth.PasscodeOnly), RecordingGetter { ok(it, validAasa) })
+        assertEquals(DoctorStatus.Pass, report.checks.single { it.id == "DEV-02" }.status)
+    }
+
+    @Test
+    fun unknownDeviceAuthOmitsDev02() = runTest {
+        val report = composeIosReport("example.com", facts(auth = null), RecordingGetter { ok(it, validAasa) })
+        assertTrue(report.checks.none { it.id == "DEV-02" })
     }
 }

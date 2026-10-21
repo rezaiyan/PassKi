@@ -24,10 +24,10 @@ internal object AasaCheck {
     fun evaluate(direct: HttpResult, cdn: HttpResult, bundleId: String): DoctorCheck {
         val rpId = hostOf(direct.url)
         direct.fetchProblem()?.let { problem ->
-            return fail(problem, "serve the file at ${direct.url} with HTTP 200, without redirects (passkiWellKnown generates it)")
+            return fail(CheckIds.IOS_01, problem, "serve the file at ${direct.url} with HTTP 200, without redirects (passkiWellKnown generates it)")
         }
         val directJson = parse(direct.body.orEmpty()) as? JsonObject
-            ?: return fail("${direct.url} is not a JSON object", "fix the JSON syntax; passkiWellKnown generates a valid file")
+            ?: return fail(CheckIds.IOS_01, "${direct.url} is not a JSON object", "fix the JSON syntax; passkiWellKnown generates a valid file")
 
         val apps = (directJson["webcredentials"] as? JsonObject)?.get("apps").strings()
         val match = apps.firstOrNull { it.contains('.') && it.substringAfter('.') == bundleId }
@@ -36,6 +36,7 @@ internal object AasaCheck {
             val found = if (apps.isEmpty()) "it lists no apps" else "found ${apps.joinToString()} (team ID ${teamIds.joinToString()})"
             val teamId = teamIds.singleOrNull() ?: "<TEAM_ID>"
             return fail(
+                CheckIds.IOS_02,
                 "webcredentials.apps has no entry for $bundleId; $found",
                 "add \"$teamId.$bundleId\" to webcredentials.apps in ${direct.url}",
             )
@@ -49,6 +50,7 @@ internal object AasaCheck {
                 DoctorStatus.Warn,
                 "lists $match (team ID $teamId), but the file is ${size / 1024} KB; Apple ignores AASA files over 128 KB",
                 "shrink ${direct.url} below 128 KB (e.g. trim applinks paths)",
+                CheckIds.IOS_01,
             )
         }
 
@@ -64,6 +66,7 @@ internal object AasaCheck {
                 "lists $match (team ID $teamId), but Apple's CDN copy is unavailable: " +
                     (cdnFetchProblem ?: "${cdn.url} is not a JSON object"),
                 cdnHint,
+                CheckIds.IOS_03,
             )
         }
         val cdnApps = (cdnJson["webcredentials"] as? JsonObject)?.get("apps").strings()
@@ -73,12 +76,13 @@ internal object AasaCheck {
                 DoctorStatus.Warn,
                 "lists $match (team ID $teamId), but Apple's CDN copy at ${cdn.url} doesn't yet (CDN lagging)",
                 cdnHint,
+                CheckIds.IOS_03,
             )
         }
-        return DoctorCheck(NAME, DoctorStatus.Pass, "lists $match (team ID $teamId); Apple's CDN copy lists it too", fixHint = null)
+        return DoctorCheck(NAME, DoctorStatus.Pass, "lists $match (team ID $teamId); Apple's CDN copy lists it too", fixHint = null, id = CheckIds.IOS_03)
     }
 
-    private fun fail(message: String, fixHint: String) = DoctorCheck(NAME, DoctorStatus.Fail, message, fixHint)
+    private fun fail(id: String, message: String, fixHint: String) = DoctorCheck(NAME, DoctorStatus.Fail, message, fixHint, id)
 
     private fun parse(body: String): JsonElement? = try {
         PasskiJson.parseToJsonElement(body)

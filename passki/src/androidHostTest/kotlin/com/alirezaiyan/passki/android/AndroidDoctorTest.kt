@@ -21,12 +21,14 @@ class AndroidDoctorTest {
         packageName: String? = pkg,
         internet: Boolean = true,
         fingerprints: List<String> = listOf(fingerprint),
+        deviceSecure: Boolean? = null,
     ) = AndroidDoctorFacts(
         sdkInt = sdkInt,
         release = "14",
         packageName = packageName,
         hasInternetPermission = internet,
         certFingerprints = fingerprints,
+        isDeviceSecure = deviceSecure,
     )
 
     private val validAssetLinks = """
@@ -173,5 +175,37 @@ class AndroidDoctorTest {
         assertFalse(report.isHealthy)
         assertEquals("rpId must be a bare domain (got https://example.com/x); use example.com", report.failures.single().message)
         assertTrue(getter.urls.isEmpty())
+    }
+
+    @Test
+    fun checksCarryCatalogIds() = runTest {
+        val report = composeAndroidReport("example.com", facts(deviceSecure = true), RecordingGetter { ok(it, validAssetLinks) })
+        val ids = report.checks.associate { it.name to it.id }
+        assertEquals("DEV-03", ids[PLATFORM_CHECK])
+        assertEquals("AND-06", ids[PASSKI_INIT_CHECK])
+        assertEquals("AND-03", ids[AssetLinksCheck.NAME])
+        assertEquals("DEV-01", ids[SCREEN_LOCK_CHECK])
+        assertTrue("[PASS] DEV-03 $PLATFORM_CHECK" in report.toString(), report.toString())
+    }
+
+    @Test
+    fun noScreenLockWarnsDev01() = runTest {
+        val report = composeAndroidReport("example.com", facts(deviceSecure = false), RecordingGetter { ok(it, validAssetLinks) })
+        val check = report.checks.single { it.id == "DEV-01" }
+        assertEquals(DoctorStatus.Warn, check.status)
+        assertTrue("screen lock" in check.fixHint.orEmpty(), check.fixHint)
+        assertTrue(report.isHealthy)
+    }
+
+    @Test
+    fun unknownScreenLockStateOmitsDev01() = runTest {
+        val report = composeAndroidReport("example.com", facts(deviceSecure = null), RecordingGetter { ok(it, validAssetLinks) })
+        assertTrue(report.checks.none { it.id == "DEV-01" })
+    }
+
+    @Test
+    fun urlRpIdCarriesCfg01() = runTest {
+        val report = composeAndroidReport("https://example.com", facts(), RecordingGetter { ok(it, validAssetLinks) })
+        assertEquals("CFG-01", report.checks.single().id)
     }
 }

@@ -24,21 +24,22 @@ internal object AssetLinksCheck {
      */
     fun evaluate(result: HttpResult, packageName: String, certFingerprints: List<String>): DoctorCheck {
         result.fetchProblem()?.let { problem ->
-            return fail(problem, "serve the file at ${result.url} with HTTP 200, without redirects (passkiWellKnown generates it)")
+            return fail(CheckIds.AND_01, problem, "serve the file at ${result.url} with HTTP 200, without redirects (passkiWellKnown generates it)")
         }
         val statements = parseStatements(result.body.orEmpty())
-            ?: return fail("${result.url} is not a JSON array of statements", "fix the JSON syntax; passkiWellKnown generates a valid file")
+            ?: return fail(CheckIds.AND_01, "${result.url} is not a JSON array of statements", "fix the JSON syntax; passkiWellKnown generates a valid file")
 
         // {"include": "<url>"} entries pull statements from another file; the doctor doesn't fetch them, so a
         // problem that an include might resolve is a warning, not a failure.
         val includes = statements.mapNotNull { it.include }
-        val problem: (String, String?) -> DoctorCheck = { message, hint ->
-            if (includes.isEmpty()) fail(message, hint) else unresolvedIncludes(message, hint, includes)
+        val problem: (String, String, String?) -> DoctorCheck = { id, message, hint ->
+            if (includes.isEmpty()) fail(id, message, hint) else unresolvedIncludes(id, message, hint, includes)
         }
 
         val loginStatements = statements.filter { LOGIN_CREDS_RELATION in it.relations }
         if (loginStatements.isEmpty()) {
             return problem(
+                CheckIds.AND_02,
                 "no statement grants $LOGIN_CREDS_RELATION",
                 addStatementHint(result.url, packageName, certFingerprints),
             )
@@ -46,17 +47,19 @@ internal object AssetLinksCheck {
         val ours = loginStatements.filter { it.namespace == "android_app" && it.packageName == packageName }
         if (ours.isEmpty()) {
             return problem(
+                CheckIds.AND_02,
                 "no $LOGIN_CREDS_RELATION statement for package $packageName",
                 addStatementHint(result.url, packageName, certFingerprints),
             )
         }
         if (certFingerprints.isEmpty()) {
-            return fail("no signing certificate found for $packageName", fixHint = null)
+            return fail(CheckIds.AND_03, "no signing certificate found for $packageName", fixHint = null)
         }
         val listed = ours.flatMapTo(mutableSetOf()) { it.fingerprints.map(String::uppercase) }
         val missing = certFingerprints.filter { it.uppercase() !in listed }
         if (missing.isNotEmpty()) {
             return problem(
+                CheckIds.AND_03,
                 "${plural(missing.size, "fingerprint")} ${missing.joinToString()} missing for $packageName",
                 addStatementHint(result.url, packageName, missing),
             )
@@ -68,6 +71,7 @@ internal object AssetLinksCheck {
                 DoctorStatus.Warn,
                 "served with Content-Type ${contentType ?: "(none)"}, expected application/json",
                 fixHint = "configure your server to send Content-Type: application/json for ${result.url}",
+                id = CheckIds.AND_01,
             )
         }
         return DoctorCheck(
@@ -75,16 +79,18 @@ internal object AssetLinksCheck {
             DoctorStatus.Pass,
             "$packageName delegated with ${plural(certFingerprints.size, "fingerprint")}",
             fixHint = null,
+            id = CheckIds.AND_03,
         )
     }
 
-    private fun fail(message: String, fixHint: String?) = DoctorCheck(NAME, DoctorStatus.Fail, message, fixHint)
+    private fun fail(id: String, message: String, fixHint: String?) = DoctorCheck(NAME, DoctorStatus.Fail, message, fixHint, id)
 
-    private fun unresolvedIncludes(message: String, fixHint: String?, includes: List<String>) = DoctorCheck(
+    private fun unresolvedIncludes(id: String, message: String, fixHint: String?, includes: List<String>) = DoctorCheck(
         NAME,
         DoctorStatus.Warn,
         "$message in this file; include statements are not followed by the doctor (${includes.joinToString()})",
         listOfNotNull("make sure an included file covers it, or", fixHint).joinToString(" "),
+        id,
     )
 
     private fun addStatementHint(url: String, packageName: String, fingerprints: List<String>): String =

@@ -2,6 +2,8 @@ package com.alirezaiyan.passki.android
 
 import android.Manifest
 import android.app.Application
+import android.app.KeyguardManager
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import java.security.MessageDigest
@@ -13,6 +15,7 @@ import java.security.MessageDigest
  * @property packageName null when PassKi has no Application (not initialised).
  * @property certFingerprints SHA-256 of each current signing certificate (rotated-out keys excluded), colon hex;
  *   empty below API 28 or when unreadable.
+ * @property isDeviceSecure whether a PIN/pattern/password lock is set; null when unknown (no Application).
  */
 internal class AndroidDoctorFacts(
     val sdkInt: Int,
@@ -20,6 +23,7 @@ internal class AndroidDoctorFacts(
     val packageName: String?,
     val hasInternetPermission: Boolean,
     val certFingerprints: List<String>,
+    val isDeviceSecure: Boolean? = null,
 )
 
 internal fun collectAndroidDoctorFacts(app: Application?): AndroidDoctorFacts {
@@ -30,6 +34,7 @@ internal fun collectAndroidDoctorFacts(app: Application?): AndroidDoctorFacts {
         packageName = app?.packageName,
         hasInternetPermission = app?.checkSelfPermission(Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED,
         certFingerprints = app?.let(::signingFingerprints).orEmpty(),
+        isDeviceSecure = app?.let { (it.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager)?.isDeviceSecure },
     )
 }
 

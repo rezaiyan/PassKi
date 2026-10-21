@@ -59,6 +59,18 @@ class DoctorReportTest {
     }
 
     @Test
+    fun checkToStringIncludesCatalogIdWhenPresent() {
+        val check = DoctorCheck("assetlinks.json", DoctorStatus.Pass, "delegated", fixHint = null, id = "AND-01")
+        assertEquals("AND-01", check.id)
+        assertEquals("[PASS] AND-01 assetlinks.json - delegated", check.toString())
+    }
+
+    @Test
+    fun checkWithoutIdHasNullId() {
+        assertEquals(null, warn.id)
+    }
+
+    @Test
     fun checkToStringIsReadable() {
         assertEquals("[WARN] INTERNET permission - not granted", warn.toString())
     }
