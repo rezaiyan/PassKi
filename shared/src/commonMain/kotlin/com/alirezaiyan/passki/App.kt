@@ -56,7 +56,11 @@ fun App(passkeys: Passkeys = remember { Passkeys() }) {
             Button(onClick = {
                 run("Register") {
                     passkeys.register(DemoRelyingParty.creationOptions())
-                        .onSuccess { DemoRelyingParty.credentialIds += it.credentialId }
+                        .onSuccess {
+                            DemoRelyingParty.credentialIds += it.credentialId
+                            // Full response, for recording passki-test contract fixtures. Contains no secrets.
+                            println("PASSKI_FIXTURE ${it.json}")
+                        }
                 }
             }) { Text("Register passkey") }
             Button(onClick = { run("Sign in") { passkeys.signIn(DemoRelyingParty.requestOptions()) } }) {
@@ -93,6 +97,6 @@ fun App(passkeys: Passkeys = remember { Passkeys() }) {
     }
 }
 
-/** One log entry per failure: the message, then the fix hint on its own line when there is one. */
+/** One log entry per failure: the error type and message, then the fix hint on its own line when there is one. */
 internal fun failureLog(label: String, error: PasskeyError): String =
-    "$label ✗ ${error.message}" + error.fixHint?.let { "\nfix: $it" }.orEmpty()
+    "$label ✗ [${error::class.simpleName}] ${error.message}" + error.fixHint?.let { "\nfix: $it" }.orEmpty()

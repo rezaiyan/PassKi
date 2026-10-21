@@ -1,0 +1,21 @@
+{
+  "rpId": "alirezaiyan.com",
+  "response": {
+    "rawId": "P-Y0NwBAncnNqezQv1FMbg",
+    "authenticatorAttachment": "platform",
+    "type": "public-key",
+    "id": "P-Y0NwBAncnNqezQv1FMbg",
+    "response": {
+      "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiUWxvN0J2NVdfRXA0N2tPYUVOSGJvMThxRzlGdTc0RXk3ejVGWllxNDVldyIsIm9yaWdpbiI6ImFuZHJvaWQ6YXBrLWtleS1oYXNoOnlXUVBhbWlRcjJ3bVNkeTdxNVI1STVOY19CQ0wzd01nZUFSZ1hGdDVTUU0iLCJhbmRyb2lkUGFja2FnZU5hbWUiOiJjb20uYWxpcmV6YWl5YW4ucGFzc2tpIn0",
+      "attestationObject": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YViUgaADwNZSa4ROksdckWpb-nzP10MpMaEXaqCDUHK3C2tdAAAAAOqbjWZNAR0hPOS2tIy1ddQAED_mNDcAQJ3Jzans0L9RTG6lAQIDJiABIVggMsuzpSKEGn1-82GGojbeXs1oNrh1grGXItG5dBZxUUAiWCB9-YE-Ed3HrehPMgiqv3dnWsUKxsAB2RDw6GiIgo3oTA",
+      "transports": [
+        "internal",
+        "hybrid"
+      ],
+      "authenticatorData": "gaADwNZSa4ROksdckWpb-nzP10MpMaEXaqCDUHK3C2tdAAAAAOqbjWZNAR0hPOS2tIy1ddQAED_mNDcAQJ3Jzans0L9RTG6lAQIDJiABIVggMsuzpSKEGn1-82GGojbeXs1oNrh1grGXItG5dBZxUUAiWCB9-YE-Ed3HrehPMgiqv3dnWsUKxsAB2RDw6GiIgo3oTA",
+      "publicKeyAlgorithm": -7,
+      "publicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEMsuzpSKEGn1-82GGojbeXs1oNrh1grGXItG5dBZxUUB9-YE-Ed3HrehPMgiqv3dnWsUKxsAB2RDw6GiIgo3oTA"
+    },
+    "clientExtensionResults": {}
+  }
+}
