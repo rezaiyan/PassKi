@@ -93,11 +93,11 @@ One versioned list of checks with stable IDs, used by the Gradle plugin, the on-
 ## Implementation Steps
 
 ### Phase 1: Check catalog + one command (no infra)
-- [ ] Define the catalog (`passki-setup-rules`: JSON/Kotlin data with IDs, titles, fix templates). Reuse it in the Gradle plugin and the doctor (doctor check names gain IDs).
-- [ ] `passkiSetup`: entitlements file + `Config.xcconfig` wiring (fallback: print the exact Xcode steps if no xcconfig exists), Team/Bundle discovery via `xcodebuild -showBuildSettings`, server-config.json + verifier snippets.
-- [ ] `passkiCheck`: IOS-05 (resolved `CODE_SIGN_ENTITLEMENTS`), IOS-06 (codesign on the last built .app if present), JSON + HTML report, CI exit codes.
-- [ ] Docs page per check ID (in the repo `docs/checks/`; later on the dashboard).
-- [ ] Dogfood: run on this repo. It must catch the missing `CODE_SIGN_ENTITLEMENTS` we hit today.
+- [x] Define the catalog (`passki-setup-rules`: JSON/Kotlin data with IDs, titles, fix templates). Reuse it in the Gradle plugin and the doctor (doctor check names gain IDs).
+- [x] `passkiSetup`: entitlements file + `Config.xcconfig` wiring (fallback: print the exact Xcode steps if no xcconfig exists), Team/Bundle discovery via `xcodebuild -showBuildSettings`, server-config.json + verifier snippets.
+- [x] `passkiCheck`: IOS-05 (resolved `CODE_SIGN_ENTITLEMENTS`), IOS-06 (codesign on the last built .app if present), JSON + HTML report, CI exit codes.
+- [x] Docs page per check ID (in the repo `docs/checks/`; later on the dashboard).
+- [x] Dogfood: run on this repo. It must catch the missing `CODE_SIGN_ENTITLEMENTS` we hit today.
 
 ### Phase 2: Demo RP + sample with real data
 - [ ] Demo RP API (Next.js + SimpleWebAuthn + SQLite, TTL cleanup) on the chosen domain.
@@ -113,7 +113,7 @@ One versioned list of checks with stable IDs, used by the Gradle plugin, the on-
 
 ### Phase 4: Polish
 - [ ] `passkiCheck --device` (adb/simctl doctor run).
-- [ ] README "Setup in 5 minutes" built around `passkiSetup` → upload → `passkiCheck`.
+- [x] README "Setup in 5 minutes" built around `passkiSetup` → upload → `passkiCheck`.
 - [ ] Video/GIF of the dashboard turning green.
 
 ## Decisions (2026-10-21)
