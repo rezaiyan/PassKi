@@ -1,6 +1,7 @@
 {
   "version": 1,
   "docsBase": "https://passki.alirezaiyan.com/checks/",
+  "docsRepo": "https://github.com/rezaiyan/PassKi/blob/main/docs/checks/",
   "checks": [
     { "id": "AND-01", "platform": "android", "severity": "error", "title": "assetlinks.json reachable", "fix": "Serve https://<rpId>/.well-known/assetlinks.json over HTTPS with status 200, Content-Type application/json and no redirects." },
     { "id": "AND-02", "platform": "android", "severity": "error", "title": "Login credentials delegated to the app", "fix": "Add a statement with relation \"delegate_permission/common.get_login_creds\" for package <package> to assetlinks.json." },
@@ -17,6 +18,7 @@
     { "id": "SRV-01", "platform": "server", "severity": "error", "title": "Server RP ID matches", "fix": "Configure your WebAuthn server's RP ID as <rpId>." },
     { "id": "SRV-02", "platform": "server", "severity": "error", "title": "Server allows all origins", "fix": "Allow https://<rpId> and every android:apk-key-hash:<hash> origin printed by ./gradlew passkiFingerprints." },
     { "id": "SRV-03", "platform": "server", "severity": "error", "title": "Server options are valid WebAuthn", "fix": "Registration options must include rp.id, a base64url challenge of at least 16 bytes and a user.id of 1-64 bytes." },
+    { "id": "CFG-01", "platform": "config", "severity": "error", "title": "RP ID is a bare domain", "fix": "Pass the relying party ID as a bare domain such as example.com: no scheme, port, path or query (the same value as the WebAuthn rp.id)." },
     { "id": "DEV-01", "platform": "device", "severity": "warning", "title": "Android device can store passkeys", "fix": "Set a screen lock and sign in to a Google account (or enable another credential provider) in Settings." },
     { "id": "DEV-02", "platform": "device", "severity": "warning", "title": "iOS device can use passkeys", "fix": "Enrol Face ID/Touch ID (Simulator: Features > Face ID > Enrolled); for ?mode=developer enable Settings > Developer > Associated Domains Development." },
     { "id": "DEV-03", "platform": "device", "severity": "error", "title": "Platform supports passkeys", "fix": "Passkeys need Android 9+ or iOS 16+." }
