@@ -4,15 +4,36 @@ Passkeys for Kotlin Multiplatform. One dependency, one call, native authenticato
 
 | Platform | Status |
 |---|---|
-| Android 9+ (Credential Manager) | register, sign in, passkey-or-password, upgrade, signals |
-| iOS 16+ (AuthenticationServices) | register, sign in, passkey-or-password, upgrade (iOS 18+), signals (iOS 26+) |
+| Android 9+ (Credential Manager) | register, sign in, passkey-or-password, upgrade, signals, autofill (Android 15+), PRF / largeBlob (depends on the credential provider) |
+| iOS 16+ (AuthenticationServices) | register, sign in, passkey-or-password, autofill, upgrade (iOS 18+), signals (iOS 26+), PRF (iOS 18+), largeBlob (iOS 17+) |
 | JVM desktop, browser (js / wasmJs) | compile and return `PasskeyError.NotSupported` today; native macOS/tvOS/watchOS/Linux/Windows targets are not published yet |
+
+`passkeys.capabilities()` reports what the current device supports, so UI can adapt before showing a button:
+
+| `PasskeyCapabilities` | Android | iOS | Notes |
+|---|---|---|---|
+| `isSupported` | 9+ (API 28) | 16+ | When false, every call fails with `NotSupported` |
+| `immediateSignIn` (`SignInMode.ImmediateOnly`) | 9+ | 16+ | |
+| `unifiedPasswordSignIn` (`signInOrPassword`) | 9+ | 16+ | |
+| `conditionalCreate` (`upgrade`) | 9+ | 18+ | Android: the credential provider may still decline |
+| `signals` | 9+ | 26+ | Android: the credential provider may still decline |
+| `autofill` (`SignInMode.Autofill`) | 15+ (API 35) | 16+ | Needs a focused username field |
+
+Extensions have no flag. As in browsers, an extension the platform can't handle is ignored and its output is `null`.
+
+| Extension | Android | iOS |
+|---|---|---|
+| PRF | passed to the credential provider (Google Password Manager supports it) | 18+ |
+| largeBlob | passed to the credential provider | 17+ |
 
 ## Install
 
 ```kotlin
-commonMain.dependencies { implementation("com.alirezaiyan.passki:passki:0.1.0-alpha01") }
-commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha01") }
+commonMain.dependencies {
+    implementation("com.alirezaiyan.passki:passki:0.1.0-alpha02")
+    implementation("com.alirezaiyan.passki:passki-compose:0.1.0-alpha02") // optional, Compose Multiplatform UI helpers
+}
+commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha02") }
 ```
 
 ## Use
@@ -50,8 +71,158 @@ Options are your server's WebAuthn JSON, used as-is (a `{"publicKey": ...}` enve
 - **`excludeCredentials` on iOS < 17.4 is ignored** by the system, so a duplicate passkey may be created; dedupe on your server. `PasskeyError.AlreadyRegistered` is guaranteed on Android and iOS 17.4+.
 - **Duplicate registration on Android shows a sheet first.** When `excludeCredentials` matches, Google Password Manager still shows its create sheet; `PasskeyError.AlreadyRegistered` is returned only after the user taps Continue.
 - **Android `upgrade()` and `signals` depend on the user's credential provider** and may return `PasskeyError.NotSupported` even when `capabilities()` reports them as available.
-- **Signals on iOS** need iOS 26 (`ASCredentialUpdater`); older versions return `PasskeyError.NotSupported`. iOS only takes one name, so `currentUserDetails` reports `name` and ignores `displayName`. No app-side setup or linker flags are needed.
 - **iOS registration responses** omit the WebAuthn Level 3 `publicKey` and `publicKeyAlgorithm` fields. Read the public key from `attestationObject`, which every server library already does.
+
+## Signals on iOS
+
+`passkeys.signals` works on iOS 26+ through `ASCredentialUpdater`. That API is Swift-only, so PassKi ships a small
+Swift bridge compiled into its klib. Your app needs **no setup**: no Swift file, no linker flags. PassKi links as a
+static or a dynamic framework. Older iOS versions return `PasskeyError.NotSupported`; the iOS 26 symbols are
+weak-linked, so the app still runs there.
+
+- iOS takes only one name, so `currentUserDetails` reports `name` and ignores `displayName`.
+- The updater refuses signals for a domain the app is not associated with. PassKi reports that as
+  `PasskeyError.Misconfigured` with an AASA hint.
+
+## Compose
+
+`passki-compose` turns passkey sign-in into a few lines of Compose Multiplatform code. It has the same targets as
+`passki` and exposes it as an `api` dependency.
+
+```kotlin
+@Composable
+fun SignInScreen(api: MyApi) {
+    val scope = rememberCoroutineScope()
+    val passkeys = rememberPasskeys() // remember { Passkeys() }
+    var username by remember { mutableStateOf("") }
+
+    // Offers the user's passkeys as keyboard suggestions while the field is focused.
+    PasskeyUsernameField(
+        value = username,
+        onValueChange = { username = it },
+        requestOptions = { api.authenticationOptions() }, // fresh options for every offer
+        onSignedIn = { assertion -> scope.launch { api.finishSignIn(assertion.json) } },
+        passkeys = passkeys,
+    )
+
+    // A Material 3 button: disabled with a progress indicator while running, double taps are safe.
+    val signIn = rememberPasskeySignIn(passkeys) { api.authenticationOptions() }
+    PasskeySignInButton(
+        state = signIn,
+        onSignedIn = { assertion -> scope.launch { api.finishSignIn(assertion.json) } },
+        onError = { error -> showError(error.message) }, // never called for Cancelled
+    )
+}
+```
+
+For custom UI, use the headless state from `rememberPasskeySignIn(passkeys, mode) { options }`. `isRunning` and
+`lastError` are Compose state, and `signIn()` returns a `PasskeyResult<PasskeyAssertion>`:
+
+```kotlin
+val state = rememberPasskeySignIn(mode = SignInMode.ImmediateOnly) { api.authenticationOptions() }
+Button(enabled = !state.isRunning, onClick = {
+    scope.launch { state.signIn().onSuccess { api.finishSignIn(it.json) } }
+}) { Text("Sign in") }
+state.lastError?.let { Text(it.message) } // Cancelled is never stored
+```
+
+A `signIn()` call made while another one is running joins it instead of opening a second sheet. If `requestOptions`
+throws, the exception comes back as `PasskeyError.Unknown` with the exception as its `cause`. Every helper takes an
+optional `passkeys` parameter, so you can pass `FakePasskeys` in previews and tests.
+
+### PasskeyUsernameField
+
+`PasskeyUsernameField(value, onValueChange, requestOptions, onSignedIn, modifier, passkeys, label, onError, enabled)`
+keeps a `SignInMode.Autofill` request open while it is focused and `capabilities().autofill` is true. It withdraws the
+offer when it loses focus or leaves composition. Typing works as usual, so the same field also serves your password
+or "continue with username" path.
+
+- **Android 15+:** a Material 3 `OutlinedTextField` marked as a username field. The passkey shows up as a suggestion
+  chip in the keyboard; tapping it opens the credential provider's sheet.
+- **iOS 16+:** the field hosts a UIKit `UITextField` with `textContentType = .username`, drawn with a Material-like
+  border and label. A Compose text field with `ContentType.Username` does not make iOS offer passkeys (checked on iOS
+  26.3), so the UIKit field is required. iOS shows a **"Passwords"** item in the QuickType bar rather than the account
+  name. Tapping it (after Face ID) opens a list that includes your passkeys. In the simulator, turn off the hardware
+  keyboard (I/O > Keyboard, or ⌘K) to see the QuickType bar.
+- **JVM desktop and browser:** a plain text field. No request is made.
+
+`onError` only reports problems autofill can't recover from: `NotSupported`, `Misconfigured` or `InvalidOptions`.
+These are reported once, and then the field stops offering passkeys. It also reports unexpected errors such as
+`requestOptions` throwing; the field then tries again on the next focus or tap. Dismissing the suggestion is never
+reported.
+
+## Autofill sign-in
+
+`SignInMode.Autofill` (WebAuthn "conditional mediation") offers passkeys in the keyboard or QuickType bar of the
+focused username field. It needs Android 15 (API 35)+ or iOS 16+ (`capabilities().autofill`). `PasskeyUsernameField`
+does all of the following for you. To use it with your own field:
+
+```kotlin
+// Your username field must be focused (content type username) when you call this.
+val job = scope.launch {
+    passkeys.signIn(api.authenticationOptions(), SignInMode.Autofill)
+        .onSuccess { api.finishSignIn(it.json) }
+}
+// When the field loses focus or leaves the screen:
+job.cancel() // withdraws the offer
+```
+
+- **The call suspends until the user picks a passkey.** Dismissing the suggestion or the sheet does not complete it.
+  Cancel the coroutine to withdraw the offer.
+- **Re-arming after a dismissal:**
+  - **Android:** the chip does not come back while the field stays focused. Cancel and call again, for example when
+    the field is tapped. `PasskeyUsernameField` re-arms on every tap.
+  - **iOS:** PassKi offers the passkeys again by itself, about 500 ms after a dismissal.
+- **Stale chips (Android):** a chip that has been visible for more than about a minute can fail in Google Password
+  Manager with "Flow has timed out". The next call offers a fresh one.
+- **Errors:**
+  - Below Android 15: `NotSupported`.
+  - On Android with no focused view: `Misconfigured` ("Autofill needs a focused text field").
+  - On iOS, a missing association: `Misconfigured`, as with the other calls.
+
+## PRF and largeBlob
+
+`PasskeyExtensions` adds typed WebAuthn extensions to the options JSON from your server. Use it when the inputs come
+from the device, for example a PRF salt for client-side encryption that the server must never see. Each helper
+returns new JSON, keeps other extensions and a `{"publicKey": ...}` envelope, and throws `IllegalArgumentException`
+for the wrong kind of options.
+
+```kotlin
+// PRF: the same passkey and salt always give the same 32 bytes, so they can derive an encryption key.
+val options = PasskeyExtensions.withPrf(api.authenticationOptions(), first = salt) // optional second = salt2
+passkeys.signIn(options).onSuccess { assertion ->
+    val key = assertion.prf?.first // null if PRF is not supported here
+}
+
+// At registration: ask whether the new passkey supports PRF.
+passkeys.register(PasskeyExtensions.withPrf(api.registrationOptions()))
+    .onSuccess { println(it.prfEnabled) } // true / false / null (not answered)
+
+// largeBlob: create with storage, then read or write while signing in.
+passkeys.register(PasskeyExtensions.withLargeBlob(creationOptions, LargeBlobSupport.Preferred))  // .largeBlobSupported
+passkeys.signIn(PasskeyExtensions.withLargeBlobWrite(requestOptions, blob))                         // .largeBlobWritten
+passkeys.signIn(PasskeyExtensions.withLargeBlobRead(requestOptions))                                // .largeBlob
+```
+
+| Output | On |
+|---|---|
+| `prf: PrfResults?` (`first`, `second`) | `PasskeyAssertion`; `PasskeyRegistration` when the provider evaluates PRF at registration |
+| `prfEnabled: Boolean?` | `PasskeyRegistration` |
+| `largeBlobSupported: Boolean?` | `PasskeyRegistration` |
+| `largeBlob: ByteArray?` / `largeBlobWritten: Boolean?` | `PasskeyAssertion` |
+
+The outputs are also in the response `json` (`clientExtensionResults`) for your server. PRF results and blobs are
+secrets: `PrfResults.toString()` prints only their sizes.
+
+- **Android:** the options pass through to the credential provider unchanged. Support depends on the provider; Google
+  Password Manager returns PRF results.
+- **iOS:** PassKi maps the extensions to the AuthenticationServices PRF and largeBlob inputs. Below iOS 18 (PRF) or
+  iOS 17 (largeBlob) the extension is left out silently and its output is `null`, as in browsers. Without salts at
+  registration, iOS only reports `prfEnabled`.
+- **largeBlob writes** need the passkey named in `allowCredentials`. Read and write are exclusive:
+  `withLargeBlobWrite` replaces a `withLargeBlobRead` request.
+- **`FakePasskeys`** computes PRF deterministically (HMAC-SHA256 of a per-credential secret and the salt) and stores
+  large blobs, so you can test PRF-derived keys without a device. Don't use it as a real key source.
 
 ## Test without devices
 
@@ -61,7 +232,7 @@ passkeys.failNextWith(PasskeyError.Cancelled)               // next call fails o
 passkeys.conditionalCreate = false                          // simulate a device without conditional create
 ```
 
-Other capability flags: `isSupported`, `immediateSignIn`, `unifiedPasswordSignIn`, `signalsSupported`. `TestOptions.creation(rpId)` and `TestOptions.request(rpId)` build server-style options JSON.
+Other capability flags: `isSupported`, `immediateSignIn`, `unifiedPasswordSignIn`, `signalsSupported`, `autofillSupported` (when on, `SignInMode.Autofill` completes at once, as if the user picked the suggestion). `passkeys.authenticator.prfSupported` / `largeBlobSupported` switch the extensions off. `TestOptions.creation(rpId)` and `TestOptions.request(rpId)` build server-style options JSON.
 
 ## Server setup
 
@@ -109,7 +280,7 @@ Apply it in your Android application module (`com.android.application`):
 ```kotlin
 plugins {
     id("com.android.application")
-    id("com.alirezaiyan.passki") version "0.1.0-alpha01"
+    id("com.alirezaiyan.passki") version "0.1.0-alpha02"
 }
 
 passki {
@@ -185,13 +356,86 @@ PassKi doctor for alirezaiyan.com: 0 failures, 0 warnings
 
 A failing check prints a `fix:` line under it. The text is for humans; read `report.checks` (`id`, `name`, `status`, `message`, `fixHint`) instead of parsing it.
 
+## Demo relying party and setup dashboard
+
+[passki.alirezaiyan.com](https://passki.alirezaiyan.com) is a hosted relying party with a setup dashboard. It is
+built on SimpleWebAuthn. Its source is in `passki-web/`.
+
+- **Verifier:** enter your RP ID. The server fetches your `assetlinks.json` and `apple-app-site-association`, asks
+  Google Digital Asset Links and the Apple CDN, and runs the same catalog checks (same IDs and fixes) as
+  `passkiCheck`. It re-checks live while you deploy, and can save a shareable report link that expires after 7 days.
+  Optionally it checks your server's options endpoint (SRV checks).
+- **Generator:** enter the RP ID, packages, SHA-256 fingerprints, Team ID and bundle ID, and get both well-known files,
+  the entitlements and `xcconfig` lines and the server origin allow-list, as a zip.
+- **Check docs:** one page per check ID, the same pages as [`docs/checks/`](docs/checks/README.md).
+- **Self-service iOS demo:** your Team ID differs from ours, so register your `TEAM.bundle` app ID on the demo page.
+  It is listed in the demo `apple-app-site-association` for 7 days. Use it with
+  `webcredentials:passki.alirezaiyan.com?mode=developer`. Registration is rate-limited per IP.
+- **Demo RP API:** `/api/demo/register/options|verify`, `/api/demo/login/options|verify` and
+  `/api/demo/server-config`. Challenges are real and single-use, and each response gets a server verdict. Demo users
+  expire after 24 hours.
+
+The server fetches only `https://<domain>/.well-known/…` and the fixed Google and Apple endpoints. It blocks IP literals
+and private or reserved addresses, pins the validated DNS answer, never follows redirects, and caps the time and size
+of every fetch.
+
+## Sample app
+
+`androidApp`, `iosApp` and `shared/` make up a Compose Multiplatform sample. It runs every PassKi call against the
+demo relying party, and the server verifies every response ("verified by server ✓, signCount …"). Its UI uses
+`PasskeyUsernameField`, `PasskeySignInButton`, register, device-only sign-in, passkey-or-password, upgrade, signals
+and PRF buttons, plus a **Setup check** that runs `PasskeyDoctor` and the server checks SRV-01/02 and shows their
+catalog IDs.
+
+- **Android, zero config:** the debug build is signed with the committed `androidApp/sample-debug.keystore`, whose
+  fingerprint the demo `assetlinks.json` lists. **That key is public: never use it for a release or for your own app.**
+  See `androidApp/README.md`.
+- **iOS:** register your Team ID on the demo page (see above), then set `TEAM_ID` and `PRODUCT_BUNDLE_IDENTIFIER` in
+  `iosApp/Configuration/Config.xcconfig`. The entitlements are wired through that file.
+- **Unattended smoke run:** start the app with an autorun flag. It runs the UI-free steps first (capabilities, Setup
+  check, server options, device-only sign-in with an unknown credential, signals, upgrade), then the interactive ones,
+  and logs `PASSKI_DEMO` lines.
+  - Android: `adb shell am start -n com.alirezaiyan.passki/.MainActivity --ez passkiAutorun true`, then read
+    `adb logcat -s System.out`.
+  - iOS: `xcrun simctl launch --console <device> com.alirezaiyan.passki.PassKi -passkiAutorun`.
+
 ## Verified on
 
-Android 16 emulator (Google Password Manager) and iOS 26.3 simulator. Real registration responses were verified by webauthn4j; the fixtures live in `passki-test`.
+**Android 16 emulator (API 36, Google Password Manager)**, against the demo relying party, with every response
+verified by the server:
+- register
+- sign in (modal, `PasskeySignInButton`), device-only sign-in and passkey-or-password
+- autofill: the passkey chip in Gboard, re-armed by a tap after a dismissal
+- PRF: 32 bytes, the same output for the same salt on two runs
+- signals: after `unknownCredential`, device-only sign-in returns `NoCredentials`; `currentUserDetails` renamed the
+  passkey in the GPM chip
+- upgrade: declined by the provider and reported as `NotSupported`, as expected
+- Setup check: doctor 0 failures, SRV-01/02 pass
+
+A registration and assertion pair from this run is a fixture in `passki-test`, verified against its public key.
+
+**iOS 26.3 simulator:**
+- build, plus `passkiCheck` IOS-04/05/06
+- `-passkiAutorun` against the demo relying party: doctor 0 failures, SRV-01/02 pass, device-only sign-in with an
+  unknown credential returns `NoCredentials`, `unknownCredential` reaches the real `ASCredentialUpdater`, and upgrade
+  is declined as expected
+- against `alirezaiyan.com`, without server verification: autofill through `PasskeyUsernameField` ("Passwords", then
+  Face ID, then the passkey list, then signed in; re-offered after closing the list and after refocusing) and modal
+  sign-in through `PasskeySignInButton`
+
+**Pending on iOS:** server-verified register, sign-in, autofill and PRF against the demo relying party have not been
+run yet. On an iOS 17.5 simulator, signals return `NotSupported` as designed.
+
+Earlier real registration responses from both platforms were verified with webauthn4j; the fixtures live in
+`passki-test`.
 
 ## API docs
 
-Generate the API reference with `./gradlew dokkaGenerate` (aggregated into `build/dokka/html/`, or per module with `:passki:dokkaGenerate`).
+Generate the API reference with `./gradlew dokkaGenerate` (`passki`, `passki-compose` and `passki-test`, aggregated into `build/dokka/html/`, or per module with `:passki:dokkaGenerate`).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Building the iOS targets needs Xcode (the Swift bridge for the Signal API is compiled with `xcrun swiftc`).
 
 ## License
 

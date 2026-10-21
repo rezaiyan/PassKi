@@ -96,6 +96,8 @@ mavenPublishing {
 dokka {
     dokkaSourceSets.configureEach {
         includes.from("Module.md")
+        // Every public declaration must have KDoc: dokkaGenerate warns "Undocumented: ..." otherwise.
+        reportUndocumented.set(true)
         perPackageOption {
             // Implementation details; not part of the public API.
             matchingRegex.set(".*\\.internal.*")
