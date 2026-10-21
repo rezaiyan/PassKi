@@ -12,7 +12,6 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,12 +21,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.autofill.ContentType
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.semantics.contentType
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import com.alirezaiyan.passki.compose.PasskeySignInButton
+import com.alirezaiyan.passki.compose.PasskeyUsernameField
+import com.alirezaiyan.passki.compose.rememberPasskeySignIn
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -37,9 +35,7 @@ fun App(passkeys: Passkeys = remember { Passkeys() }, autorun: Boolean = false) 
         val scope = rememberCoroutineScope()
         var log by remember { mutableStateOf("Ready. RP ID: ${DemoRelyingParty.RP_ID}") }
 
-        suspend fun execute(label: String, action: suspend () -> PasskeyResult<*>) {
-            log = "$label…"
-            val result = action()
+        fun report(label: String, result: PasskeyResult<*>) {
             log = when (result) {
                 is PasskeyResult.Success -> "$label ✓\n${result.value}"
                 is PasskeyResult.Failure -> failureLog(label, result.error)
@@ -48,6 +44,13 @@ fun App(passkeys: Passkeys = remember { Passkeys() }, autorun: Boolean = false) 
             // Full response, for recording passki-test contract fixtures. Contains no secrets.
             ((result as? PasskeyResult.Success)?.value as? PasskeyRegistration)?.let { println("PASSKI_FIXTURE ${it.json}") }
         }
+
+        suspend fun execute(label: String, action: suspend () -> PasskeyResult<*>) {
+            log = "$label…"
+            report(label, action())
+        }
+
+        val signInState = rememberPasskeySignIn(passkeys) { DemoRelyingParty.requestOptions() }
 
         fun run(label: String, action: suspend () -> PasskeyResult<*>) {
             scope.launch { execute(label, action) }
@@ -83,25 +86,20 @@ fun App(passkeys: Passkeys = remember { Passkeys() }, autorun: Boolean = false) 
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            // Autofill spike: while the username field is focused, passkeys are offered in its keyboard.
+            // While the username field is focused, passkeys are offered in its keyboard (passki-compose).
             var username by remember { mutableStateOf("") }
-            var usernameFocused by remember { mutableStateOf(false) }
-            LaunchedEffect(usernameFocused) {
-                if (!usernameFocused) return@LaunchedEffect
-                println("PASSKI_DEMO Autofill: waiting for a passkey suggestion")
-                execute("Sign in (autofill)") {
-                    passkeys.signIn(DemoRelyingParty.requestOptions(), SignInMode.Autofill)
-                }
-            }
-            OutlinedTextField(
+            PasskeyUsernameField(
                 value = username,
                 onValueChange = { username = it },
-                label = { Text("Username (passkey autofill)") },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .semantics { contentType = ContentType.Username }
-                    .onFocusChanged { usernameFocused = it.isFocused },
+                requestOptions = {
+                    println("PASSKI_DEMO Autofill: waiting for a passkey suggestion")
+                    DemoRelyingParty.requestOptions()
+                },
+                onSignedIn = { report("Sign in (autofill)", PasskeyResult.Success(it)) },
+                onError = { report("Sign in (autofill)", PasskeyResult.Failure(it)) },
+                passkeys = passkeys,
+                label = "Username (passkey autofill)",
+                modifier = Modifier.fillMaxWidth(),
             )
             Button(onClick = { run("Capabilities") { PasskeyResult.Success(passkeys.capabilities()) } }) {
                 Text("Capabilities")
@@ -112,9 +110,11 @@ fun App(passkeys: Passkeys = remember { Passkeys() }, autorun: Boolean = false) 
                         .onSuccess { DemoRelyingParty.credentialIds += it.credentialId }
                 }
             }) { Text("Register passkey") }
-            Button(onClick = { run("Sign in") { passkeys.signIn(DemoRelyingParty.requestOptions()) } }) {
-                Text("Sign in")
-            }
+            PasskeySignInButton(
+                state = signInState,
+                onSignedIn = { report("Sign in", PasskeyResult.Success(it)) },
+                onError = { report("Sign in", PasskeyResult.Failure(it)) },
+            ) { Text("Sign in") }
             Button(onClick = {
                 run("Sign in (device only)") {
                     passkeys.signIn(DemoRelyingParty.requestOptions(), SignInMode.ImmediateOnly)
