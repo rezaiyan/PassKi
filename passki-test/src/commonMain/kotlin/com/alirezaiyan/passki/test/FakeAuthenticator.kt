@@ -3,11 +3,13 @@ package com.alirezaiyan.passki.test
 import com.alirezaiyan.passki.PasskeyError
 import com.alirezaiyan.passki.PasskeyException
 import com.alirezaiyan.passki.internal.Base64Url
+import com.alirezaiyan.passki.internal.ExtensionsJson
 import com.alirezaiyan.passki.internal.WebAuthnOptions
 import com.alirezaiyan.passki.internal.WebAuthnResponses
 import dev.whyoleg.cryptography.CryptographyProvider
 import dev.whyoleg.cryptography.algorithms.EC
 import dev.whyoleg.cryptography.algorithms.ECDSA
+import dev.whyoleg.cryptography.algorithms.HMAC
 import dev.whyoleg.cryptography.algorithms.SHA256
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -26,9 +28,15 @@ public class FakeCredential internal constructor(
     /** WebAuthn user.name; set at registration, updated by the currentUserDetails signal. */
     userName: String,
     internal val privateKey: ECDSA.PrivateKey,
+    /** Created with large-blob storage (the `largeBlob` extension was requested and supported). */
+    internal val largeBlobEnabled: Boolean = false,
 ) {
     /** WebAuthn user.name; set at registration, updated by the currentUserDetails signal. */
     public var userName: String = userName
+        internal set
+
+    /** The large blob last written with the `largeBlob` extension, or null. */
+    public var largeBlob: ByteArray? = null
         internal set
 
     /** Signature counter; incremented on every successful sign-in. */
@@ -48,6 +56,13 @@ public class FakeCredential internal constructor(
  *
  * Safe to call from concurrent coroutines: every operation runs under one lock.
  *
+ * Extensions: `prf` and `largeBlob` are supported (toggle with [prfSupported] / [largeBlobSupported]); outputs
+ * appear in `clientExtensionResults` as on real platforms.
+ * PRF is deterministic and **test-only**: `HMAC-SHA256(secret, SHA-256("WebAuthn PRF" || 0x00 || salt))`, mirroring
+ * the WebAuthn salt hashing, where `secret` is derived from the credential id (so it is predictable; never use
+ * this as real key material). The same passkey and salt always give the same 32 bytes; different salts or
+ * passkeys give different ones. Large blobs are kept in memory per passkey ([FakeCredential.largeBlob]).
+ *
  * @property origin the web origin written into clientDataJSON, e.g. `https://example.com`.
  */
 public class FakeAuthenticator(
@@ -59,6 +74,19 @@ public class FakeAuthenticator(
 
     // Copy-on-write, replaced only under [lock], so [storedCredentials] can read it without locking.
     private var credentials: List<FakeCredential> = emptyList()
+
+    /**
+     * Whether the `prf` extension is supported. When false, registration reports `prf.enabled = false` and
+     * sign-in returns no PRF results. Default true. Set from test code, not concurrently with operations.
+     */
+    public var prfSupported: Boolean = true
+
+    /**
+     * Whether new passkeys can get large-blob storage. When false, registration reports
+     * `largeBlob.supported = false`, or fails with [PasskeyError.NotSupported] if support is `required`.
+     * Default true. Set from test code, not concurrently with operations.
+     */
+    public var largeBlobSupported: Boolean = true
 
     /** Snapshot of the passkeys currently stored, oldest first. */
     public val storedCredentials: List<FakeCredential> get() = credentials
@@ -85,6 +113,12 @@ public class FakeAuthenticator(
             throw PasskeyException(PasskeyError.AlreadyRegistered)
         }
 
+        val prfInput = ExtensionsJson.prfInput(options.extensions)
+        val largeBlobSupport = ExtensionsJson.largeBlobSupport(options.extensions)
+        if (largeBlobSupport == "required" && !largeBlobSupported) {
+            throw PasskeyException(PasskeyError.NotSupported("FakeAuthenticator: largeBlobSupported = false"))
+        }
+
         val keyPair = crypto.get(ECDSA).keyPairGenerator(EC.Curve.P256).generateKey()
         // 0x04 || X || Y
         val rawPublicKey = keyPair.publicKey.encodeToByteArray(EC.PublicKey.Format.RAW.Uncompressed)
@@ -106,6 +140,7 @@ public class FakeAuthenticator(
             userId = options.user.id,
             userName = options.user.name,
             privateKey = keyPair.privateKey,
+            largeBlobEnabled = largeBlobSupport != null && largeBlobSupported,
         )
         WebAuthnResponses.registration(
             credentialId = credentialId,
@@ -113,6 +148,11 @@ public class FakeAuthenticator(
             attestationObject = attestationObject,
             transports = listOf("internal", "hybrid"),
             attachment = "platform",
+            extensions = ExtensionsJson.registrationOutputs(
+                prfEnabled = prfInput?.let { prfSupported },
+                prf = prfInput?.eval?.takeIf { prfSupported }?.let { prf(credentialId, it) },
+                largeBlobSupported = largeBlobSupport?.let { largeBlobSupported },
+            ),
         )
     }
 
@@ -136,13 +176,28 @@ public class FakeAuthenticator(
             .signatureGenerator(SHA256, ECDSA.SignatureFormat.DER)
             .generateSignature(authData + sha256(clientData))
 
+        val credentialId = Base64Url.decode(credential.id)
+        val prfInput = ExtensionsJson.prfInput(options.extensions)?.takeIf { prfSupported }
+        val prfSalts = prfInput?.let { input ->
+            input.evalByCredential.entries.firstOrNull { (id, _) -> sameId(id, credential.id) }?.value ?: input.eval
+        }
+        val largeBlob = ExtensionsJson.largeBlobAssertion(options.extensions)
+        if (largeBlob is ExtensionsJson.LargeBlobAssertion.Write && credential.largeBlobEnabled) {
+            credential.largeBlob = largeBlob.blob.copyOf()
+        }
+
         WebAuthnResponses.authentication(
-            credentialId = Base64Url.decode(credential.id),
+            credentialId = credentialId,
             clientDataJson = clientData,
             authenticatorData = authData,
             signature = signature,
             userHandle = Base64Url.decode(credential.userId),
             attachment = "platform",
+            extensions = ExtensionsJson.assertionOutputs(
+                prf = prfSalts?.let { prf(credentialId, it) },
+                largeBlob = if (largeBlob == ExtensionsJson.LargeBlobAssertion.Read) credential.largeBlob else null,
+                largeBlobWritten = (largeBlob as? ExtensionsJson.LargeBlobAssertion.Write)?.let { credential.largeBlobEnabled },
+            ),
         )
     }
 
@@ -174,6 +229,22 @@ public class FakeAuthenticator(
         lock.withLock {
             credentials.filter { it.rpId == rpId && it.userId == user }.forEach { it.userName = name }
         }
+    }
+
+    /** Test-only PRF; see the class KDoc. */
+    private suspend fun prf(credentialId: ByteArray, salts: ExtensionsJson.PrfValues): ExtensionsJson.PrfValues {
+        val secret = sha256("passki-test PRF secret".encodeToByteArray() + credentialId)
+        val key = crypto.get(HMAC).keyDecoder(SHA256).decodeFromByteArray(HMAC.Key.Format.RAW, secret)
+        val generator = key.signatureGenerator()
+        suspend fun eval(salt: ByteArray) =
+            generator.generateSignature(sha256(PRF_CONTEXT + byteArrayOf(0) + salt))
+        return ExtensionsJson.PrfValues(eval(salts.first), salts.second?.let { eval(it) })
+    }
+
+    private fun sameId(a: String, b: String): Boolean = try {
+        Base64Url.decode(a).contentEquals(Base64Url.decode(b))
+    } catch (e: IllegalArgumentException) {
+        false
     }
 
     private fun canonical(value: String, field: String): String = try {
@@ -248,6 +319,8 @@ public class FakeAuthenticator(
     }
 
     private companion object {
+        val PRF_CONTEXT = "WebAuthn PRF".encodeToByteArray()
+
         // UP | UV | BE | BS | AT
         const val FLAGS_REGISTER = 0x01 or 0x04 or 0x08 or 0x10 or 0x40
 

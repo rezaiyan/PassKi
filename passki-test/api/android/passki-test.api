@@ -1,17 +1,22 @@
 public final class com/alirezaiyan/passki/test/FakeAuthenticator {
 	public fun <init> (Ljava/lang/String;Lkotlin/random/Random;)V
 	public synthetic fun <init> (Ljava/lang/String;Lkotlin/random/Random;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getLargeBlobSupported ()Z
 	public final fun getOrigin ()Ljava/lang/String;
+	public final fun getPrfSupported ()Z
 	public final fun getStoredCredentials ()Ljava/util/List;
 	public final fun register (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun register$default (Lcom/alirezaiyan/passki/test/FakeAuthenticator;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun remove (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun retainOnly (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun setLargeBlobSupported (Z)V
+	public final fun setPrfSupported (Z)V
 	public final fun signIn (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class com/alirezaiyan/passki/test/FakeCredential {
 	public final fun getId ()Ljava/lang/String;
+	public final fun getLargeBlob ()[B
 	public final fun getRpId ()Ljava/lang/String;
 	public final fun getSignCount ()I
 	public final fun getUserId ()Ljava/lang/String;

@@ -73,6 +73,13 @@ final class com.alirezaiyan.passki.test/FakeAuthenticator { // com.alirezaiyan.p
     final val storedCredentials // com.alirezaiyan.passki.test/FakeAuthenticator.storedCredentials|{}storedCredentials[0]
         final fun <get-storedCredentials>(): kotlin.collections/List<com.alirezaiyan.passki.test/FakeCredential> // com.alirezaiyan.passki.test/FakeAuthenticator.storedCredentials.<get-storedCredentials>|<get-storedCredentials>(){}[0]
 
+    final var largeBlobSupported // com.alirezaiyan.passki.test/FakeAuthenticator.largeBlobSupported|{}largeBlobSupported[0]
+        final fun <get-largeBlobSupported>(): kotlin/Boolean // com.alirezaiyan.passki.test/FakeAuthenticator.largeBlobSupported.<get-largeBlobSupported>|<get-largeBlobSupported>(){}[0]
+        final fun <set-largeBlobSupported>(kotlin/Boolean) // com.alirezaiyan.passki.test/FakeAuthenticator.largeBlobSupported.<set-largeBlobSupported>|<set-largeBlobSupported>(kotlin.Boolean){}[0]
+    final var prfSupported // com.alirezaiyan.passki.test/FakeAuthenticator.prfSupported|{}prfSupported[0]
+        final fun <get-prfSupported>(): kotlin/Boolean // com.alirezaiyan.passki.test/FakeAuthenticator.prfSupported.<get-prfSupported>|<get-prfSupported>(){}[0]
+        final fun <set-prfSupported>(kotlin/Boolean) // com.alirezaiyan.passki.test/FakeAuthenticator.prfSupported.<set-prfSupported>|<set-prfSupported>(kotlin.Boolean){}[0]
+
     final suspend fun register(kotlin/String, kotlin/Boolean = ...): kotlin/String // com.alirezaiyan.passki.test/FakeAuthenticator.register|register(kotlin.String;kotlin.Boolean){}[0]
     final suspend fun remove(kotlin/String, kotlin/String) // com.alirezaiyan.passki.test/FakeAuthenticator.remove|remove(kotlin.String;kotlin.String){}[0]
     final suspend fun retainOnly(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String>) // com.alirezaiyan.passki.test/FakeAuthenticator.retainOnly|retainOnly(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
@@ -87,6 +94,8 @@ final class com.alirezaiyan.passki.test/FakeCredential { // com.alirezaiyan.pass
     final val userId // com.alirezaiyan.passki.test/FakeCredential.userId|{}userId[0]
         final fun <get-userId>(): kotlin/String // com.alirezaiyan.passki.test/FakeCredential.userId.<get-userId>|<get-userId>(){}[0]
 
+    final var largeBlob // com.alirezaiyan.passki.test/FakeCredential.largeBlob|{}largeBlob[0]
+        final fun <get-largeBlob>(): kotlin/ByteArray? // com.alirezaiyan.passki.test/FakeCredential.largeBlob.<get-largeBlob>|<get-largeBlob>(){}[0]
     final var signCount // com.alirezaiyan.passki.test/FakeCredential.signCount|{}signCount[0]
         final fun <get-signCount>(): kotlin/Int // com.alirezaiyan.passki.test/FakeCredential.signCount.<get-signCount>|<get-signCount>(){}[0]
     final var userName // com.alirezaiyan.passki.test/FakeCredential.userName|{}userName[0]

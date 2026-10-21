@@ -140,18 +140,18 @@ Run Gradle through `ctx_execute`; the Bash hook blocks `./gradlew`.
 
 **Task 5: PRF + largeBlob typed extensions**
 - **Files:** `commonMain/.../PasskeyExtensions.kt` (public), `internal/ExtensionsJson.kt`, `apple/AppleRequests.kt` (map inputs/outputs), the result classes (new properties), tests, ABI dumps.
-- [ ] **Common:**
+- [x] **Common:**
   - builders that add `extensions.prf.eval{first,second}` (base64url) / `extensions.largeBlob` to options JSON
   - parsers from `clientExtensionResults`: `prf.enabled`, `prf.results.first/second`, `largeBlob.supported/blob/written`
-- [ ] **iOS:**
+- [x] **iOS:**
   - registration: `prf` input → `ASAuthorizationPublicKeyCredentialPRFRegistrationInput` (checkForSupport / with input values), and `largeBlob` → `ASAuthorizationPublicKeyCredentialLargeBlobRegistrationInput(supportRequirement)`
   - assertion: PRF input values (`saltInput1/2`), largeBlob read/write
   - outputs → `clientExtensionResults` JSON in WebAuthn format
   - availability: iOS 18 (PRF), iOS 17 (largeBlob); otherwise the extension is omitted silently, matching browser behaviour
   - verify K/N names in the platform klib
-- [ ] **Android:** JSON passthrough. The parser works on GPM output.
-- [ ] **FakeAuthenticator:** deterministic PRF via HMAC-SHA256(credentialSecret, salt) so apps can test PRF-derived keys. Mark it test-only in KDoc.
-- [ ] Commit: `feat(core): typed PRF and largeBlob extensions`
+- [x] **Android:** JSON passthrough. The parser works on GPM output.
+- [x] **FakeAuthenticator:** deterministic PRF via HMAC-SHA256(credentialSecret, salt) so apps can test PRF-derived keys. Mark it test-only in KDoc.
+- [x] Commit: `feat(core): typed PRF and largeBlob extensions`
 
 ### Wave 4
 

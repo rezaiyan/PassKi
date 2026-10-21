@@ -1,5 +1,6 @@
 package com.alirezaiyan.passki.test
 
+import com.alirezaiyan.passki.PasskeyExtensions
 import com.alirezaiyan.passki.getOrThrow
 import com.alirezaiyan.passki.internal.Base64Url
 import com.webauthn4j.WebAuthnManager
@@ -54,6 +55,31 @@ class WebAuthn4jVerificationTest {
             AuthenticationParameters(serverProperty(assertionChallenge), record, null, true, true),
         )
         assertEquals(1L, assertion.authenticatorData!!.signCount)
+    }
+
+    @Test
+    fun responsesWithPrfAndLargeBlobOutputsVerify() = runTest {
+        val authenticator = FakeAuthenticator(origin)
+        val regChallenge = Random.nextBytes(32)
+        val creation = PasskeyExtensions.withLargeBlob(
+            PasskeyExtensions.withPrf(TestOptions.creation(rpId, challenge = Base64Url.encode(regChallenge)), byteArrayOf(1)),
+        )
+        val registration = manager.parseRegistrationResponseJSON(authenticator.register(creation))
+        manager.verify(registration, RegistrationParameters(serverProperty(regChallenge), null, true, true))
+
+        val assertChallenge = Random.nextBytes(32)
+        val request = PasskeyExtensions.withLargeBlobWrite(
+            PasskeyExtensions.withPrf(TestOptions.request(rpId, challenge = Base64Url.encode(assertChallenge)), byteArrayOf(1)),
+            byteArrayOf(9),
+        )
+        val assertion = manager.parseAuthenticationResponseJSON(authenticator.signIn(request))
+        val record = CredentialRecordImpl(
+            registration.attestationObject!!,
+            registration.collectedClientData,
+            registration.clientExtensions,
+            registration.transports,
+        )
+        manager.verify(assertion, AuthenticationParameters(serverProperty(assertChallenge), record, null, true, true))
     }
 
     private fun recordOf(registrationJson: String) = manager.parseRegistrationResponseJSON(registrationJson).let {
