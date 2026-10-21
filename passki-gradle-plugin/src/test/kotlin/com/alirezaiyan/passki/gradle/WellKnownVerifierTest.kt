@@ -63,6 +63,7 @@ internal class WellKnownVerifierTest {
                 Problem(
                     "assetlinks.json not found at https://example.com/.well-known/assetlinks.json (HTTP 404)",
                     fix = "Upload build/passki/well-known/assetlinks.json",
+                    id = "AND-01",
                 ),
             ),
             problems,
@@ -173,5 +174,24 @@ internal class WellKnownVerifierTest {
     @Test
     fun skippedInputsProduceNoProblems() {
         assertEquals(emptyList(), WellKnownVerifier.verify(expected.copy(appleAppIds = emptyList()), goodAssetLinks, null, null))
+    }
+
+    @Test
+    fun everyProblemCarriesItsCatalogId() {
+        fun ids(problems: List<Problem>) = problems.map { it.id }
+        assertEquals(listOf("AND-01"), ids(verify(assetLinks = Fetched(301, null, "", redirected = true))))
+        assertEquals(listOf("AND-01"), ids(verify(assetLinks = json("<html>"))))
+        assertEquals(
+            listOf("AND-02", "AND-02"),
+            ids(verify(assetLinks = json(WellKnownFiles.assetLinks(mapOf("com.other" to listOf(fpA)))))),
+        )
+        assertEquals(
+            listOf("AND-03"),
+            ids(verify(assetLinks = json(WellKnownFiles.assetLinks(mapOf("com.example.app" to listOf(fpA), "com.example.app.debug" to listOf(fpB)))))),
+        )
+        assertEquals(listOf("IOS-01"), ids(verify(aasa = Fetched(404, null, "", false))))
+        assertEquals(listOf("IOS-02"), ids(verify(aasa = json(WellKnownFiles.aasa(listOf("X.y"))))))
+        assertEquals(listOf("IOS-01"), ids(verify(aasa = json(WellKnownFiles.aasa(listOf("ABCDE12345.com.example.app")), contentType = "text/plain"))))
+        assertEquals(listOf("IOS-04"), ids(verify(entitlements = entitlements("webcredentials:other.com"))))
     }
 }

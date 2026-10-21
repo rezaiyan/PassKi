@@ -83,6 +83,13 @@ val androidSdkDir: String = providers.environmentVariable("ANDROID_HOME").orNull
     }
     ?: (System.getProperty("user.home") + "/Library/Android/sdk")
 
+// The shared check catalog (single source: docs/checks/catalog.json) ships inside the plugin jar.
+tasks.processResources {
+    from(layout.projectDirectory.file("../docs/checks/catalog.json")) {
+        into("com/alirezaiyan/passki/gradle")
+    }
+}
+
 tasks.pluginUnderTestMetadata {
     pluginClasspath.from(functionalTestPluginClasspath)
 }

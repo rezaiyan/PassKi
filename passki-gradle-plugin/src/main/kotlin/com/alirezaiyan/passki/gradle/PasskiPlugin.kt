@@ -1,6 +1,9 @@
 package com.alirezaiyan.passki.gradle
 
+import com.alirezaiyan.passki.gradle.tasks.PasskiAppleTask
+import com.alirezaiyan.passki.gradle.tasks.PasskiCheckTask
 import com.alirezaiyan.passki.gradle.tasks.PasskiFingerprintsTask
+import com.alirezaiyan.passki.gradle.tasks.PasskiSetupTask
 import com.alirezaiyan.passki.gradle.tasks.PasskiSigningTask
 import com.alirezaiyan.passki.gradle.tasks.PasskiVerifyTask
 import com.alirezaiyan.passki.gradle.tasks.PasskiWellKnownTask
@@ -15,11 +18,13 @@ import org.gradle.api.provider.Provider
  * Gradle plugin `com.alirezaiyan.passki`.
  *
  * Registers the [PasskiExtension] (`passki { }`). When `com.android.application` is applied it also
- * registers `passkiFingerprints`, `passkiWellKnown` and `passkiVerify`, fed from the finalized Android DSL.
+ * registers `passkiFingerprints`, `passkiWellKnown`, `passkiVerify`, `passkiSetup` and `passkiCheck`, fed from the
+ * finalized Android DSL.
  */
 public class PasskiPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         val extension = project.extensions.create("passki", PasskiExtension::class.java)
+        extension.apple.developerMode.convention(true)
         project.pluginManager.withPlugin("com.android.application") {
             AndroidWiring(project, extension).wire()
         }
@@ -58,6 +63,40 @@ public class PasskiPlugin : Plugin<Project> {
                 task.entitlementsFile.set(extension.apple.entitlementsFile)
                 task.baseUrl.set(project.providers.gradleProperty("passki.verify.baseUrl"))
             }
+            project.tasks.register("passkiSetup", PasskiSetupTask::class.java) { task ->
+                task.group = GROUP
+                task.description = "Generates well-known files, writes and wires iOS entitlements (via xcconfig) and server config."
+                configureApple(task)
+                task.developerMode.set(extension.apple.developerMode)
+                task.outputDir.set(project.layout.buildDirectory.dir("passki"))
+            }
+            project.tasks.register("passkiCheck", PasskiCheckTask::class.java) { task ->
+                task.group = GROUP
+                task.description = "Runs the setup checklist (AND/IOS/SRV catalog checks) and writes build/reports/passki (network)."
+                configureApple(task)
+                val providers = project.providers
+                task.serverConfigUrl.set(extension.server.configUrl)
+                task.baseUrl.set(providers.gradleProperty("passki.check.baseUrl").orElse(providers.gradleProperty("passki.verify.baseUrl")))
+                task.googleDalUrl.set(providers.gradleProperty("passki.check.googleDalUrl").orElse("https://digitalassetlinks.googleapis.com"))
+                task.appleCdnUrl.set(providers.gradleProperty("passki.check.appleCdnUrl").orElse("https://app-site-association.cdn-apple.com"))
+                task.warningsAsErrors.set(providers.gradleProperty("passki.check.warningsAsErrors").map { it.toBoolean() }.orElse(false))
+                task.reportDir.set(project.layout.buildDirectory.dir("reports/passki"))
+            }
+        }
+
+        fun configureApple(task: PasskiAppleTask) {
+            configureSigning(task)
+            val apple = extension.apple
+            task.rpId.set(extension.rpId)
+            task.teamId.set(apple.teamId)
+            task.bundleId.set(apple.bundleId)
+            task.entitlementsFile.set(apple.entitlementsFile)
+            task.xcodeProject.set(apple.xcodeProject)
+            task.scheme.set(apple.scheme)
+            task.xcconfig.set(apple.xcconfig)
+            task.searchRoots.from(project.projectDir, project.rootDir)
+            task.xcodebuild.set(project.providers.gradleProperty("passki.xcodebuild").orElse("xcodebuild"))
+            task.codesign.set(project.providers.gradleProperty("passki.codesign").orElse("codesign"))
         }
 
         fun configureSigning(task: PasskiSigningTask) {

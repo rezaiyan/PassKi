@@ -15,6 +15,7 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
+import org.gradle.work.DisableCachingByDefault
 
 /**
  * Shared inputs of the passki tasks: the Android base package and per-variant signing.
@@ -22,6 +23,7 @@ import org.gradle.api.tasks.PathSensitivity
  * Keystore passwords are deliberately [Internal]: up-to-date checks track the keystore files
  * (content only) plus the variants' password-free identity, never secrets.
  */
+@DisableCachingByDefault(because = "Base type; subclasses decide")
 public abstract class PasskiSigningTask : DefaultTask() {
     /** Base Android package name (applicationId); variant suffixes and flavor overrides apply on top. */
     @get:Input
