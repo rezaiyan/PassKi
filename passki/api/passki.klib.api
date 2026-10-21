@@ -10,6 +10,19 @@ open annotation class com.alirezaiyan.passki/InternalPasskiApi : kotlin/Annotati
     constructor <init>() // com.alirezaiyan.passki/InternalPasskiApi.<init>|<init>(){}[0]
 }
 
+final enum class com.alirezaiyan.passki/DoctorStatus : kotlin/Enum<com.alirezaiyan.passki/DoctorStatus> { // com.alirezaiyan.passki/DoctorStatus|null[0]
+    enum entry Fail // com.alirezaiyan.passki/DoctorStatus.Fail|null[0]
+    enum entry Pass // com.alirezaiyan.passki/DoctorStatus.Pass|null[0]
+    enum entry Skipped // com.alirezaiyan.passki/DoctorStatus.Skipped|null[0]
+    enum entry Warn // com.alirezaiyan.passki/DoctorStatus.Warn|null[0]
+
+    final val entries // com.alirezaiyan.passki/DoctorStatus.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.alirezaiyan.passki/DoctorStatus> // com.alirezaiyan.passki/DoctorStatus.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): com.alirezaiyan.passki/DoctorStatus // com.alirezaiyan.passki/DoctorStatus.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.alirezaiyan.passki/DoctorStatus> // com.alirezaiyan.passki/DoctorStatus.values|values#static(){}[0]
+}
+
 final enum class com.alirezaiyan.passki/SignInMode : kotlin/Enum<com.alirezaiyan.passki/SignInMode> { // com.alirezaiyan.passki/SignInMode|null[0]
     enum entry ImmediateOnly // com.alirezaiyan.passki/SignInMode.ImmediateOnly|null[0]
     enum entry Modal // com.alirezaiyan.passki/SignInMode.Modal|null[0]
@@ -502,6 +515,34 @@ final class com.alirezaiyan.passki.internal/UserJson { // com.alirezaiyan.passki
     }
 }
 
+final class com.alirezaiyan.passki/DoctorCheck { // com.alirezaiyan.passki/DoctorCheck|null[0]
+    constructor <init>(kotlin/String, com.alirezaiyan.passki/DoctorStatus, kotlin/String, kotlin/String?) // com.alirezaiyan.passki/DoctorCheck.<init>|<init>(kotlin.String;com.alirezaiyan.passki.DoctorStatus;kotlin.String;kotlin.String?){}[0]
+
+    final val fixHint // com.alirezaiyan.passki/DoctorCheck.fixHint|{}fixHint[0]
+        final fun <get-fixHint>(): kotlin/String? // com.alirezaiyan.passki/DoctorCheck.fixHint.<get-fixHint>|<get-fixHint>(){}[0]
+    final val message // com.alirezaiyan.passki/DoctorCheck.message|{}message[0]
+        final fun <get-message>(): kotlin/String // com.alirezaiyan.passki/DoctorCheck.message.<get-message>|<get-message>(){}[0]
+    final val name // com.alirezaiyan.passki/DoctorCheck.name|{}name[0]
+        final fun <get-name>(): kotlin/String // com.alirezaiyan.passki/DoctorCheck.name.<get-name>|<get-name>(){}[0]
+    final val status // com.alirezaiyan.passki/DoctorCheck.status|{}status[0]
+        final fun <get-status>(): com.alirezaiyan.passki/DoctorStatus // com.alirezaiyan.passki/DoctorCheck.status.<get-status>|<get-status>(){}[0]
+
+    final fun toString(): kotlin/String // com.alirezaiyan.passki/DoctorCheck.toString|toString(){}[0]
+}
+
+final class com.alirezaiyan.passki/DoctorReport { // com.alirezaiyan.passki/DoctorReport|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<com.alirezaiyan.passki/DoctorCheck>) // com.alirezaiyan.passki/DoctorReport.<init>|<init>(kotlin.String;kotlin.collections.List<com.alirezaiyan.passki.DoctorCheck>){}[0]
+
+    final val checks // com.alirezaiyan.passki/DoctorReport.checks|{}checks[0]
+        final fun <get-checks>(): kotlin.collections/List<com.alirezaiyan.passki/DoctorCheck> // com.alirezaiyan.passki/DoctorReport.checks.<get-checks>|<get-checks>(){}[0]
+    final val isHealthy // com.alirezaiyan.passki/DoctorReport.isHealthy|{}isHealthy[0]
+        final fun <get-isHealthy>(): kotlin/Boolean // com.alirezaiyan.passki/DoctorReport.isHealthy.<get-isHealthy>|<get-isHealthy>(){}[0]
+    final val rpId // com.alirezaiyan.passki/DoctorReport.rpId|{}rpId[0]
+        final fun <get-rpId>(): kotlin/String // com.alirezaiyan.passki/DoctorReport.rpId.<get-rpId>|<get-rpId>(){}[0]
+
+    final fun toString(): kotlin/String // com.alirezaiyan.passki/DoctorReport.toString|toString(){}[0]
+}
+
 final class com.alirezaiyan.passki/PasskeyAssertion { // com.alirezaiyan.passki/PasskeyAssertion|null[0]
     constructor <init>(kotlin/String, kotlin/String, kotlin/String?) // com.alirezaiyan.passki/PasskeyAssertion.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?){}[0]
 
@@ -668,6 +709,10 @@ final object com.alirezaiyan.passki.internal/WebAuthnOptions { // com.alirezaiya
 final object com.alirezaiyan.passki.internal/WebAuthnResponses { // com.alirezaiyan.passki.internal/WebAuthnResponses|null[0]
     final fun authentication(kotlin/ByteArray, kotlin/ByteArray, kotlin/ByteArray, kotlin/ByteArray, kotlin/ByteArray?, kotlin/String?, kotlinx.serialization.json/JsonObject = ...): kotlin/String // com.alirezaiyan.passki.internal/WebAuthnResponses.authentication|authentication(kotlin.ByteArray;kotlin.ByteArray;kotlin.ByteArray;kotlin.ByteArray;kotlin.ByteArray?;kotlin.String?;kotlinx.serialization.json.JsonObject){}[0]
     final fun registration(kotlin/ByteArray, kotlin/ByteArray, kotlin/ByteArray, kotlin.collections/List<kotlin/String>, kotlin/String?, kotlinx.serialization.json/JsonObject = ...): kotlin/String // com.alirezaiyan.passki.internal/WebAuthnResponses.registration|registration(kotlin.ByteArray;kotlin.ByteArray;kotlin.ByteArray;kotlin.collections.List<kotlin.String>;kotlin.String?;kotlinx.serialization.json.JsonObject){}[0]
+}
+
+final object com.alirezaiyan.passki/PasskeyDoctor { // com.alirezaiyan.passki/PasskeyDoctor|null[0]
+    final suspend fun run(kotlin/String): com.alirezaiyan.passki/DoctorReport // com.alirezaiyan.passki/PasskeyDoctor.run|run(kotlin.String){}[0]
 }
 
 final val com.alirezaiyan.passki.internal/PasskiJson // com.alirezaiyan.passki.internal/PasskiJson|{}PasskiJson[0]

@@ -1,3 +1,30 @@
+public final class com/alirezaiyan/passki/DoctorCheck {
+	public fun <init> (Ljava/lang/String;Lcom/alirezaiyan/passki/DoctorStatus;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun getFixHint ()Ljava/lang/String;
+	public final fun getMessage ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getStatus ()Lcom/alirezaiyan/passki/DoctorStatus;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/DoctorReport {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
+	public final fun getChecks ()Ljava/util/List;
+	public final fun getRpId ()Ljava/lang/String;
+	public final fun isHealthy ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/DoctorStatus : java/lang/Enum {
+	public static final field Fail Lcom/alirezaiyan/passki/DoctorStatus;
+	public static final field Pass Lcom/alirezaiyan/passki/DoctorStatus;
+	public static final field Skipped Lcom/alirezaiyan/passki/DoctorStatus;
+	public static final field Warn Lcom/alirezaiyan/passki/DoctorStatus;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/alirezaiyan/passki/DoctorStatus;
+	public static fun values ()[Lcom/alirezaiyan/passki/DoctorStatus;
+}
+
 public abstract interface annotation class com/alirezaiyan/passki/InternalPasskiApi : java/lang/annotation/Annotation {
 }
 
@@ -17,6 +44,11 @@ public final class com/alirezaiyan/passki/PasskeyCapabilities {
 	public final fun getUnifiedPasswordSignIn ()Z
 	public final fun isSupported ()Z
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/PasskeyDoctor {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/PasskeyDoctor;
+	public final fun run (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract class com/alirezaiyan/passki/PasskeyError {

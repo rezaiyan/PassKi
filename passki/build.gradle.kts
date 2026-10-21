@@ -12,6 +12,11 @@ plugins {
 kotlin {
     explicitApi()
 
+    compilerOptions {
+        // PasskeyDoctor is an expect object; expect/actual classes are Beta (KT-61573).
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     @OptIn(ExperimentalAbiValidation::class)
     abiValidation {
         // Calling abiValidation { } enables ABI validation in Kotlin 2.4 (the `enabled` property was removed).
