@@ -1,0 +1,53 @@
+package com.alirezaiyan.passki.android
+
+import android.Manifest
+import android.app.Application
+import android.content.pm.PackageManager
+import android.os.Build
+import java.security.MessageDigest
+
+/**
+ * Everything the Android doctor needs to know about this device and app, gathered up front so
+ * [composeAndroidReport] stays pure and host-testable.
+ *
+ * @property packageName null when PassKi has no Application (not initialised).
+ * @property certFingerprints SHA-256 of each signing certificate, colon hex; empty below API 28 or when unreadable.
+ */
+internal class AndroidDoctorFacts(
+    val sdkInt: Int,
+    val release: String,
+    val packageName: String?,
+    val hasInternetPermission: Boolean,
+    val certFingerprints: List<String>,
+)
+
+internal fun collectAndroidDoctorFacts(app: Application?): AndroidDoctorFacts {
+    val sdkInt = Build.VERSION.SDK_INT
+    return AndroidDoctorFacts(
+        sdkInt = sdkInt,
+        release = Build.VERSION.RELEASE.orEmpty(),
+        packageName = app?.packageName,
+        hasInternetPermission = app?.checkSelfPermission(Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED,
+        certFingerprints = app?.let(::signingFingerprints).orEmpty(),
+    )
+}
+
+/** SHA-256 of [certificate] (DER bytes) as uppercase colon hex, the format assetlinks.json uses. */
+internal fun sha256Fingerprint(certificate: ByteArray): String =
+    MessageDigest.getInstance("SHA-256").digest(certificate).joinToString(":") { byte ->
+        (byte.toInt() and 0xFF).toString(16).padStart(2, '0').uppercase()
+    }
+
+/** GET_SIGNING_CERTIFICATES and SigningInfo need API 28; older devices can't use passkeys anyway. */
+private fun signingFingerprints(app: Application): List<String> {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return emptyList()
+    val info = try {
+        @Suppress("DEPRECATION") // The PackageInfoFlags overload needs API 33; the Int one works everywhere.
+        app.packageManager.getPackageInfo(app.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+    } catch (_: PackageManager.NameNotFoundException) {
+        return emptyList()
+    }
+    val signing = info.signingInfo ?: return emptyList()
+    val signers = if (signing.hasMultipleSigners()) signing.apkContentsSigners else signing.signingCertificateHistory
+    return signers.orEmpty().map { sha256Fingerprint(it.toByteArray()) }.distinct()
+}

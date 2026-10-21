@@ -31,7 +31,7 @@ import com.alirezaiyan.passki.internal.parseAssertion
 import com.alirezaiyan.passki.internal.parseRegistration
 import com.alirezaiyan.passki.internal.passkeyCatching
 
-private const val INIT_HINT: String =
+internal const val INIT_HINT: String =
     "Call PassKi while an Activity is in the foreground. If you removed PassKi's androidx.startup " +
         "initializer, call PasskiAndroid.init(application) in Application.onCreate()."
 
