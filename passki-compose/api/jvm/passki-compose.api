@@ -19,6 +19,10 @@ public final class com/alirezaiyan/passki/compose/PasskeySignInStateKt {
 	public static final fun rememberPasskeySignIn (Lcom/alirezaiyan/passki/Passkeys;Lcom/alirezaiyan/passki/SignInMode;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)Lcom/alirezaiyan/passki/compose/PasskeySignInState;
 }
 
+public final class com/alirezaiyan/passki/compose/PasskeyUsernameFieldKt {
+	public static final fun PasskeyUsernameField (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lcom/alirezaiyan/passki/Passkeys;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ZLandroidx/compose/runtime/Composer;II)V
+}
+
 public final class com/alirezaiyan/passki/compose/RememberPasskeysKt {
 	public static final fun rememberPasskeys (Landroidx/compose/runtime/Composer;I)Lcom/alirezaiyan/passki/Passkeys;
 }

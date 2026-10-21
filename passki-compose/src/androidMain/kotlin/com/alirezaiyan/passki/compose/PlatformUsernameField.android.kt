@@ -1,0 +1,17 @@
+package com.alirezaiyan.passki.compose
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+
+@Composable
+internal actual fun PlatformUsernameField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    enabled: Boolean,
+    modifier: Modifier,
+    onFocusChanged: (Boolean) -> Unit,
+    onTap: () -> Unit,
+) {
+    MaterialUsernameField(value, onValueChange, label, enabled, modifier, onFocusChanged, onTap)
+}

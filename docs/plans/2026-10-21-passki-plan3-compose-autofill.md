@@ -132,11 +132,38 @@ Run Gradle through `ctx_execute`; the Bash hook blocks `./gradlew`.
 ### Wave 3 (parallel)
 
 **Task 4: `PasskeyUsernameField`**
-- **Files:** `passki-compose/src/commonMain/.../PasskeyUsernameField.kt`
-- [ ] A Material3 `OutlinedTextField` with `Modifier.semantics { contentType = ContentType.Username }` (verify the Compose 1.12 API name).
-- [ ] While the field is focused and `capabilities().autofill`, run `signIn(requestOptions(), Autofill)` in a `LaunchedEffect` keyed on focus. Cancel when focus or composition ends.
-- [ ] Deliver results via `onSignedIn`.
-- [ ] Commit: `feat(compose): PasskeyUsernameField with passkey autofill`
+- **Files:** `passki-compose/src/commonMain/.../PasskeyUsernameField.kt`, `internal/AutofillController.kt`, `PlatformUsernameField.{android,jvm,web,ios}.kt`, `AutofillControllerTest.kt`, ABI dumps; sample `App.kt`, `shared/build.gradle.kts`.
+- [x] A Material3 `OutlinedTextField` with `Modifier.semantics { contentType = ContentType.Username }` (`androidx.compose.ui.autofill.ContentType`, `androidx.compose.ui.semantics.contentType`) on Android/jvm/web. iOS hosts a UIKit `UITextField` instead (see below).
+- [x] While the field is focused and `capabilities().autofill`, run `signIn(requestOptions(), Autofill)`. Cancel when focus or composition ends.
+- [x] Deliver results via `onSignedIn`.
+- [x] Commit: `feat(compose): PasskeyUsernameField with passkey autofill`
+- **Outcome (2026-10-21).**
+  - **API:** `PasskeyUsernameField(value, onValueChange, requestOptions, onSignedIn, modifier, passkeys = rememberPasskeys(), label = "Username", onError = {}, enabled = true)`. Internal `expect fun PlatformUsernameField(…, onFocusChanged, onTap)`.
+  - **Logic** is the pure `internal class AutofillController` (commonMain), unit-tested on jvm/android/iOS with a CompletableDeferred-gated fake and `testTimeSource` (12 tests):
+    - focus arms, blur/dispose cancels
+    - a tap on the focused field re-arms (Android: the chip is used up after a dismissal); taps within 500 ms of the last arm are ignored, so the focusing tap doesn't restart
+    - Cancelled/NoCredentials/Interrupted → next call, starts ≥ 500 ms apart (no restart storm)
+    - NotSupported/Misconfigured/InvalidOptions → `onError` once, stop for good
+    - other errors (e.g. `requestOptions` throws → Unknown) → `onError`, wait for next focus/tap
+    - success → `onSignedIn`, idle until next focus/tap
+  - **Android taps:** `PressInteraction.Release` from the field's `MutableInteractionSource`.
+  - **iOS field:** `UIKitView` (`androidx.compose.ui.viewinterop.UIKitView(factory, modifier, update, onRelease, onReset, properties)`, CMP 1.12.1) hosting a `UITextField`:
+    - `textContentType = UITextContentTypeUsername`, autocorrection/autocapitalization/spellcheck off, email keyboard
+    - `UIKitInteropProperties(interactionMode = NonCooperative, isNativeAccessibilityEnabled = true)`
+    - text via target-action `editingChanged:` (`@ObjCAction`), focus via `UITextFieldDelegateProtocol` begin/end editing
+    - Material-like border/label drawn in Compose; the field needs an opaque `surface` background (the interop hole otherwise shows white)
+    - taps not reported (core re-offers after a 1001 by itself)
+  - **Android emulator (API 36, GPM):**
+    - tapping the field shows the "PassKi Demo" passkey chip in Gboard (`scratchpad/a1-focus.png`); tap chip → PIN → `PASSKI_DEMO Sign in (autofill) ✓`
+    - dismissal (back on the PIN prompt) → no chip (`a3-dismissed.png`); tapping the still-focused field → `Autofill: waiting…` again and the chip returns (`a4-rearmed.png`); picking it → `Sign in (autofill) ✓`
+    - `PasskeySignInButton` "Sign in" → `PASSKI_DEMO Sign in ✓`
+  - **iOS simulator 26.3 (entitlements override):**
+    - focusing the UIKit field: the QuickType bar shows **"🔑 Passwords"**, not an inline "demo@passki.dev" item (`i9-focused.png`); with the Compose field it showed only word predictions
+    - tapping "Passwords" → Face ID → a "Sign In" list with **Passkeys: alirezaiyan.com / demo@passki.dev** (`i10-list.png`); picking it → `PASSKI_DEMO Sign in (autofill) ✓ PasskeyAssertion(credentialId=5GHAW5v6NuAdmHQgL3flacl8XV4, …)`, delivered through the autofill request
+    - blur + refocus → re-armed → success again; closing the list (X) → 1001, the core keeps waiting; opening it again and picking → success
+    - starting the request on appear instead of on focus showed the same "Passwords" bar (no inline item) and failed once at launch with `Unknown: Unable to verify webcredentials association … try again in a few seconds`, so focus-start stays
+    - `PasskeySignInButton` → `Sign in ✓`
+  - Screenshots: `/private/tmp/claude-501/-Users-ali-projects-deblock-PassKi/485ddd86-db4f-406f-a03a-cc5a90be42f4/scratchpad/`.
 
 **Task 5: PRF + largeBlob typed extensions**
 - **Files:** `commonMain/.../PasskeyExtensions.kt` (public), `internal/ExtensionsJson.kt`, `apple/AppleRequests.kt` (map inputs/outputs), the result classes (new properties), tests, ABI dumps.
