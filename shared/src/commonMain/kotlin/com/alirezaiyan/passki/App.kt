@@ -48,21 +48,24 @@ fun App(passkeys: Passkeys = remember { Passkeys() }, autorun: Boolean = false) 
             scope.launch { execute(label, action) }
         }
 
-        // Unattended smoke run (simulator/CI): only steps that need no taps, then opens the register sheet.
+        // Unattended smoke run (simulator/CI): steps that never show UI first, then the ones that may
+        // open a system sheet (these wait for a tap).
         LaunchedEffect(autorun) {
             if (!autorun) return@LaunchedEffect
             delay(1_500)
             execute("Capabilities") { PasskeyResult.Success(passkeys.capabilities()) }
             println("PASSKI_DEMO ${PasskeyDoctor.run(DemoRelyingParty.RP_ID)}")
-            execute("Sign in (device only)") {
-                passkeys.signIn(DemoRelyingParty.requestOptions(), SignInMode.ImmediateOnly)
-            }
             // No passkey matches this id, so the device-only request has nothing to offer.
             execute("Sign in (device only, unknown credential)") {
                 passkeys.signIn(DemoRelyingParty.requestOptions(listOf("AAAAAAAAAAAAAAAAAAAAAA")), SignInMode.ImmediateOnly)
             }
             execute("Signal unknown") { passkeys.signals.unknownCredential(DemoRelyingParty.RP_ID, "AA") }
-            println("PASSKI_DEMO Register started: a system passkey sheet should now be visible")
+            // Conditional create never shows UI: either succeeds silently or is declined.
+            execute("Upgrade") { passkeys.upgrade(DemoRelyingParty.creationOptions()) }
+            println("PASSKI_DEMO Interactive steps follow: a system passkey sheet may now be visible")
+            execute("Sign in (device only)") {
+                passkeys.signIn(DemoRelyingParty.requestOptions(), SignInMode.ImmediateOnly)
+            }
             execute("Register") { passkeys.register(DemoRelyingParty.creationOptions()) }
         }
 
