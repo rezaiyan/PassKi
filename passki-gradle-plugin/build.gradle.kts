@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "com.alirezaiyan.passki"
-version = "0.1.0-alpha01"
+version = "0.1.0-alpha02"
 
 kotlin {
     jvmToolchain(17)
