@@ -64,3 +64,43 @@ export function fixText(id: string, params: FixParams = {}): string {
 export function docsPath(id: string): string {
   return `/checks/${id}`;
 }
+
+const PLATFORM_LABELS: Record<string, string> = {
+  android: "Android",
+  ios: "iOS",
+  server: "Server",
+  config: "Config",
+  device: "Device",
+};
+
+const PLATFORM_ORDER = Object.keys(PLATFORM_LABELS);
+
+/** Human label for a platform; unknown (future) values fall back to a capitalised raw value, never throw. */
+export function platformLabel(platform: string | undefined | null): string {
+  if (!platform) return "Other";
+  const known = Object.hasOwn(PLATFORM_LABELS, platform) ? PLATFORM_LABELS[platform] : undefined;
+  return known ?? platform.charAt(0).toUpperCase() + platform.slice(1);
+}
+
+/** Checks grouped by platform: known platforms in a fixed order, unknown ones after, alphabetically. */
+export function groupByPlatform(
+  checks: readonly CatalogCheck[],
+): { platform: string; label: string; checks: CatalogCheck[] }[] {
+  const groups = new Map<string, CatalogCheck[]>();
+  for (const c of checks) {
+    const key = c.platform || "other";
+    groups.set(key, [...(groups.get(key) ?? []), c]);
+  }
+  const rank = (p: string) => {
+    const i = PLATFORM_ORDER.indexOf(p);
+    return i === -1 ? PLATFORM_ORDER.length : i;
+  };
+  return [...groups.keys()]
+    .sort((a, b) => rank(a) - rank(b) || a.localeCompare(b))
+    .map((platform) => ({ platform, label: platformLabel(platform), checks: groups.get(platform)! }));
+}
+
+/** "Edit on GitHub" URL for a check page; null unless the catalog sets docsRepo. */
+export function editUrl(id: string, repo: string | undefined): string | null {
+  return repo ? `${repo}${id}.md` : null;
+}

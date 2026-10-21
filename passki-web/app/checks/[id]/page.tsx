@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { catalog, isCheckId, check } from "@/lib/catalog";
+import { catalog, isCheckId, check, editUrl, platformLabel } from "@/lib/catalog";
 import { checkDocHtml } from "@/lib/docs";
 
 export const dynamicParams = false;
@@ -23,13 +23,13 @@ export default async function CheckPage({ params }: { params: Promise<{ id: stri
     <>
       <p className="muted"><a href="/checks">All checks</a></p>
       <h1>{c.id}: {c.title}</h1>
-      <p className="lead">Platform: {c.platform} · Severity: {c.severity}</p>
+      <p className="lead">Platform: {platformLabel(c.platform)} · Severity: {c.severity}</p>
       {html ? (
         <article className="doc" dangerouslySetInnerHTML={{ __html: html }} />
       ) : (
         <div className="card"><strong>Fix:</strong> {c.fix}</div>
       )}
-      {catalog.docsRepo && <p className="muted"><a href={`${catalog.docsRepo}${c.id}.md`}>Edit this page on GitHub</a></p>}
+      {editUrl(c.id, catalog.docsRepo) && <p className="muted"><a href={editUrl(c.id, catalog.docsRepo)!}>Edit this page on GitHub</a></p>}
     </>
   );
 }

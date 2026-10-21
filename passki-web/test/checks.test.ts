@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { catalog, fixText } from "@/lib/catalog";
+import { catalog, editUrl, fixText, groupByPlatform, platformLabel } from "@/lib/catalog";
 import { checkAasa } from "@/lib/checks/aasa";
 import {
   checkAssetLinks,
@@ -47,6 +47,26 @@ describe("catalog", () => {
     );
     const mirror = join(__dirname, "..", "content", "checks", "catalog.json");
     expect(readFileSync(mirror, "utf8")).toBe(readFileSync(source, "utf8"));
+  });
+
+  it("should include CFG-01 on platform config with a docs page", () => {
+    expect(catalog.checks.find((c) => c.id === "CFG-01")?.platform).toBe("config");
+    expect(platformLabel("config")).toBe("Config");
+  });
+
+  it("should fall back to a capitalised label for an unknown platform without throwing", () => {
+    expect(platformLabel("wasm")).toBe("Wasm");
+    expect(platformLabel("constructor")).toBe("Constructor");
+    expect(platformLabel("")).toBe("Other");
+    const mk = (id: string, platform: string) => ({ id, platform, severity: "error" as const, title: id, fix: "" });
+    const groups = groupByPlatform([mk("X-01", "wasm"), mk("S-01", "server"), mk("C-01", "config"), mk("A-01", "android")]);
+    expect(groups.map((g) => g.platform)).toEqual(["android", "server", "config", "wasm"]);
+    expect(groups[3].label).toBe("Wasm");
+  });
+
+  it("should render the edit link only when docsRepo is set", () => {
+    expect(editUrl("CFG-01", undefined)).toBeNull();
+    expect(editUrl("CFG-01", "https://example.test/docs/")).toBe("https://example.test/docs/CFG-01.md");
   });
 
   it("should have unique IDs", () => {

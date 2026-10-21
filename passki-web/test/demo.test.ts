@@ -58,6 +58,25 @@ describe("demo config", () => {
   });
 });
 
+describe("Gradle plugin contract", () => {
+  it("should serve exactly {rpId, origins} from GET /api/demo/server-config", async () => {
+    const { GET } = await import("@/app/api/demo/server-config/route");
+    const body = await GET().json();
+    expect(Object.keys(body).sort()).toEqual(["origins", "rpId"]);
+    expect(body.rpId).toBe(demoConfig().rpId);
+    expect(body.origins).toEqual(demoConfig().origins);
+  });
+
+  it("should issue registration options that satisfy SRV-03", async () => {
+    const o = await registrationOptions(db, {}, cfg);
+    const bytes = (v: string) => (/^[A-Za-z0-9_-]+$/.test(v) ? Buffer.from(v, "base64url").length : -1);
+    expect(o.rp.id).toBe(cfg.rpId);
+    expect(bytes(o.challenge)).toBeGreaterThanOrEqual(16);
+    expect(bytes(o.user.id)).toBeGreaterThanOrEqual(1);
+    expect(bytes(o.user.id)).toBeLessThanOrEqual(64);
+  });
+});
+
 describe("demo relying party", () => {
   for (const origin of ["https://passki.alirezaiyan.com", androidOrigin(FP)]) {
     it(`should register and log in end to end from ${origin.slice(0, 22)}`, async () => {
