@@ -27,8 +27,10 @@ object DemoRelyingParty {
         """.trimIndent()
     }
 
-    fun requestOptions(): String =
-        """{"challenge":"${challenge()}","rpId":"$RP_ID","userVerification":"preferred","timeout":60000}"""
+    fun requestOptions(allowCredentialIds: List<String> = emptyList()): String {
+        val allow = allowCredentialIds.joinToString(",") { """{"type":"public-key","id":"$it"}""" }
+        return """{"challenge":"${challenge()}","rpId":"$RP_ID","allowCredentials":[$allow],"userVerification":"preferred","timeout":60000}"""
+    }
 
     // Demo only: real challenges must be generated and verified by your server.
     // kotlin.random is not a cryptographically secure source.

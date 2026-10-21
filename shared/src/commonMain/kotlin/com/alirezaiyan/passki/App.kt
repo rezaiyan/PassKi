@@ -14,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,23 +23,47 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun App(passkeys: Passkeys = remember { Passkeys() }) {
+fun App(passkeys: Passkeys = remember { Passkeys() }, autorun: Boolean = false) {
     MaterialTheme {
         val scope = rememberCoroutineScope()
         var log by remember { mutableStateOf("Ready. RP ID: ${DemoRelyingParty.RP_ID}") }
 
-        fun run(label: String, action: suspend () -> PasskeyResult<*>) {
-            scope.launch {
-                log = "$label…"
-                log = when (val result = action()) {
-                    is PasskeyResult.Success -> "$label ✓\n${result.value}"
-                    is PasskeyResult.Failure -> failureLog(label, result.error)
-                }
-                println("PASSKI_DEMO $log")
+        suspend fun execute(label: String, action: suspend () -> PasskeyResult<*>) {
+            log = "$label…"
+            val result = action()
+            log = when (result) {
+                is PasskeyResult.Success -> "$label ✓\n${result.value}"
+                is PasskeyResult.Failure -> failureLog(label, result.error)
             }
+            println("PASSKI_DEMO $log")
+            // Full response, for recording passki-test contract fixtures. Contains no secrets.
+            ((result as? PasskeyResult.Success)?.value as? PasskeyRegistration)?.let { println("PASSKI_FIXTURE ${it.json}") }
+        }
+
+        fun run(label: String, action: suspend () -> PasskeyResult<*>) {
+            scope.launch { execute(label, action) }
+        }
+
+        // Unattended smoke run (simulator/CI): only steps that need no taps, then opens the register sheet.
+        LaunchedEffect(autorun) {
+            if (!autorun) return@LaunchedEffect
+            delay(1_500)
+            execute("Capabilities") { PasskeyResult.Success(passkeys.capabilities()) }
+            println("PASSKI_DEMO ${PasskeyDoctor.run(DemoRelyingParty.RP_ID)}")
+            execute("Sign in (device only)") {
+                passkeys.signIn(DemoRelyingParty.requestOptions(), SignInMode.ImmediateOnly)
+            }
+            // No passkey matches this id, so the device-only request has nothing to offer.
+            execute("Sign in (device only, unknown credential)") {
+                passkeys.signIn(DemoRelyingParty.requestOptions(listOf("AAAAAAAAAAAAAAAAAAAAAA")), SignInMode.ImmediateOnly)
+            }
+            execute("Signal unknown") { passkeys.signals.unknownCredential(DemoRelyingParty.RP_ID, "AA") }
+            println("PASSKI_DEMO Register started: a system passkey sheet should now be visible")
+            execute("Register") { passkeys.register(DemoRelyingParty.creationOptions()) }
         }
 
         Column(
@@ -56,11 +81,7 @@ fun App(passkeys: Passkeys = remember { Passkeys() }) {
             Button(onClick = {
                 run("Register") {
                     passkeys.register(DemoRelyingParty.creationOptions())
-                        .onSuccess {
-                            DemoRelyingParty.credentialIds += it.credentialId
-                            // Full response, for recording passki-test contract fixtures. Contains no secrets.
-                            println("PASSKI_FIXTURE ${it.json}")
-                        }
+                        .onSuccess { DemoRelyingParty.credentialIds += it.credentialId }
                 }
             }) { Text("Register passkey") }
             Button(onClick = { run("Sign in") { passkeys.signIn(DemoRelyingParty.requestOptions()) } }) {

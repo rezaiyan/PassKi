@@ -1,0 +1,18 @@
+{
+  "rpId": "alirezaiyan.com",
+  "response": {
+    "id": "5GHAW5v6NuAdmHQgL3flacl8XV4",
+    "rawId": "5GHAW5v6NuAdmHQgL3flacl8XV4",
+    "type": "public-key",
+    "response": {
+      "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiU1hfb1E3XzQxeXdJN1V2YUYzelUwS1FWbGxoV3p5b1lIUXplOVpHSUNhSSIsIm9yaWdpbiI6Imh0dHBzOi8vYWxpcmV6YWl5YW4uY29tIn0",
+      "attestationObject": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YViYgaADwNZSa4ROksdckWpb-nzP10MpMaEXaqCDUHK3C2tdAAAAAPv8MAcVTk7MjAtuAgVX170AFORhwFub-jbgHZh0IC935WnJfF1epQECAyYgASFYIEbDOA-JgQ5pGG3D1BjRfxFPKPPsF6RUsjvV_SewLueNIlggvBlmm_184Z_jGBKuygXVGnyZQ-ONHR6yvSyxkp18Z9c",
+      "transports": [
+        "hybrid",
+        "internal"
+      ]
+    },
+    "authenticatorAttachment": "platform",
+    "clientExtensionResults": {}
+  }
+}

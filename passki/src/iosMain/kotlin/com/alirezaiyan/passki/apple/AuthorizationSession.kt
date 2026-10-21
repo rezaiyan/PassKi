@@ -14,6 +14,9 @@ import platform.AuthenticationServices.ASAuthorizationControllerRequestOptionPre
 import platform.AuthenticationServices.ASAuthorizationRequest
 import platform.AuthenticationServices.ASPresentationAnchor
 import platform.Foundation.NSError
+import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSOperationQueue
+import platform.UIKit.UIApplicationWillResignActiveNotification
 import platform.UIKit.UIWindow
 import platform.darwin.NSObject
 import platform.darwin.dispatch_async
@@ -33,20 +36,37 @@ internal class AuthorizationSession private constructor(
     ASAuthorizationControllerDelegateProtocol,
     ASAuthorizationControllerPresentationContextProvidingProtocol {
 
-    // Set when iOS asks where to present: distinguishes "sheet shown, user cancelled" from
-    // "nothing to show" under preferImmediatelyAvailableCredentials (both report code 1001).
+    // Set when the app resigns active, i.e. the out-of-process system sheet really appeared. This
+    // distinguishes "sheet shown, user cancelled" from "nothing to show" under
+    // preferImmediatelyAvailableCredentials (both report code 1001). iOS asks for the presentation
+    // anchor in both cases, so the anchor callback can't be used for this (verified on the simulator).
     private var presented = false
+    private var resignObserver: Any? = null
+
+    private fun observeSheet() {
+        resignObserver = NSNotificationCenter.defaultCenter.addObserverForName(
+            name = UIApplicationWillResignActiveNotification,
+            `object` = null,
+            queue = NSOperationQueue.mainQueue,
+        ) { _ -> presented = true }
+    }
+
+    private fun finish() {
+        active.remove(this)
+        resignObserver?.let { NSNotificationCenter.defaultCenter.removeObserver(it) }
+        resignObserver = null
+    }
 
     override fun authorizationController(
         controller: ASAuthorizationController,
         didCompleteWithAuthorization: ASAuthorization,
     ) {
-        active.remove(this)
+        finish()
         if (continuation.isActive) continuation.resume(didCompleteWithAuthorization)
     }
 
     override fun authorizationController(controller: ASAuthorizationController, didCompleteWithError: NSError) {
-        active.remove(this)
+        finish()
         if (continuation.isActive) {
             continuation.resumeWithException(
                 AppleAuthorizationException(
@@ -58,10 +78,8 @@ internal class AuthorizationSession private constructor(
         }
     }
 
-    override fun presentationAnchorForAuthorizationController(controller: ASAuthorizationController): ASPresentationAnchor {
-        presented = true
-        return window
-    }
+    override fun presentationAnchorForAuthorizationController(controller: ASAuthorizationController): ASPresentationAnchor =
+        window
 
     companion object {
         suspend fun perform(
@@ -79,13 +97,14 @@ internal class AuthorizationSession private constructor(
             suspendCancellableCoroutine { continuation ->
                 val session = AuthorizationSession(window, continuation)
                 active += session
+                session.observeSheet()
                 val controller = ASAuthorizationController(authorizationRequests = requests)
                 controller.delegate = session
                 controller.presentationContextProvider = session
                 continuation.invokeOnCancellation {
                     dispatch_async(dispatch_get_main_queue()) {
                         controller.cancel()
-                        active.remove(session)
+                        session.finish()
                     }
                 }
                 if (preferImmediatelyAvailable) {
