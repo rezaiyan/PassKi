@@ -31,6 +31,16 @@ android {
         versionCode = 1
         versionName = "1.0"
     }
+    signingConfigs {
+        // Committed sample key so every checkout signs with the fingerprint the demo RP's assetlinks lists.
+        // NOT for release: the password is public (see androidApp/README.md).
+        getByName("debug") {
+            storeFile = file("sample-debug.keystore")
+            storePassword = "passki-sample"
+            keyAlias = "passki-sample"
+            keyPassword = "passki-sample"
+        }
+    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -55,7 +65,8 @@ android {
 }
 
 passki {
-    rpId = "alirezaiyan.com"
+    rpId = "passki.alirezaiyan.com"
+    server { configUrl = "https://passki.alirezaiyan.com/api/demo/server-config" }
     apple {
         teamId = "VFCFJC7Y5J"
         bundleId = "com.alirezaiyan.passki.PassKi"

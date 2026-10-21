@@ -6,6 +6,8 @@
 	<array>
 		<string>webcredentials:alirezaiyan.com?mode=developer</string>
 		<string>webcredentials:alirezaiyan.com</string>
+		<string>webcredentials:passki.alirezaiyan.com</string>
+		<string>webcredentials:passki.alirezaiyan.com?mode=developer</string>
 	</array>
 </dict>
 </plist>
