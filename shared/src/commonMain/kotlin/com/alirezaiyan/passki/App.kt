@@ -79,6 +79,13 @@ fun App(passkeys: Passkeys = remember { Passkeys() }) {
                     passkeys.signals.unknownCredential(DemoRelyingParty.RP_ID, id)
                 }
             }) { Text("Signal: forget last passkey") }
+            Button(onClick = {
+                scope.launch {
+                    log = "Doctor…"
+                    log = PasskeyDoctor.run(DemoRelyingParty.RP_ID).toString()
+                    println("PASSKI_DEMO $log")
+                }
+            }) { Text("Run doctor") }
             SelectionContainer {
                 Text(log, fontFamily = FontFamily.Monospace, modifier = Modifier.fillMaxWidth())
             }

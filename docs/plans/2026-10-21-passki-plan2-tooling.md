@@ -548,9 +548,9 @@ internal fun interface HttpGetter { suspend fun get(url: String): HttpResult }
 
 ### Task B4: Sample "Doctor" button
 
-- [ ] In `App.kt`, add a `Button("Run doctor")` that calls `PasskeyDoctor.run(DemoRelyingParty.RP_ID)` and puts `report.toString()` into the log.
-- [ ] Build all sample targets: `:androidApp:assembleDebug :shared:compileKotlinIosSimulatorArm64 :desktopApp:compileKotlin`.
-- [ ] Commit: `feat(sample): run PasskeyDoctor from demo`
+- [x] In `App.kt`, add a `Button("Run doctor")` that calls `PasskeyDoctor.run(DemoRelyingParty.RP_ID)` and puts `report.toString()` into the log.
+- [x] Build all sample targets: `:androidApp:assembleDebug :shared:compileKotlinIosSimulatorArm64 :desktopApp:compileKotlin`.
+- [x] Commit: `feat(sample): run PasskeyDoctor from demo`
 
 ---
 
