@@ -110,7 +110,7 @@ Run Gradle through `ctx_execute`; the Bash hook blocks `./gradlew`.
 - Test: `src/test/kotlin/com/alirezaiyan/passki/gradle/PluginApplyTest.kt`
 - Modify: root `settings.gradle.kts`
 
-- [ ] **Step 1: `passki-gradle-plugin/settings.gradle.kts`**
+- [x] **Step 1: `passki-gradle-plugin/settings.gradle.kts`**
 
 ```kotlin
 rootProject.name = "passki-gradle-plugin"
@@ -127,7 +127,7 @@ dependencyResolutionManagement {
 }
 ```
 
-- [ ] **Step 2: `passki-gradle-plugin/build.gradle.kts`**
+- [x] **Step 2: `passki-gradle-plugin/build.gradle.kts`**
 
 ```kotlin
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
@@ -175,7 +175,7 @@ tasks.test {
 
 The Android SDK path for TestKit: read `sdk.dir` from the root `local.properties` if `ANDROID_HOME` is unset, and write a `local.properties` into each TestKit project.
 
-- [ ] **Step 3: `PasskiExtension.kt`**
+- [x] **Step 3: `PasskiExtension.kt`**
 
 ```kotlin
 package com.alirezaiyan.passki.gradle
@@ -220,7 +220,7 @@ public abstract class PasskiExtension @Inject constructor(objects: ObjectFactory
 }
 ```
 
-- [ ] **Step 4: `PasskiPlugin.kt`** (skeleton; tasks wired in A4 and A5)
+- [x] **Step 4: `PasskiPlugin.kt`** (skeleton; tasks wired in A4 and A5)
 
 ```kotlin
 package com.alirezaiyan.passki.gradle
@@ -235,7 +235,7 @@ public class PasskiPlugin : Plugin<Project> {
 }
 ```
 
-- [ ] **Step 5: Write the failing test `PluginApplyTest.kt`** (ProjectBuilder)
+- [x] **Step 5: Write the failing test `PluginApplyTest.kt`** (ProjectBuilder)
 
 ```kotlin
 package com.alirezaiyan.passki.gradle
@@ -256,9 +256,9 @@ class PluginApplyTest {
 
 Write the test before Step 4 to see red, then add Step 4. Run: `./gradlew -p passki-gradle-plugin test`. Expected: PASS.
 
-- [ ] **Step 6: Root `settings.gradle.kts`.** Add `includeBuild("passki-gradle-plugin")` inside the existing `pluginManagement {}` block, then run `./gradlew help -q` and expect exit 0.
+- [x] **Step 6: Root `settings.gradle.kts`.** Add `includeBuild("passki-gradle-plugin")` inside the existing `pluginManagement {}` block, then run `./gradlew help -q` and expect exit 0.
 
-- [ ] **Step 7: Commit:** `build(plugin): add passki-gradle-plugin included build`
+- [x] **Step 7: Commit:** `build(plugin): add passki-gradle-plugin included build`
 
 ### Task A2: Fingerprints
 
@@ -266,7 +266,7 @@ Write the test before Step 4 to see red, then add Step 4. Run: `./gradlew -p pas
 - `Fingerprints.kt`
 - Test: `FingerprintsTest.kt`
 
-- [ ] **Step 1: Write the test first.** It generates a real keystore with the JDK `keytool` into a temp dir, then:
+- [x] **Step 1: Write the test first.** It generates a real keystore with the JDK `keytool` into a temp dir, then:
   - asserts the fingerprint matches the SHA-256 that `keytool -list -v` reports for the same keystore (parse the `SHA256:` line)
   - asserts the format is uppercase colon-hex, 32 bytes long
   - asserts a wrong password throws `PasskiConfigException` with a message naming the keystore path
@@ -276,7 +276,7 @@ Write the test before Step 4 to see red, then add Step 4. Run: `./gradlew -p pas
 //   -alias key0 -keyalg RSA -keysize 2048 -validity 1 -dname "CN=PassKi Test"
 ```
 
-- [ ] **Step 2: Implement**
+- [x] **Step 2: Implement**
 
 ```kotlin
 package com.alirezaiyan.passki.gradle
@@ -314,7 +314,7 @@ internal object Fingerprints {
 
 Also test `normalize` on lowercase input, input without colons, and invalid input.
 
-- [ ] **Step 3: Commit:** `feat(plugin): compute signing certificate fingerprints`
+- [x] **Step 3: Commit:** `feat(plugin): compute signing certificate fingerprints`
 
 ### Task A3: Well-known file builders
 
@@ -322,14 +322,14 @@ Also test `normalize` on lowercase input, input without colons, and invalid inpu
 - `WellKnownFiles.kt`
 - Test: `WellKnownFilesTest.kt`
 
-- [ ] **Step 1: Write golden tests first.** Expected outputs, pretty-printed with 2-space indent and a trailing newline:
+- [x] **Step 1: Write golden tests first.** Expected outputs, pretty-printed with 2-space indent and a trailing newline:
   - `assetLinks("com.example", listOf("AA:…"))` → exactly the JSON from `docs/setup/well-known/assetlinks.json` (relations `handle_all_urls` + `get_login_creds`)
   - `aasa(listOf("ABCDE12345.com.example"))` → `{"webcredentials":{"apps":["ABCDE12345.com.example"]}}`, pretty-printed
   - fingerprints are de-duplicated and sorted
 
-- [ ] **Step 2: Implement** with `groovy.json.JsonOutput.prettyPrint(JsonOutput.toJson(...))`. Normalise indent to 2 spaces, since Groovy uses 4: re-indent line-by-line by halving the leading spaces. Order keys exactly as in the golden output by building with `LinkedHashMap`.
+- [x] **Step 2: Implement** with `groovy.json.JsonOutput.prettyPrint(JsonOutput.toJson(...))`. Normalise indent to 2 spaces, since Groovy uses 4: re-indent line-by-line by halving the leading spaces. Order keys exactly as in the golden output by building with `LinkedHashMap`.
 
-- [ ] **Step 3: Commit:** `feat(plugin): build assetlinks.json and AASA documents`
+- [x] **Step 3: Commit:** `feat(plugin): build assetlinks.json and AASA documents`
 
 ### Task A4: Wire AGP + `passkiFingerprints` / `passkiWellKnown` tasks
 
@@ -339,7 +339,7 @@ Also test `normalize` on lowercase input, input without colons, and invalid inpu
 - `tasks/PasskiWellKnownTask.kt`
 - Test: `functional/WellKnownFunctionalTest.kt`
 
-- [ ] **Step 1: Write the functional test first** with TestKit:
+- [x] **Step 1: Write the functional test first** with TestKit:
   - The temp project has `settings.gradle.kts` (google + mavenCentral repos), `local.properties` (`sdk.dir`) and `build.gradle.kts`:
     - `plugins { id("com.android.application") version "<agp>"; id("com.alirezaiyan.passki") }`
     - `android { namespace = "com.example.app"; compileSdk = 36; defaultConfig { applicationId = "com.example.app"; minSdk = 24 } }`
@@ -355,7 +355,7 @@ Also test `normalize` on lowercase input, input without colons, and invalid inpu
     - running again reports `UP-TO-DATE`
   - Second scenario: `apple {}` not configured → no AASA is generated and the log explains why.
 
-- [ ] **Step 2: Implement AGP wiring.** Use `pluginManager.withPlugin("com.android.application")`, then the `ApplicationAndroidComponentsExtension.finalizeDsl { dsl -> … }` callback.
+- [x] **Step 2: Implement AGP wiring.** Use `pluginManager.withPlugin("com.android.application")`, then the `ApplicationAndroidComponentsExtension.finalizeDsl { dsl -> … }` callback.
 
   From the DSL, capture:
   - `defaultConfig.applicationId`
@@ -368,7 +368,7 @@ Also test `normalize` on lowercase input, input without colons, and invalid inpu
 
   Verify the exact AGP 9.1.1 DSL types against the `gradle-api` jar in `~/.gradle/caches` with `javap`: `com.android.build.api.dsl.ApplicationExtension`, `SigningConfig.storeFile`, and so on.
 
-- [ ] **Step 3: `PasskiWellKnownTask`** (`@CacheableTask`)
+- [x] **Step 3: `PasskiWellKnownTask`** (`@CacheableTask`)
   - Inputs:
     - `packageName`
     - `keystores`
@@ -378,9 +378,9 @@ Also test `normalize` on lowercase input, input without colons, and invalid inpu
   - Missing keystore files are skipped with a warning, not a failure. A typical example is a CI machine without the release keystore.
   - Fails with `PasskiConfigException` only if no fingerprint at all can be produced.
 
-- [ ] **Step 4: `PasskiFingerprintsTask`.** Prints a table with columns `variant/buildType | keystore | SHA-256`, plus the extra fingerprints and the Android WebAuthn origin `android:apk-key-hash:<base64url(sha256 bytes)>` for each fingerprint, for server allow-lists. Not cacheable; it only logs.
+- [x] **Step 4: `PasskiFingerprintsTask`.** Prints a table with columns `variant/buildType | keystore | SHA-256`, plus the extra fingerprints and the Android WebAuthn origin `android:apk-key-hash:<base64url(sha256 bytes)>` for each fingerprint, for server allow-lists. Not cacheable; it only logs.
 
-- [ ] **Step 5: Run the functional + unit tests.** Then commit: `feat(plugin): generate well-known files from Android signing configs`
+- [x] **Step 5: Run the functional + unit tests.** Then commit: `feat(plugin): generate well-known files from Android signing configs`
 
 ### Task A5: `passkiVerify`
 
@@ -389,7 +389,7 @@ Also test `normalize` on lowercase input, input without colons, and invalid inpu
 - `tasks/PasskiVerifyTask.kt`
 - Tests: `WellKnownVerifierTest.kt`, `functional/VerifyFunctionalTest.kt`
 
-- [ ] **Step 1: Pure verifier tests first.** The signature is `verify(expected: Expected, assetLinks: Fetched?, aasa: Fetched?, entitlements: String?): List<Problem>`, where `Fetched(status, contentType, body, redirected)`.
+- [x] **Step 1: Pure verifier tests first.** The signature is `verify(expected: Expected, assetLinks: Fetched?, aasa: Fetched?, entitlements: String?): List<Problem>`, where `Fetched(status, contentType, body, redirected)`.
 
   Cases, each producing a `Problem` with an actionable fix text:
 
@@ -408,36 +408,36 @@ Also test `normalize` on lowercase input, input without colons, and invalid inpu
 
   `Problem` has a `severity` field (`ERROR`/`WARNING`).
 
-- [ ] **Step 2: Implement the verifier.**
+- [x] **Step 2: Implement the verifier.**
 
-- [ ] **Step 3: Task.**
+- [x] **Step 3: Task.**
   - Use `java.net.http.HttpClient` with `followRedirects(NEVER)` and a 10 s timeout. Fetch `https://<rpId>/.well-known/assetlinks.json`, and `/.well-known/apple-app-site-association` if Apple is configured.
   - The base URL can be overridden by an internal `@Input @Optional baseUrl` set from the Gradle property `passki.verify.baseUrl`, for tests.
   - Inputs are the same as `passkiWellKnown`, plus `rpId` and the entitlements file contents.
   - Fail the build on any ERROR. Print warnings. Never cacheable: `outputs.upToDateWhen { false }`.
 
-- [ ] **Step 4: Functional test.** Start `com.sun.net.httpserver.HttpServer` on a random port and serve good files, then bad ones. Run `passkiVerify -Ppasski.verify.baseUrl=http://127.0.0.1:<port>`:
+- [x] **Step 4: Functional test.** Start `com.sun.net.httpserver.HttpServer` on a random port and serve good files, then bad ones. Run `passkiVerify -Ppasski.verify.baseUrl=http://127.0.0.1:<port>`:
   - good files → success
   - missing fingerprint → `FAILED`, and the output contains the missing fingerprint
 
-- [ ] **Step 5: Commit:** `feat(plugin): verify hosted well-known files and entitlements`
+- [x] **Step 5: Commit:** `feat(plugin): verify hosted well-known files and entitlements`
 
 ### Task A6: Dogfood in sample + publish config
 
 **Files:** `androidApp/build.gradle.kts`, `passki-gradle-plugin/build.gradle.kts`, `docs/setup/well-known/README.md`
 
-- [ ] **Step 1: Apply the plugin in `androidApp`:**
+- [x] **Step 1: Apply the plugin in `androidApp`:**
   - `id("com.alirezaiyan.passki")`
   - `passki { rpId = "alirezaiyan.com"; apple { bundleId = "com.alirezaiyan.passki.PassKi" } }`
   - `teamId` is left unset until the user provides it.
   - Run `./gradlew :androidApp:passkiWellKnown :androidApp:passkiFingerprints --configuration-cache`.
   - Expected: the output matches `docs/setup/well-known/assetlinks.json` content-wise.
 
-- [ ] **Step 2: Publishing config** via the vanniktech plugin's Gradle-plugin support (`GradlePlugin` platform). The POM matches the library's. Verify with `./gradlew -p passki-gradle-plugin publishToMavenLocal`.
+- [x] **Step 2: Publishing config** via the vanniktech plugin's Gradle-plugin support (`GradlePlugin` platform). The POM matches the library's. Verify with `./gradlew -p passki-gradle-plugin publishToMavenLocal`.
 
-- [ ] **Step 3: `docs/setup/well-known/README.md`:** "These files are generated by `./gradlew :androidApp:passkiWellKnown`".
+- [x] **Step 3: `docs/setup/well-known/README.md`:** "These files are generated by `./gradlew :androidApp:passkiWellKnown`".
 
-- [ ] **Step 4: Commit:** `build(sample): dogfood passki Gradle plugin`
+- [x] **Step 4: Commit:** `build(sample): dogfood passki Gradle plugin`
 
 ---
 

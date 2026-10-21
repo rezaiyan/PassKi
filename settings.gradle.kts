@@ -1,6 +1,7 @@
 rootProject.name = "PassKi"
 
 pluginManagement {
+    includeBuild("passki-gradle-plugin")
     repositories {
         google {
             mavenContent {

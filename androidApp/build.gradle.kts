@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
+    id("com.alirezaiyan.passki")
 }
 
 kotlin {
@@ -50,5 +51,14 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+}
+
+passki {
+    rpId = "alirezaiyan.com"
+    apple {
+        teamId = "VFCFJC7Y5J"
+        bundleId = "com.alirezaiyan.passki.PassKi"
+        entitlementsFile = rootProject.file("iosApp/iosApp/iosApp.entitlements")
     }
 }

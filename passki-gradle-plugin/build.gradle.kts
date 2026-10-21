@@ -1,9 +1,12 @@
+import com.vanniktech.maven.publish.GradlePlugin
+import com.vanniktech.maven.publish.JavadocJar
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import java.util.Properties
 
 plugins {
     `java-gradle-plugin`
     alias(libs.plugins.kotlinJvm)
+    alias(libs.plugins.vanniktechPublish)
 }
 
 group = "com.alirezaiyan.passki"
@@ -39,6 +42,36 @@ gradlePlugin {
             implementationClass = "com.alirezaiyan.passki.gradle.PasskiPlugin"
             displayName = "PassKi"
             description = "Generates and verifies assetlinks.json / apple-app-site-association for passkeys."
+        }
+    }
+}
+
+mavenPublishing {
+    configure(GradlePlugin(javadocJar = JavadocJar.Empty(), sourcesJar = true))
+    coordinates(artifactId = "passki-gradle-plugin")
+    publishToMavenCentral()
+    if (project.hasProperty("signingInMemoryKey")) signAllPublications()
+    pom {
+        name.set("PassKi Gradle plugin")
+        description.set("Generates and verifies assetlinks.json / apple-app-site-association for passkeys.")
+        url.set("https://github.com/rezaiyan/PassKi")
+        licenses {
+            license {
+                name.set("Apache-2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+            }
+        }
+        developers {
+            developer {
+                id.set("alirezaiyan")
+                name.set("Ali Rezaiyan")
+                url.set("https://alirezaiyan.com")
+            }
+        }
+        scm {
+            url.set("https://github.com/rezaiyan/PassKi")
+            connection.set("scm:git:git://github.com/rezaiyan/PassKi.git")
+            developerConnection.set("scm:git:ssh://git@github.com/rezaiyan/PassKi.git")
         }
     }
 }
