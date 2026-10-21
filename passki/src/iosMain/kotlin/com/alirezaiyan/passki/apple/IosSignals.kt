@@ -40,7 +40,23 @@ internal fun signalResult(status: Int, message: String?): PasskeyResult<Unit> = 
     SignalStatus.OK -> PasskeyResult.Success(Unit)
     SignalStatus.NOT_AVAILABLE ->
         PasskeyResult.Failure(PasskeyError.NotSupported(message ?: "The Signal API requires iOS 26 or newer."))
-    else -> PasskeyResult.Failure(PasskeyError.Unknown(message ?: "ASCredentialUpdater failed.", "ASCredentialUpdater"))
+    else -> PasskeyResult.Failure(signalError(message))
+}
+
+internal const val NOT_ASSOCIATED_SIGNAL_MESSAGE: String =
+    "ASCredentialUpdater refused the signal (AuthorizationError 1004): the app is not associated with the RP ID domain."
+
+private val AUTHORIZATION_ERROR_1004 = Regex("""AuthorizationError\s+1004\b""")
+
+/** Bridge ERROR messages look like "<NSError domain> <code>: <localizedDescription>". */
+private fun signalError(message: String?): PasskeyError {
+    val text = message ?: return PasskeyError.Unknown("ASCredentialUpdater failed.", "ASCredentialUpdater")
+    val description = stripAppleBoilerplate(text.substringAfter(": ", text))
+    return when {
+        text.contains("not associated with domain", ignoreCase = true) -> associationError(description)
+        AUTHORIZATION_ERROR_1004.containsMatchIn(text) -> PasskeyError.Misconfigured(NOT_ASSOCIATED_SIGNAL_MESSAGE, AASA_HINT)
+        else -> PasskeyError.Unknown(text, "ASCredentialUpdater")
+    }
 }
 
 /** WebAuthn Signal API on iOS 26+, through ASCredentialUpdater (Swift-only) via the C bridge. */

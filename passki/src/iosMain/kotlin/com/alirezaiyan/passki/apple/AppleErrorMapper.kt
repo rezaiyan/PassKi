@@ -22,7 +22,7 @@ internal fun concreteAasaHint(appId: String, domain: String): String =
         "in Settings > Developer), and serve https://$domain/.well-known/apple-app-site-association containing " +
         "{\"webcredentials\":{\"apps\":[\"$appId\"]}}."
 
-private fun associationError(message: String): PasskeyError.Misconfigured {
+internal fun associationError(message: String): PasskeyError.Misconfigured {
     val match = NOT_ASSOCIATED.find(message) ?: return PasskeyError.Misconfigured(message, AASA_HINT)
     val (appId, domain) = match.destructured
     return PasskeyError.Misconfigured("App $appId is not associated with $domain.", concreteAasaHint(appId, domain))
