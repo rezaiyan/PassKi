@@ -94,7 +94,7 @@ internal class IosPasskeys(private val anchor: () -> UIWindow? = ::keyWindow) : 
     }
 
     private suspend fun createPasskey(optionsJson: String, conditional: Boolean): PasskeyResult<PasskeyRegistration> =
-        passkeyCatching(Throwable::toPasskeyError) {
+        passkeyCatching({ it.toPasskeyError(conditional = conditional) }) {
             requireIos(16, "Passkeys")
             if (conditional) requireIos(18, "Conditional passkey creation (upgrade)")
             val options = WebAuthnOptions.parseCreation(optionsJson).model

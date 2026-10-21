@@ -44,11 +44,39 @@ private const val PROVIDER_HINT: String =
     "No credential provider is available. Make sure Google Play services is up to date and a provider " +
         "(Google Password Manager, 1Password, ...) is enabled in Settings > Passwords & accounts."
 
-/** [conditional] is true for conditional create (`upgrade()`), where a provider declining is not a setup problem. */
+private const val CONDITIONAL_DECLINED: String = "The credential provider declined conditional passkey creation"
+
+/**
+ * [conditional] is true for conditional create (`upgrade()`), where a provider declining is not a setup problem:
+ * any NotSupported or Unknown outcome is reported as [PasskeyError.NotSupported] with a short platform detail
+ * (e.g. Play services' raw "API is not supported: 17: " becomes "status 17").
+ */
 internal fun Throwable.toPasskeyError(
     conditional: Boolean = false,
     context: AndroidErrorContext = AndroidErrorContext(),
-): PasskeyError = when (this) {
+): PasskeyError {
+    val error = toBasePasskeyError(conditional, context)
+    if (!conditional || this is CreateCredentialNoCreateOptionException) return error
+    return when (error) {
+        is PasskeyError.NotSupported, is PasskeyError.Unknown -> {
+            val detail = conditionalDeclineDetail(message)
+            PasskeyError.NotSupported(if (detail == null) "$CONDITIONAL_DECLINED." else "$CONDITIONAL_DECLINED ($detail).")
+        }
+        else -> error
+    }
+}
+
+private val STATUS_CODE = Regex("""(?:^|:)\s*(\d+)\s*(?::|$)""")
+
+/** A short, human detail from a provider message: "status N" when a numeric status is embedded, else the trimmed text. */
+internal fun conditionalDeclineDetail(message: String?): String? {
+    val text = message?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+    STATUS_CODE.find(text)?.let { return "status ${it.groupValues[1]}" }
+    if (text.startsWith("android.credentials.") || text.startsWith("androidx.credentials.")) return null
+    return text.take(120)
+}
+
+private fun Throwable.toBasePasskeyError(conditional: Boolean, context: AndroidErrorContext): PasskeyError = when (this) {
     is CreateCredentialCancellationException, is GetCredentialCancellationException -> PasskeyError.Cancelled
     is NoCredentialException -> PasskeyError.NoCredentials
     is CreateCredentialInterruptedException, is GetCredentialInterruptedException -> PasskeyError.Interrupted
@@ -56,7 +84,7 @@ internal fun Throwable.toPasskeyError(
         PasskeyError.Misconfigured(messageOr("No credential provider configured."), PROVIDER_HINT)
     is CreateCredentialNoCreateOptionException ->
         if (conditional) {
-            PasskeyError.NotSupported("The credential provider declined conditional passkey creation.")
+            PasskeyError.NotSupported("$CONDITIONAL_DECLINED.")
         } else {
             PasskeyError.Misconfigured(messageOr("No provider can create this credential."), PROVIDER_HINT)
         }

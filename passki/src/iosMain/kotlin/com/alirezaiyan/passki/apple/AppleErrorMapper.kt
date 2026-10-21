@@ -31,9 +31,14 @@ private fun associationError(message: String): PasskeyError.Misconfigured {
 /** [presented] is true once the system asked for a presentation anchor, i.e. a sheet was (about to be) shown. */
 internal class AppleAuthorizationException(val code: Long, message: String, val presented: Boolean) : Exception(message)
 
+internal const val CONDITIONAL_DECLINED_MESSAGE: String =
+    "iOS declined conditional passkey creation; it requires a recent password AutoFill sign-in for this account."
+
 /**
  * Maps an ASAuthorizationError code. With [immediateOnly], iOS reports "nothing to show" as a cancel
  * (1001) without ever presenting a sheet; that case is [PasskeyError.NoCredentials], not a user cancel.
+ * With [conditional] (conditional create, `upgrade()`), iOS declines silently with 1001 and no UI, so that
+ * is [PasskeyError.NotSupported], not a user cancel.
  */
 internal fun appleErrorToPasskeyError(
     code: Long,
@@ -41,7 +46,9 @@ internal fun appleErrorToPasskeyError(
     immediateOnly: Boolean = false,
     presented: Boolean = true,
     cause: Throwable? = null,
-): PasskeyError = appleErrorToPasskeyErrorInternal(code, stripAppleBoilerplate(message), immediateOnly, presented, cause)
+    conditional: Boolean = false,
+): PasskeyError =
+    appleErrorToPasskeyErrorInternal(code, stripAppleBoilerplate(message), immediateOnly, presented, cause, conditional)
 
 private fun appleErrorToPasskeyErrorInternal(
     code: Long,
@@ -49,8 +56,10 @@ private fun appleErrorToPasskeyErrorInternal(
     immediateOnly: Boolean,
     presented: Boolean,
     cause: Throwable?,
+    conditional: Boolean,
 ): PasskeyError = when {
     message.contains("not associated with domain", ignoreCase = true) -> associationError(message)
+    code == 1001L && conditional -> PasskeyError.NotSupported(CONDITIONAL_DECLINED_MESSAGE)
     code == 1001L && immediateOnly && !presented -> PasskeyError.NoCredentials
     code == 1001L -> PasskeyError.Cancelled
     code == 1005L -> PasskeyError.NoCredentials
@@ -61,8 +70,10 @@ private fun appleErrorToPasskeyErrorInternal(
     else -> PasskeyError.Unknown(message, platformCode = "ASAuthorizationError.$code", cause = cause)
 }
 
-internal fun Throwable.toPasskeyError(immediateOnly: Boolean = false): PasskeyError = when (this) {
-    is AppleAuthorizationException -> appleErrorToPasskeyError(code, message.orEmpty(), immediateOnly, presented, cause = this)
-    is IllegalArgumentException -> PasskeyError.InvalidOptions(message ?: "Invalid request.")
-    else -> PasskeyError.Unknown(message ?: this::class.simpleName.orEmpty(), platformCode = null, cause = this)
-}
+internal fun Throwable.toPasskeyError(immediateOnly: Boolean = false, conditional: Boolean = false): PasskeyError =
+    when (this) {
+        is AppleAuthorizationException ->
+            appleErrorToPasskeyError(code, message.orEmpty(), immediateOnly, presented, cause = this, conditional = conditional)
+        is IllegalArgumentException -> PasskeyError.InvalidOptions(message ?: "Invalid request.")
+        else -> PasskeyError.Unknown(message ?: this::class.simpleName.orEmpty(), platformCode = null, cause = this)
+    }

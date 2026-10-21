@@ -150,4 +150,26 @@ class AppleErrorMapperTest {
         )
         assertEquals("The operation couldn't be completed.", error.message)
     }
+
+    @Test
+    fun conditionalCreateCancelIsNotSupportedDecline() {
+        val error = appleErrorToPasskeyError(1001, "canceled", conditional = true)
+        assertEquals(
+            PasskeyError.NotSupported(
+                "iOS declined conditional passkey creation; it requires a recent password AutoFill sign-in for this account.",
+            ),
+            error,
+        )
+    }
+
+    @Test
+    fun authorizationExceptionCarriesConditional() {
+        val error = AppleAuthorizationException(1001, "x", presented = false).toPasskeyError(conditional = true)
+        assertTrue(error is PasskeyError.NotSupported)
+    }
+
+    @Test
+    fun conditionalCreateMatchedExcludedIsStillAlreadyRegistered() {
+        assertEquals(PasskeyError.AlreadyRegistered, appleErrorToPasskeyError(1006, "x", conditional = true))
+    }
 }

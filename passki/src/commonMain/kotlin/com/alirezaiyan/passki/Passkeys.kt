@@ -47,7 +47,10 @@ public interface Passkeys {
      * [PasskeyError.Misconfigured].
      *
      * Conditional creation is opportunistic: providers may decline (e.g. iOS requires a recent password-autofill
-     * sign-in). Treat any failure as silent; never show an error to the user.
+     * sign-in). A decline is reported as [PasskeyError.NotSupported] on both platforms: on Android when the
+     * credential provider rejects conditional create (Play services may answer with a status such as 17), on iOS
+     * when the system declines silently without showing UI. Treat any failure as silent; never show an error to
+     * the user.
      */
     public suspend fun upgrade(optionsJson: String): PasskeyResult<PasskeyRegistration>
 

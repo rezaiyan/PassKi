@@ -45,9 +45,10 @@ Options are your server's WebAuthn JSON, used as-is (a `{"publicKey": ...}` enve
 
 ## Good to know
 
-- **`upgrade()` is opportunistic.** It uses conditional create, so the platform may decline without any UI. Treat every `upgrade()` failure as silent: do not show an error and do not block your login flow.
+- **`upgrade()` is opportunistic.** It uses conditional create, so the platform may decline without any UI. A decline is reported as `PasskeyError.NotSupported` on both platforms (Android: the credential provider rejected conditional create; iOS: the system declined, typically because there was no recent password AutoFill sign-in for the account). Treat every `upgrade()` failure as silent: do not show an error and do not block your login flow.
 - **Verifying upgrade responses.** A conditional-create response is created without a user prompt, so the user-presence (UP) flag may be 0. Servers verifying these responses must not require user presence.
 - **`excludeCredentials` on iOS < 17.4 is ignored** by the system, so a duplicate passkey may be created; dedupe on your server. `PasskeyError.AlreadyRegistered` is guaranteed on Android and iOS 17.4+.
+- **Duplicate registration on Android shows a sheet first.** When `excludeCredentials` matches, Google Password Manager still shows its create sheet; `PasskeyError.AlreadyRegistered` is returned only after the user taps Continue.
 - **Android `upgrade()` and `signals` depend on the user's credential provider** and may return `PasskeyError.NotSupported` even when `capabilities()` reports them as available.
 - **Signals on iOS.** `passkeys.signals` returns `PasskeyError.NotSupported` on iOS for now.
 - **iOS registration responses** omit the WebAuthn Level 3 `publicKey` and `publicKeyAlgorithm` fields. Read the public key from `attestationObject`, which every server library already does.

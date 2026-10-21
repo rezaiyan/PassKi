@@ -5,12 +5,14 @@ import androidx.credentials.exceptions.CreateCredentialInterruptedException
 import androidx.credentials.exceptions.CreateCredentialNoCreateOptionException
 import androidx.credentials.exceptions.CreateCredentialProviderConfigurationException
 import androidx.credentials.exceptions.CreateCredentialUnknownException
+import androidx.credentials.exceptions.CreateCredentialUnsupportedException
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialUnsupportedException
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.credentials.exceptions.domerrors.DataError
 import androidx.credentials.exceptions.domerrors.InvalidStateError
 import androidx.credentials.exceptions.domerrors.NotAllowedError
+import androidx.credentials.exceptions.domerrors.NotSupportedError
 import androidx.credentials.exceptions.domerrors.SecurityError
 import androidx.credentials.exceptions.publickeycredential.CreatePublicKeyCredentialDomException
 import androidx.credentials.exceptions.publickeycredential.GetPublicKeyCredentialDomException
@@ -185,5 +187,46 @@ class AndroidErrorMapperTest {
         val error = SignalCredentialSecurityException("not allowed")
             .toPasskeyError(context = AndroidErrorContext(rpId = "example.com", packageName = "com.example"))
         assertTrue("https://example.com/.well-known/assetlinks.json" in assertIs<PasskeyError.Misconfigured>(error).fixHint)
+    }
+
+    @Test
+    fun unsupportedFromUpgradeReportsDeclineWithStatusNotRawMessage() {
+        val error = CreateCredentialUnsupportedException("API is not supported: 17: ").toPasskeyError(conditional = true)
+        val notSupported = assertIs<PasskeyError.NotSupported>(error)
+        assertEquals(
+            "The credential provider declined conditional passkey creation (status 17).",
+            notSupported.message,
+        )
+    }
+
+    @Test
+    fun unknownFromUpgradeReportsDeclineWithStatus() {
+        val error = CreateCredentialUnknownException("API is not supported: 17: ").toPasskeyError(conditional = true)
+        val notSupported = assertIs<PasskeyError.NotSupported>(error)
+        assertEquals(
+            "The credential provider declined conditional passkey creation (status 17).",
+            notSupported.message,
+        )
+    }
+
+    @Test
+    fun notSupportedDomErrorFromUpgradeKeepsShortDetail() {
+        val error = CreatePublicKeyCredentialDomException(NotSupportedError(), "conditional create unavailable")
+            .toPasskeyError(conditional = true)
+        assertEquals(
+            "The credential provider declined conditional passkey creation (conditional create unavailable).",
+            assertIs<PasskeyError.NotSupported>(error).message,
+        )
+    }
+
+    @Test
+    fun unsupportedFromRegisterKeepsOriginalMessage() {
+        val error = CreateCredentialUnsupportedException("old device").toPasskeyError()
+        assertEquals("old device", assertIs<PasskeyError.NotSupported>(error).message)
+    }
+
+    @Test
+    fun cancellationFromUpgradeStaysCancelled() {
+        assertEquals(PasskeyError.Cancelled, CreateCredentialCancellationException("x").toPasskeyError(conditional = true))
     }
 }
