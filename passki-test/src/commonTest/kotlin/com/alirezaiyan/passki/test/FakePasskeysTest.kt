@@ -86,18 +86,44 @@ class FakePasskeysTest {
         assertTrue(capabilities.unifiedPasswordSignIn)
         assertTrue(capabilities.conditionalCreate)
         assertTrue(capabilities.signals)
+        assertTrue(capabilities.autofill)
     }
 
     @Test
     fun capabilitiesReflectFlags() = runTest {
         passkeys.immediateSignIn = false
         passkeys.signalsSupported = false
+        passkeys.autofillSupported = false
         val capabilities = passkeys.capabilities()
         assertTrue(capabilities.isSupported)
         assertFalse(capabilities.immediateSignIn)
         assertTrue(capabilities.unifiedPasswordSignIn)
         assertTrue(capabilities.conditionalCreate)
         assertFalse(capabilities.signals)
+        assertFalse(capabilities.autofill)
+    }
+
+    @Test
+    fun isSupportedFalseReportsAutofillFalse() = runTest {
+        passkeys.isSupported = false
+        assertFalse(passkeys.capabilities().autofill)
+        notSupported(passkeys.signIn(TestOptions.request(rpId), SignInMode.Autofill), "isSupported")
+    }
+
+    @Test
+    fun autofillSignInBehavesLikeModal() = runTest {
+        val registration = passkeys.register(TestOptions.creation(rpId)).getOrThrow()
+        val assertion = passkeys.signIn(TestOptions.request(rpId), SignInMode.Autofill).getOrThrow()
+        assertEquals(registration.credentialId, assertion.credentialId)
+    }
+
+    @Test
+    fun autofillSupportedFalseFailsAutofillModeOnly() = runTest {
+        passkeys.autofillSupported = false
+        passkeys.register(TestOptions.creation(rpId)).getOrThrow()
+        notSupported(passkeys.signIn(TestOptions.request(rpId), SignInMode.Autofill), "autofillSupported")
+        assertIs<PasskeyResult.Success<*>>(passkeys.signIn(TestOptions.request(rpId), SignInMode.Modal))
+        assertIs<PasskeyResult.Success<*>>(passkeys.signIn(TestOptions.request(rpId), SignInMode.ImmediateOnly))
     }
 
     @Test

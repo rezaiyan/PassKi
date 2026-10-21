@@ -39,7 +39,8 @@ public final class com/alirezaiyan/passki/PasskeyAssertion {
 }
 
 public final class com/alirezaiyan/passki/PasskeyCapabilities {
-	public fun <init> (ZZZZZ)V
+	public fun <init> (ZZZZZZ)V
+	public final fun getAutofill ()Z
 	public final fun getConditionalCreate ()Z
 	public final fun getImmediateSignIn ()Z
 	public final fun getSignals ()Z
@@ -215,6 +216,7 @@ public final class com/alirezaiyan/passki/SignInCredential$Password : com/alirez
 }
 
 public final class com/alirezaiyan/passki/SignInMode : java/lang/Enum {
+	public static final field Autofill Lcom/alirezaiyan/passki/SignInMode;
 	public static final field ImmediateOnly Lcom/alirezaiyan/passki/SignInMode;
 	public static final field Modal Lcom/alirezaiyan/passki/SignInMode;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;

@@ -11,6 +11,7 @@ class UnsupportedPasskeysTest {
     @Test
     fun capabilitiesReportUnsupported() = runTest {
         assertFalse(passkeys.capabilities().isSupported)
+        assertFalse(passkeys.capabilities().autofill)
     }
 
     @Test
@@ -18,6 +19,7 @@ class UnsupportedPasskeysTest {
         listOf(
             passkeys.register("{}"),
             passkeys.signIn("{}"),
+            passkeys.signIn("{}", SignInMode.Autofill),
             passkeys.signInOrPassword("{}"),
             passkeys.upgrade("{}"),
             passkeys.signals.unknownCredential("example.com", "AQID"),

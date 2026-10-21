@@ -72,6 +72,20 @@ public enum class SignInMode {
 
     /** Only use passkeys already on this device; fails fast with [PasskeyError.NoCredentials] otherwise. */
     ImmediateOnly,
+
+    /**
+     * Offers passkeys as suggestions in the keyboard / QuickType bar of the focused username field
+     * (WebAuthn "conditional mediation"). Requires [PasskeyCapabilities.autofill]: Android 15 (API 35)+, iOS 16+.
+     *
+     * [Passkeys.signIn] suspends until the user picks a passkey suggestion. Dismissing the suggestion or the
+     * sheet does not complete the call; it keeps waiting. Cancel the calling coroutine to withdraw the offer,
+     * e.g. when the field loses focus or leaves composition.
+     *
+     * A username text field must be focused when you call it: use `PasskeyUsernameField` from passki-compose,
+     * or focus your own username field (content type username) first. Without one, Android fails with
+     * [PasskeyError.Misconfigured].
+     */
+    Autofill,
 }
 
 /**
@@ -122,10 +136,13 @@ public class PasskeyCapabilities @InternalPasskiApi constructor(
      * On Android this reflects OS support; the user's credential provider may still decline (operation then returns NotSupported).
      */
     public val signals: Boolean,
+    /** [SignInMode.Autofill] (passkey suggestions in the username field's keyboard) is available. */
+    public val autofill: Boolean,
 ) {
     override fun toString(): String =
         "PasskeyCapabilities(isSupported=$isSupported, immediateSignIn=$immediateSignIn, " +
-            "unifiedPasswordSignIn=$unifiedPasswordSignIn, conditionalCreate=$conditionalCreate, signals=$signals)"
+            "unifiedPasswordSignIn=$unifiedPasswordSignIn, conditionalCreate=$conditionalCreate, signals=$signals, " +
+            "autofill=$autofill)"
 }
 
 /**

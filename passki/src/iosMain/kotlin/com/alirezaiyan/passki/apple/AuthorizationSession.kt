@@ -81,11 +81,32 @@ internal class AuthorizationSession private constructor(
     override fun presentationAnchorForAuthorizationController(controller: ASAuthorizationController): ASPresentationAnchor =
         window
 
+    /** How the controller is started. */
+    enum class Presentation { Modal, PreferImmediatelyAvailable, AutoFill }
+
     companion object {
         suspend fun perform(
             requests: List<ASAuthorizationRequest>,
             anchor: () -> UIWindow?,
             preferImmediatelyAvailable: Boolean,
+        ): ASAuthorization = perform(
+            requests,
+            anchor,
+            if (preferImmediatelyAvailable) Presentation.PreferImmediatelyAvailable else Presentation.Modal,
+        )
+
+        /**
+         * Offers [requests] in the QuickType bar of the focused username field
+         * (`performAutoFillAssistedRequests`, iOS 16+). Cancelling the coroutine calls `controller.cancel()`;
+         * the resulting 1001 is ignored because the continuation is no longer active.
+         */
+        suspend fun performAutoFill(requests: List<ASAuthorizationRequest>, anchor: () -> UIWindow?): ASAuthorization =
+            perform(requests, anchor, Presentation.AutoFill)
+
+        private suspend fun perform(
+            requests: List<ASAuthorizationRequest>,
+            anchor: () -> UIWindow?,
+            presentation: Presentation,
         ): ASAuthorization = withContext(Dispatchers.Main) {
             // Resolve on the main thread (UIKit) and fail fast rather than present on a detached window.
             val window = anchor() ?: throw PasskeyException(
@@ -107,10 +128,11 @@ internal class AuthorizationSession private constructor(
                         session.finish()
                     }
                 }
-                if (preferImmediatelyAvailable) {
-                    controller.performRequestsWithOptions(ASAuthorizationControllerRequestOptionPreferImmediatelyAvailableCredentials)
-                } else {
-                    controller.performRequests()
+                when (presentation) {
+                    Presentation.PreferImmediatelyAvailable ->
+                        controller.performRequestsWithOptions(ASAuthorizationControllerRequestOptionPreferImmediatelyAvailableCredentials)
+                    Presentation.AutoFill -> controller.performAutoFillAssistedRequests()
+                    Presentation.Modal -> controller.performRequests()
                 }
             }
         }

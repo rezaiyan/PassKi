@@ -107,6 +107,9 @@ final class com.alirezaiyan.passki.test/FakePasskeys : com.alirezaiyan.passki/Pa
     final val signals // com.alirezaiyan.passki.test/FakePasskeys.signals|{}signals[0]
         final fun <get-signals>(): com.alirezaiyan.passki/PasskeySignals // com.alirezaiyan.passki.test/FakePasskeys.signals.<get-signals>|<get-signals>(){}[0]
 
+    final var autofillSupported // com.alirezaiyan.passki.test/FakePasskeys.autofillSupported|{}autofillSupported[0]
+        final fun <get-autofillSupported>(): kotlin/Boolean // com.alirezaiyan.passki.test/FakePasskeys.autofillSupported.<get-autofillSupported>|<get-autofillSupported>(){}[0]
+        final fun <set-autofillSupported>(kotlin/Boolean) // com.alirezaiyan.passki.test/FakePasskeys.autofillSupported.<set-autofillSupported>|<set-autofillSupported>(kotlin.Boolean){}[0]
     final var conditionalCreate // com.alirezaiyan.passki.test/FakePasskeys.conditionalCreate|{}conditionalCreate[0]
         final fun <get-conditionalCreate>(): kotlin/Boolean // com.alirezaiyan.passki.test/FakePasskeys.conditionalCreate.<get-conditionalCreate>|<get-conditionalCreate>(){}[0]
         final fun <set-conditionalCreate>(kotlin/Boolean) // com.alirezaiyan.passki.test/FakePasskeys.conditionalCreate.<set-conditionalCreate>|<set-conditionalCreate>(kotlin.Boolean){}[0]

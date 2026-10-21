@@ -22,6 +22,7 @@ internal class UnsupportedPasskeys(platform: String) : Passkeys {
             unifiedPasswordSignIn = false,
             conditionalCreate = false,
             signals = false,
+            autofill = false,
         )
 
     override suspend fun register(optionsJson: String): PasskeyResult<PasskeyRegistration> = failure

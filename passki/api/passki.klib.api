@@ -24,6 +24,7 @@ final enum class com.alirezaiyan.passki/DoctorStatus : kotlin/Enum<com.alirezaiy
 }
 
 final enum class com.alirezaiyan.passki/SignInMode : kotlin/Enum<com.alirezaiyan.passki/SignInMode> { // com.alirezaiyan.passki/SignInMode|null[0]
+    enum entry Autofill // com.alirezaiyan.passki/SignInMode.Autofill|null[0]
     enum entry ImmediateOnly // com.alirezaiyan.passki/SignInMode.ImmediateOnly|null[0]
     enum entry Modal // com.alirezaiyan.passki/SignInMode.Modal|null[0]
 
@@ -561,8 +562,10 @@ final class com.alirezaiyan.passki/PasskeyAssertion { // com.alirezaiyan.passki/
 }
 
 final class com.alirezaiyan.passki/PasskeyCapabilities { // com.alirezaiyan.passki/PasskeyCapabilities|null[0]
-    constructor <init>(kotlin/Boolean, kotlin/Boolean, kotlin/Boolean, kotlin/Boolean, kotlin/Boolean) // com.alirezaiyan.passki/PasskeyCapabilities.<init>|<init>(kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+    constructor <init>(kotlin/Boolean, kotlin/Boolean, kotlin/Boolean, kotlin/Boolean, kotlin/Boolean, kotlin/Boolean) // com.alirezaiyan.passki/PasskeyCapabilities.<init>|<init>(kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
 
+    final val autofill // com.alirezaiyan.passki/PasskeyCapabilities.autofill|{}autofill[0]
+        final fun <get-autofill>(): kotlin/Boolean // com.alirezaiyan.passki/PasskeyCapabilities.autofill.<get-autofill>|<get-autofill>(){}[0]
     final val conditionalCreate // com.alirezaiyan.passki/PasskeyCapabilities.conditionalCreate|{}conditionalCreate[0]
         final fun <get-conditionalCreate>(): kotlin/Boolean // com.alirezaiyan.passki/PasskeyCapabilities.conditionalCreate.<get-conditionalCreate>|<get-conditionalCreate>(){}[0]
     final val immediateSignIn // com.alirezaiyan.passki/PasskeyCapabilities.immediateSignIn|{}immediateSignIn[0]

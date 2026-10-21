@@ -14,11 +14,18 @@ import com.alirezaiyan.passki.internal.WebAuthnOptions
 import com.alirezaiyan.passki.internal.parseAssertion
 import com.alirezaiyan.passki.internal.parseRegistration
 import com.alirezaiyan.passki.internal.passkeyCatching
+import platform.AuthenticationServices.ASAuthorization
 import platform.AuthenticationServices.ASAuthorizationPasswordProvider
 import platform.AuthenticationServices.ASAuthorizationPlatformPublicKeyCredentialAssertion
 import platform.AuthenticationServices.ASAuthorizationPlatformPublicKeyCredentialRegistration
 import platform.AuthenticationServices.ASPasswordCredential
+import kotlinx.coroutines.delay
 import platform.UIKit.UIWindow
+
+internal const val AUTOFILL_RETRY_DELAY_MS: Long = 500
+
+/** A 1001 (canceled) during autofill means the user dismissed the suggestion sheet; keep offering. */
+internal fun isAutoFillDismissal(error: Throwable): Boolean = error is AppleAuthorizationException && error.code == 1001L
 
 internal class IosPasskeys(private val anchor: () -> UIWindow? = ::keyWindow) : Passkeys {
 
@@ -28,6 +35,7 @@ internal class IosPasskeys(private val anchor: () -> UIWindow? = ::keyWindow) : 
         unifiedPasswordSignIn = iosAtLeast(16),
         conditionalCreate = iosAtLeast(18),
         signals = iosAtLeast(26),
+        autofill = iosAtLeast(16),
     )
 
     override suspend fun register(optionsJson: String): PasskeyResult<PasskeyRegistration> =
@@ -41,11 +49,15 @@ internal class IosPasskeys(private val anchor: () -> UIWindow? = ::keyWindow) : 
         return passkeyCatching({ it.toPasskeyError(immediateOnly) }) {
             requireIos(16, "Passkeys")
             val options = WebAuthnOptions.parseRequest(optionsJson).model
-            val authorization = AuthorizationSession.perform(
-                requests = listOf(AppleRequests.assertion(options)),
-                anchor = anchor,
-                preferImmediatelyAvailable = immediateOnly,
-            )
+            val authorization = if (mode == SignInMode.Autofill) {
+                autoFill { AuthorizationSession.performAutoFill(listOf(AppleRequests.assertion(options)), anchor) }
+            } else {
+                AuthorizationSession.perform(
+                    requests = listOf(AppleRequests.assertion(options)),
+                    anchor = anchor,
+                    preferImmediatelyAvailable = immediateOnly,
+                )
+            }
             when (val credential = authorization.credential) {
                 is ASAuthorizationPlatformPublicKeyCredentialAssertion -> parseAssertion(AppleRequests.assertionJson(credential))
                 else -> throw unexpected(credential)
@@ -88,6 +100,22 @@ internal class IosPasskeys(private val anchor: () -> UIWindow? = ::keyWindow) : 
                 else -> throw unexpected(credential)
             }
         }
+
+    /**
+     * Autofill keeps offering passkeys until one is picked: a dismissal (1001 not caused by us) restarts the
+     * request after a short pause, so a provider that answers 1001 immediately can't spin the main thread.
+     * Our own cancel (coroutine cancelled) ends the loop through [delay] / the cancelled continuation.
+     */
+    private suspend fun autoFill(run: suspend () -> ASAuthorization): ASAuthorization {
+        while (true) {
+            try {
+                return run()
+            } catch (e: AppleAuthorizationException) {
+                if (!isAutoFillDismissal(e)) throw e
+                delay(AUTOFILL_RETRY_DELAY_MS)
+            }
+        }
+    }
 
     private fun unexpected(value: Any?): PasskeyException =
         PasskeyException(PasskeyError.Unknown("Unexpected credential type ${value?.let { it::class.simpleName }}.", null))

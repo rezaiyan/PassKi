@@ -25,6 +25,7 @@ public final class com/alirezaiyan/passki/test/FakePasskeys : com/alirezaiyan/pa
 	public fun capabilities (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun failNextWith (Lcom/alirezaiyan/passki/PasskeyError;)V
 	public final fun getAuthenticator ()Lcom/alirezaiyan/passki/test/FakeAuthenticator;
+	public final fun getAutofillSupported ()Z
 	public final fun getConditionalCreate ()Z
 	public final fun getImmediateSignIn ()Z
 	public final fun getReceivedSignals ()Ljava/util/List;
@@ -34,6 +35,7 @@ public final class com/alirezaiyan/passki/test/FakePasskeys : com/alirezaiyan/pa
 	public final fun getUnifiedPasswordSignIn ()Z
 	public final fun isSupported ()Z
 	public fun register (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun setAutofillSupported (Z)V
 	public final fun setConditionalCreate (Z)V
 	public final fun setImmediateSignIn (Z)V
 	public final fun setSignalsSupported (Z)V

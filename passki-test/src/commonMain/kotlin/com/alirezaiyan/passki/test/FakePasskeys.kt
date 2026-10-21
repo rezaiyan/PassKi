@@ -87,6 +87,13 @@ public class FakePasskeys(origin: String, random: Random = Random.Default) : Pas
     public var signalsSupported: Boolean = true
 
     /**
+     * [SignInMode.Autofill] is available ([PasskeyCapabilities.autofill]). When false,
+     * `signIn(mode = Autofill)` fails with [PasskeyError.NotSupported]. Default true.
+     * When true, Autofill behaves like [SignInMode.Modal]: it completes at once as if the user picked the suggestion.
+     */
+    public var autofillSupported: Boolean = true
+
+    /**
      * Username → password offered by [signInOrPassword] when no passkey matches.
      * Mutate from test code before/after calls, not concurrently with them.
      */
@@ -116,6 +123,7 @@ public class FakePasskeys(origin: String, random: Random = Random.Default) : Pas
         unifiedPasswordSignIn = isSupported && unifiedPasswordSignIn,
         conditionalCreate = isSupported && conditionalCreate,
         signals = isSupported && signalsSupported,
+        autofill = isSupported && autofillSupported,
     )
 
     override suspend fun register(optionsJson: String): PasskeyResult<PasskeyRegistration> =
@@ -127,9 +135,13 @@ public class FakePasskeys(origin: String, random: Random = Random.Default) : Pas
         }
 
     override suspend fun signIn(optionsJson: String, mode: SignInMode): PasskeyResult<PasskeyAssertion> =
-        result(mode != SignInMode.ImmediateOnly || immediateSignIn, "immediateSignIn") {
-            parseAssertion(authenticator.signIn(optionsJson))
+        when (mode) {
+            SignInMode.ImmediateOnly -> result(immediateSignIn, "immediateSignIn") { assertion(optionsJson) }
+            SignInMode.Autofill -> result(autofillSupported, "autofillSupported") { assertion(optionsJson) }
+            SignInMode.Modal -> result { assertion(optionsJson) }
         }
+
+    private suspend fun assertion(optionsJson: String): PasskeyAssertion = parseAssertion(authenticator.signIn(optionsJson))
 
     override suspend fun signInOrPassword(optionsJson: String): PasskeyResult<SignInCredential> =
         result(unifiedPasswordSignIn, "unifiedPasswordSignIn") {
