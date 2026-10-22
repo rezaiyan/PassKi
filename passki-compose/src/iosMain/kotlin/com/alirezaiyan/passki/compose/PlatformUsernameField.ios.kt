@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
+import com.alirezaiyan.passki.compose.internal.AutofillSignIn
+import com.alirezaiyan.passki.compose.internal.PlainAutofillSignIn
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
@@ -158,3 +160,6 @@ private class UsernameFieldBridge : NSObject(), UITextFieldDelegateProtocol {
     @ObjCAction
     fun editingChanged(sender: UITextField) = onValueChange(sender.text ?: "")
 }
+
+@Composable
+internal actual fun rememberAutofillSignIn(): AutofillSignIn = PlainAutofillSignIn

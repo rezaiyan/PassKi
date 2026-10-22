@@ -2,6 +2,8 @@ package com.alirezaiyan.passki.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.alirezaiyan.passki.compose.internal.AutofillSignIn
+import com.alirezaiyan.passki.compose.internal.PlainAutofillSignIn
 
 @Composable
 internal actual fun PlatformUsernameField(
@@ -15,3 +17,6 @@ internal actual fun PlatformUsernameField(
 ) {
     MaterialUsernameField(value, onValueChange, label, enabled, modifier, onFocusChanged, onTap)
 }
+
+@Composable
+internal actual fun rememberAutofillSignIn(): AutofillSignIn = PlainAutofillSignIn

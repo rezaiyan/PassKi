@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.alirezaiyan.passki.compose.PasskeySignInButton
 import com.alirezaiyan.passki.compose.PasskeyUsernameField
 import com.alirezaiyan.passki.compose.rememberPasskeySignIn
@@ -56,6 +58,7 @@ fun App(
         var log by remember { mutableStateOf("Ready. RP ID: ${DemoRelyingParty.RP_ID} (server $DEMO_RP_URL)") }
         var username by remember { mutableStateOf("") }
         var shareFixture by remember { mutableStateOf(false) }
+        var showAutofillDialog by remember { mutableStateOf(false) }
         val prfByCredential = remember { mutableStateMapOf<String, String>() }
         val platform = remember { getPlatform().name }
 
@@ -226,6 +229,31 @@ fun App(
                 label = "Username (passkey autofill)",
                 modifier = Modifier.fillMaxWidth(),
             )
+            // A Dialog is its own window (Android): the field must still get the passkey suggestion.
+            Button(onClick = { showAutofillDialog = true }) { Text("Autofill in dialog") }
+            if (showAutofillDialog) {
+                Dialog(onDismissRequest = { showAutofillDialog = false }) {
+                    Surface(shape = MaterialTheme.shapes.large) {
+                        var dialogUsername by remember { mutableStateOf("") }
+                        PasskeyUsernameField(
+                            value = dialogUsername,
+                            onValueChange = { dialogUsername = it },
+                            requestOptions = {
+                                println("PASSKI_DEMO Autofill (dialog): waiting for a passkey suggestion")
+                                rp.authenticationOptions()
+                            },
+                            onSignedIn = {
+                                showAutofillDialog = false
+                                onSignedIn("Sign in (autofill in dialog)", it)
+                            },
+                            onError = { onError("Sign in (autofill in dialog)", it) },
+                            passkeys = passkeys,
+                            label = "Username (dialog)",
+                            modifier = Modifier.padding(16.dp),
+                        )
+                    }
+                }
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(checked = shareFixture, onCheckedChange = { shareFixture = it })
                 Text("Share response for PassKi tests (stored 7 days on the demo RP)")

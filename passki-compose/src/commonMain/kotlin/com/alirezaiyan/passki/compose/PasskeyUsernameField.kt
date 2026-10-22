@@ -20,13 +20,15 @@ import com.alirezaiyan.passki.PasskeyError
 import com.alirezaiyan.passki.Passkeys
 import com.alirezaiyan.passki.SignInMode
 import com.alirezaiyan.passki.compose.internal.AutofillController
+import com.alirezaiyan.passki.compose.internal.AutofillSignIn
 
 /**
  * A username text field that offers the user's passkeys as keyboard suggestions (passkey autofill).
  *
  * While the field is focused and the platform supports it ([PasskeyCapabilities.autofill]: Android 15 / API 35+,
  * iOS 16+), the field keeps a [SignInMode.Autofill] request open:
- * - Android: the passkey appears as a suggestion chip in the keyboard.
+ * - Android: the passkey appears as a suggestion chip in the keyboard. The request is anchored to the field's own
+ *   view, so this also works inside a `Dialog` or `ModalBottomSheet`.
  * - iOS: the passkey appears in the QuickType bar above the keyboard. The field is a native `UITextField` with
  *   the username content type, because iOS only offers passkeys for real UIKit username fields.
  * - Other platforms: a plain Material 3 outlined text field; no request is made.
@@ -64,12 +66,14 @@ public fun PasskeyUsernameField(
     val currentRequestOptions by rememberUpdatedState(requestOptions)
     val currentOnSignedIn by rememberUpdatedState(onSignedIn)
     val currentOnError by rememberUpdatedState(onError)
-    val controller = remember(passkeys) {
+    val autofill = rememberAutofillSignIn()
+    val controller = remember(passkeys, autofill) {
         AutofillController(
             passkeys = passkeys,
             requestOptions = { currentRequestOptions() },
             onSignedIn = { currentOnSignedIn(it) },
             onError = { currentOnError(it) },
+            autofill = autofill,
         )
     }
     LaunchedEffect(controller, enabled) {
@@ -85,6 +89,14 @@ public fun PasskeyUsernameField(
         onTap = controller::onTap,
     )
 }
+
+/**
+ * How the field makes its autofill call. Android anchors the request to this composition's View
+ * (`LocalView.current`), which inside a `Dialog` or `ModalBottomSheet` is the dialog window's view; elsewhere it is a
+ * plain `signIn(options, SignInMode.Autofill)`.
+ */
+@Composable
+internal expect fun rememberAutofillSignIn(): AutofillSignIn
 
 /**
  * The platform text field behind [PasskeyUsernameField]. Must report focus changes and taps on the field.

@@ -16,6 +16,14 @@ import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
 /**
+ * One `signIn(options, SignInMode.Autofill)` call. Android anchors it to the field's own View, see
+ * [com.alirezaiyan.passki.compose.rememberAutofillSignIn].
+ */
+internal typealias AutofillSignIn = suspend (passkeys: Passkeys, optionsJson: String) -> PasskeyResult<PasskeyAssertion>
+
+internal val PlainAutofillSignIn: AutofillSignIn = { passkeys, options -> passkeys.signIn(options, SignInMode.Autofill) }
+
+/**
  * Decides when a username field offers passkeys through [SignInMode.Autofill]. Pure logic, no UI.
  *
  * Feed it [onFocusChanged] and [onTap] from the field and keep [run] running for as long as the field is composed.
@@ -30,6 +38,8 @@ import kotlin.time.TimeSource
  * - [PasskeyError.NotSupported], [PasskeyError.Misconfigured] and [PasskeyError.InvalidOptions] call `onError` once and
  *   stop for good: retrying can't fix them. Any other error (for example `requestOptions` throwing) calls `onError`
  *   and waits for the next focus or tap.
+ *
+ * Each offer is one [autofill] call.
  */
 internal class AutofillController(
     private val passkeys: Passkeys,
@@ -38,6 +48,7 @@ internal class AutofillController(
     private val onError: (PasskeyError) -> Unit,
     private val minInterval: Duration = 500.milliseconds,
     private val timeSource: TimeSource = TimeSource.Monotonic,
+    private val autofill: AutofillSignIn = PlainAutofillSignIn,
 ) {
     private data class Arm(val focused: Boolean, val generation: Int)
 
@@ -117,7 +128,7 @@ internal class AutofillController(
                 ),
             )
         }
-        return passkeys.signIn(options, SignInMode.Autofill)
+        return autofill(passkeys, options)
     }
 
     private suspend fun throttle() {

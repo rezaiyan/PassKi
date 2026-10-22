@@ -11,6 +11,7 @@ import com.alirezaiyan.passki.test.FakePasskeys
 import com.alirezaiyan.passki.test.TestOptions
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
@@ -329,6 +330,32 @@ class AutofillControllerTest {
 
         assertEquals(registration.credentialId, recorder.signedIn.single().credentialId)
         assertEquals(1, passkeys.calls)
+        job.cancel()
+    }
+
+    @Test
+    fun platformAutofillCallIsUsedInsteadOfPlainSignIn() = runTest {
+        // On Android, PasskeyUsernameField passes a call anchored to its own View (dialogs are separate windows).
+        val passkeys = GatedPasskeys()
+        val anchored = mutableListOf<Pair<Passkeys, String>>()
+        val controller = AutofillController(
+            passkeys = passkeys,
+            requestOptions = { "options" },
+            onSignedIn = {},
+            onError = {},
+            timeSource = testTimeSource,
+            autofill = { p, options ->
+                anchored += p to options
+                awaitCancellation()
+            },
+        )
+        val job = launch { controller.run() }
+
+        controller.onFocusChanged(true)
+        runCurrent()
+
+        assertEquals(listOf<Pair<Passkeys, String>>(passkeys to "options"), anchored)
+        assertEquals(0, passkeys.calls.size, "the plain signIn(…, Autofill) is not used")
         job.cancel()
     }
 }
