@@ -89,6 +89,11 @@ kotlin {
             implementation(libs.ktor.client.mock)
             implementation(libs.kotlinx.coroutines.test)
         }
+        jvmTest.dependencies {
+            // Renders the sample's screens headlessly (ScreensRenderTest).
+            implementation(libs.compose.uiTest)
+            implementation(compose.desktop.currentOs)
+        }
         jsMain.dependencies {
             implementation(libs.wrappers.browser)
             implementation(libs.ktor.client.js)

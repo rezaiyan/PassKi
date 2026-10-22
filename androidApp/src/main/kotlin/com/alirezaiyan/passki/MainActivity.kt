@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Base64
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
@@ -14,7 +15,8 @@ import java.security.MessageDigest
 /** Start with `adb shell am start -n com.alirezaiyan.passki/.MainActivity --ez passkiAutorun true` for an unattended smoke run. */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
+        // Every tab starts with the dark brand band, so status bar icons stay light in both themes.
+        enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT))
         super.onCreate(savedInstanceState)
         val autorun = intent.getBooleanExtra("passkiAutorun", false)
         val origin = apkKeyHashOrigin()
