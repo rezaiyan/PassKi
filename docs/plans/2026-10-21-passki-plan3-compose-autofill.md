@@ -41,8 +41,8 @@ Run Gradle through `ctx_execute`; the Bash hook blocks `./gradlew`.
 | Decision | Value |
 |---|---|
 | New artifact | `com.alirezaiyan.passki:passki-compose` |
-| Headless API | `rememberPasskeys()`, `rememberPasskeySignIn(passkeys, requestOptions: suspend () -> String, mode)` → state with `isRunning`, `lastError`, `signIn()` |
-| UI API | `PasskeySignInButton(state, onSignedIn)`, `PasskeyUsernameField(value, onValueChange, passkeys, requestOptions, onSignedIn)` |
+| Headless API | `rememberPasskeys()`, `rememberPasskeySignIn(requestOptions: suspend () -> String, passkeys, mode)` → state with `isRunning`, `lastError`, `signIn()` |
+| UI API | `PasskeySignInButton(state, onSignedIn)`, `PasskeyUsernameField(value, onValueChange, requestOptions, onSignedIn, modifier, passkeys, …)` |
 | Autofill errors | Never shown as UI errors: a dismissed suggestion just means no result. The coroutine keeps waiting until the field leaves composition. |
 | Autofill below Android 15 | `NotSupported`. `capabilities().autofill = false`. |
 | PRF API (common) | Extension helpers `PasskeyExtensions.withPrf(optionsJson, first, second?)` + `PasskeyAssertion.prf: PrfResults?` (+ registration `prfEnabled`) |
@@ -85,7 +85,7 @@ Run Gradle through `ctx_execute`; the Bash hook blocks `./gradlew`.
   - members: `isRunning`, `lastError: PasskeyError?`, `suspend fun signIn(): PasskeyResult<PasskeyAssertion>`
   - guards against double taps
   - `Cancelled` is not stored as `lastError`
-- [x] `rememberPasskeySignIn(passkeys, requestOptions, mode)`
+- [x] `rememberPasskeySignIn(requestOptions, passkeys, mode)` (order changed in the final-review fixes)
 - [x] `PasskeySignInButton(state, onSignedIn, modifier, onError, content = default "Sign in with a passkey")`: a Material3 Button, disabled while running, shows a small progress indicator.
 - [x] **Tests**, commonTest with `FakePasskeys` from `passki-test` (test dependency), using `runComposeUiTest` where the compose test artifact supports all targets, otherwise state-only tests on jvm:
   - double tap → one call
@@ -219,6 +219,38 @@ Run Gradle through `ctx_execute`; the Bash hook blocks `./gradlew`.
   - Gate: the full Gradle list plus `dokkaGenerate --configuration-cache --rerun-tasks` passed (passki 775,
     passki-test 115, passki-compose 65, shared 14 tests, 0 failures; ABI checks and assembleDebug green). The plugin
     `test` passed (114) and `passki-web` `npm test` passed (124).
+
+**Final-review fixes (2026-10-22)**
+- [x] **Android autofill in dialogs / bottom sheets.** A Compose `Dialog` or `ModalBottomSheet` is its own window, so
+  `activity.currentFocus` missed the field (the activity window has no focused view, or a stale one behind the
+  dialog).
+  - Core: `chooseAutofillTarget` picks, in order, an explicit anchor (its focused descendant, else itself), the
+    focused view of the app window that has window focus (`WindowInspector.getGlobalWindowViews()`, API 29+), then
+    `activity.currentFocus`. New `@InternalPasskiApi suspend fun Passkeys.autofillSignIn(optionsJson, anchor: View)`;
+    the public `signIn(options, Autofill)` uses the window search.
+  - Core: the request is attached only once the view's window has window focus. Restarting the autofill session
+    (`AutofillManager.cancel()`) cancels every window's session of the activity, so a field behind the dialog that
+    re-armed during the PIN prompt dropped the picked passkey (`onAuthenticationResult(): sessionId=… not active`).
+  - Compose: `PasskeyUsernameField` on Android anchors to `LocalView.current` (the dialog's view inside a Dialog);
+    `AutofillController` takes the platform call (`AutofillSignIn`).
+  - Sample: "Autofill in dialog" button opens a `Dialog` with a `PasskeyUsernameField`.
+  - **Emulator (API 36, GPM, Gboard), `$TMPDIR/passki-e2e/dialog-flow.sh`:** open dialog → tap field → "PassKi demo
+    user" passkey chip in Gboard → tap → PIN → `Sign in (autofill in dialog) ✓ verified by server ✓ … userVerified
+    true` (credential `kmXRGM-H6QrlW6oFp4hJ9A`). Repeated 3× with the final build. After the dialog closes, the main
+    field's deferred offer attaches: its chip shows and picking it gives `Sign in (autofill) ✓ verified by server`.
+    - Red, same flow: old target logic (activity `currentFocus` only) → `Sign in (autofill in dialog) ✗
+      [Misconfigured] Autofill needs a focused text field`. Without the window-focus wait: the main field re-armed
+      during the PIN entry (key events leave touch mode, Compose focuses the first field) and the result was lost.
+    - Public path (no anchor, window search only): also `✓ verified by server` in the dialog.
+    - `ModalBottomSheet` is not run on the device; it is a separate window like `Dialog` and takes the same path.
+- [x] **FakePasskeys Autofill parity.** No matching passkey → suspends until cancelled (outside the lock); a matching
+  passkey → completes at once (the "picked" suggestion); `failNextWith` still ends it. Tests: cancellation, other
+  operations not blocked, `AutofillController` with the plain fake makes one call in 60 s (no spin).
+- [x] **Parameter order.** `rememberPasskeySignIn(requestOptions, passkeys = rememberPasskeys(), mode = Modal)`, the
+  same convention as `PasskeyUsernameField` (required, `modifier`, optional with `passkeys` first).
+- [x] **Swift bridge staleness.** `swiftc --version`, SDK version and SDK build are inputs of
+  `buildPassKiSwift*` (lazy `providers.exec`, config-cache safe). `DEVELOPER_DIR=/Library/Developer/CommandLineTools`
+  made the task out of date: "Value of input property 'swiftcVersion' has changed".
 
 ---
 

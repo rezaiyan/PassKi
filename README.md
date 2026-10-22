@@ -142,7 +142,8 @@ offer when it loses focus or leaves composition. Typing works as usual, so the s
 or "continue with username" path.
 
 - **Android 15+:** a Material 3 `OutlinedTextField` marked as a username field. The passkey shows up as a suggestion
-  chip in the keyboard; tapping it opens the credential provider's sheet.
+  chip in the keyboard; tapping it opens the credential provider's sheet. It also works inside a `Dialog` or
+  `ModalBottomSheet`.
 - **iOS 16+:** the field hosts a UIKit `UITextField` with `textContentType = .username`, drawn with a Material-like
   border and label. A Compose text field with `ContentType.Username` does not make iOS offer passkeys (checked on iOS
   26.3), so the UIKit field is required. iOS shows a **"Passwords"** item in the QuickType bar rather than the account

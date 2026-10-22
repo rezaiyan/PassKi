@@ -15,11 +15,14 @@ listed here.
     ones with defaults, `passkeys` first among them.
   - `PasskeySignInButton`, a Material 3 button.
   - `PasskeyUsernameField`, a username field with passkey autofill. On iOS it hosts a UIKit `UITextField`, because
-    Compose's username content type does not trigger passkey QuickType.
+    Compose's username content type does not trigger passkey QuickType. On Android it anchors the request to its own
+    view, so it also works inside a `Dialog` or `ModalBottomSheet` (separate windows).
 - **`SignInMode.Autofill`** (conditional mediation): passkeys as suggestions in the keyboard or QuickType bar of the
   focused username field. It needs Android 15 (API 35)+ or iOS 16+. `PasskeyCapabilities.autofill` reports support.
   - The call suspends until the user picks a passkey; cancelling the coroutine withdraws the offer.
-  - Android restarts the autofill session, so the suggestion appears on the first focus.
+  - Android restarts the autofill session, so the suggestion appears on the first focus. It attaches the request to
+    the focused field of whichever app window has focus (activity, dialog or bottom sheet), and waits for that window
+    to have focus first, so a field behind a dialog can't cancel a passkey being picked on top.
   - iOS offers the passkeys again after a dismissal.
 - **Signal API on iOS 26+** through an embedded Swift bridge to `ASCredentialUpdater`. Apps need no setup or linker
   flags. Below iOS 26 it returns `NotSupported`; a missing association returns `Misconfigured` with an AASA hint.
@@ -46,14 +49,16 @@ listed here.
 - **Setup dashboard and demo relying party** at https://passki.alirezaiyan.com (source in `passki-web/`): a verifier,
   a generator, shareable reports, per-check docs and self-service iOS demo registration.
 - **Sample app:** runs against the demo relying party with server verification. It has a Setup check screen, a PRF
-  demo, and autorun flags (iOS `-passkiAutorun`, Android `--ez passkiAutorun true`). Its debug build is signed with
-  a committed sample keystore, which is not for release.
+  demo, an "Autofill in dialog" demo, and autorun flags (iOS `-passkiAutorun`, Android `--ez passkiAutorun true`).
+  Its debug build is signed with a committed sample keystore, which is not for release.
 
 ### Changed
 - `SignInMode` has a new entry, `Autofill`. Exhaustive `when`s need an `else` branch, as the KDoc already advised.
 - The constructors of `PasskeyAssertion`, `PasskeyRegistration` and `PasskeyCapabilities` have new parameters. They
   are `@InternalPasskiApi`, so only code that opted in is affected. Use the same version of `passki`, `passki-test`
   and `passki-compose`.
+- New binary API on Android: `Passkeys.autofillSignIn(optionsJson, anchor: View)` (`@InternalPasskiApi`), which
+  `passki-compose` uses to anchor autofill to its own view.
 
 ## 0.1.0-alpha01
 
