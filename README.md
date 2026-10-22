@@ -419,17 +419,23 @@ verified by the server:
 
 A registration and assertion pair from this run is a fixture in `passki-test`, verified against its public key.
 
-**iOS 26.3 simulator:**
-- build, plus `passkiCheck` IOS-04/05/06
-- `-passkiAutorun` against the demo relying party: doctor 0 failures, SRV-01/02 pass, device-only sign-in with an
-  unknown credential returns `NoCredentials`, `unknownCredential` reaches the real `ASCredentialUpdater`, and upgrade
-  is declined as expected
-- against `alirezaiyan.com`, without server verification: autofill through `PasskeyUsernameField` ("Passwords", then
-  Face ID, then the passkey list, then signed in; re-offered after closing the list and after refocusing) and modal
-  sign-in through `PasskeySignInButton`
+**iOS 26.3 simulator (Face ID)**, against the demo relying party, with every response verified by the server:
+- register (the response was shared as an `ios` fixture on the demo RP)
+- sign in (modal, `PasskeySignInButton`), device-only sign-in and passkey-or-password
+- autofill through `PasskeyUsernameField`: "Passwords" in the QuickType bar, then Face ID, then the passkey list,
+  then signed in
+- PRF: 32 bytes, the same output for the same salt on two runs
+- cancel: closing the sheet returns `Cancelled`
+- signals: after `unknownCredential`, device-only sign-in returns `NoCredentials` (the passkey is gone);
+  `currentUserDetails` renamed the passkey in the system sheet
+- Setup check: doctor 0 failures (IOS-03 AASA pass, IOS-04 skipped at runtime), SRV-01/02 pass
+- build, plus `passkiCheck` IOS-04/05/06; `-passkiAutorun` declines upgrade as expected
 
-**Pending on iOS:** server-verified register, sign-in, autofill and PRF against the demo relying party have not been
-run yet. On an iOS 17.5 simulator, signals return `NotSupported` as designed.
+A registration and assertion pair from this run is a fixture in `passki-test`, verified against its public key.
+
+**Not verified on iOS:** `AlreadyRegistered`. The demo relying party creates a new user for every registration and
+sends no `excludeCredentials`, so the sample cannot trigger it; it is covered by unit tests only (error 1006). On an
+iOS 17.5 simulator, signals return `NotSupported` as designed.
 
 Earlier real registration responses from both platforms were verified with webauthn4j; the fixtures live in
 `passki-test`.

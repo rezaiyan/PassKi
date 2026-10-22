@@ -1,0 +1,22 @@
+{
+  "rpId": "passki.alirezaiyan.com",
+  "response": {
+    "id": "RqaAdnj8sHTkH5Loao6bJFy6yKA",
+    "rawId": "RqaAdnj8sHTkH5Loao6bJFy6yKA",
+    "type": "public-key",
+    "response": {
+      "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiU2lXQXhWNHhqZFVVTWhaU1MzTnYtRlYtWW9JWnY1Q0FwTDNZNXhvbExXMCIsIm9yaWdpbiI6Imh0dHBzOi8vcGFzc2tpLmFsaXJlemFpeWFuLmNvbSJ9",
+      "attestationObject": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YViY_SOLy3quES5Mbd5Gu7NZZ6nCI_MNhtEQg2rF31oRm6NdAAAAAPv8MAcVTk7MjAtuAgVX170AFEamgHZ4_LB05B-S6GqOmyRcusigpQECAyYgASFYIBDThNIy1w8qthePlXNY4b4IfVO0Wi1NbpUGEUM35YJRIlgg3Bmlsvie8S2WPldD-NZNswRfQ4NIVRq0IRR21tnplSQ",
+      "transports": [
+        "hybrid",
+        "internal"
+      ]
+    },
+    "authenticatorAttachment": "platform",
+    "clientExtensionResults": {
+      "prf": {
+        "enabled": true
+      }
+    }
+  }
+}

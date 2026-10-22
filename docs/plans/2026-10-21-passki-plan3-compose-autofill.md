@@ -188,13 +188,25 @@ Run Gradle through `ctx_execute`; the Bash hook blocks `./gradlew`.
   - a "PRF" button showing the derived output (hex, first 8 bytes) and whether it matches the previous run
   - autorun steps for the non-UI parts (iOS `-passkiAutorun`, Android `--ez passkiAutorun true`)
 - [x] **Android emulator (API 36):** focusing the username field shows the passkey suggestion in the keyboard; picking it signs in (`Sign in (autofill) ✓ verified by server`); PRF returns 32 bytes; the same salt gives the same output twice (`60d4951e6da94aeb` both runs). Signals: `unknownCredential` then device-only sign-in → `NoCredentials` (GPM honours it).
-- [ ] **iOS simulator 26.3:** (2026-10-22, Mac screen locked, so no taps)
-  - focusing the field shows the QuickType passkey suggestion; picking it signs in: **not verified**
-  - PRF 32 bytes, stable: **not verified**
-  - Signals: `unknownCredential` → `Signal unknown ✓` (real ASCredentialUpdater call on iOS 26.3); the device-only follow-up has no credential to compare yet
-  - verified: build, `passkiCheck` IOS-04/05/06, doctor, SRV-01/02, the passkey sheet opens for passki.alirezaiyan.com (association OK)
-- [x] **Record results** in this plan; add the fixtures (an assertion pair if feasible). `android-20261022-registration.json` + `android-20261022-assertion.json` (same credential); `RecordedFixturesTest` verifies 3 registrations + 1 assertion against the paired public key.
-- [ ] Commit: `test(sample): autofill, PRF, signals verified on emulators` (Android done; iOS rerun pending)
+- [x] **iOS simulator 26.3 (iPhone 16e, Face ID), 2026-10-22, every response verified by the demo RP:**
+  - Setup check: doctor 0 failures (DEV-03/DEV-02/key window/IOS-03 pass, IOS-04 SKIP at runtime), SRV-01/02 pass
+  - register with "Share response" on → `Register ✓ prfEnabled=true`, `verified by server ✓ … backedUp true`,
+    credential `RqaAdnj8sHTkH5Loao6bJFy6yKA`, aaguid `fbfc3007-…` (iCloud Keychain), `shared with PassKi tests as a ios
+    fixture` (also listed by `/api/demo/fixtures?platform=ios`)
+  - `Sign in ✓` (modal), `Sign in (device only) ✓`, `Sign in or password (passkey) ✓`, all verified by the server
+  - autofill: focus the UIKit field → ⌘K software keyboard → QuickType **"🔑 Passwords"** → Face ID → list
+    "Passkeys: passki.alirezaiyan.com / demo-b4de6e" → pick → `Sign in (autofill) ✓ verified by server ✓`
+    (`scratchpad/af-ios2.png`, `af-ios3.png`)
+  - PRF: `PRF ✓ 32 bytes, first 8: 32252867fa91e4c1`, then again `same as the previous run ✓ (stable)`
+  - cancel: X on the register sheet → `Register ✗ [Cancelled]`
+  - signals: new passkey `KLlYNY_UV3ShPhs3aIazA1UVOr4` → `Signal unknown ✓` → `Sign in (device only) ✗
+    [NoCredentials]` (iOS deleted it); `Signal user details ✓ mcCPp3dJlO3urIsLDgJHoA → t` and the next sign-in sheet
+    reads `passkey for "t "`
+  - **not verified:** `AlreadyRegistered`. The demo RP mints a new user per `/register/options` and sends no
+    `excludeCredentials`, so a second register just adds a passkey for a new user (unit-tested via error 1006)
+  - the build no longer needs the `CODE_SIGN_ENTITLEMENTS` override (Config.xcconfig supplies associated domains)
+- [x] **Record results** in this plan; add the fixtures (an assertion pair if feasible). `android-20261022-registration.json` + `android-20261022-assertion.json` (same credential); `RecordedFixturesTest` verifies 3 registrations + 1 assertion against the paired public key. iOS: `ios-20261022-registration.json` + `ios-20261022-assertion.json` (credential `RqaAdnj8…`, modal sign-in); now 4 registrations + 2 assertions verified.
+- [x] Commit: `test(sample): autofill, PRF, signals verified on emulators` (Android earlier; iOS in `test: real iOS fixtures; iOS server-verified flows`)
 
 **Task 7: Docs + review**
 - [x] README: Compose section, autofill, PRF/largeBlob, the iOS signals status (A or B).
@@ -212,8 +224,8 @@ Run Gradle through `ctx_execute`; the Bash hook blocks `./gradlew`.
 - [x] Commit: `docs: Plan 3 README, compose docs`
 - **Outcome (2026-10-22).**
   - README: Compose, autofill, PRF/largeBlob, iOS signals (A, no app setup), the demo RP + dashboard, the sample
-    app, capability tables and "Verified on". iOS server-verified register/sign-in/autofill/PRF are marked pending
-    (Task 6).
+    app, capability tables and "Verified on". iOS server-verified register/sign-in/autofill/PRF were marked pending
+    (Task 6); verified and updated on 2026-10-22.
   - `passki-compose/Module.md` is complete; Dokka has `reportUndocumented` on for `passki-compose` (0 warnings).
   - Added CHANGELOG.md and CONTRIBUTING.md (Swift bridge needs Xcode `swiftc`); versions are now 0.1.0-alpha02.
   - Gate: the full Gradle list plus `dokkaGenerate --configuration-cache --rerun-tasks` passed (passki 775,

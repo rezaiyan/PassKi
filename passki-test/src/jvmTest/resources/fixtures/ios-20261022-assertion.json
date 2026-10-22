@@ -1,0 +1,17 @@
+{
+  "rpId": "passki.alirezaiyan.com",
+  "registration": "ios-20261022-registration.json",
+  "response": {
+    "id": "RqaAdnj8sHTkH5Loao6bJFy6yKA",
+    "rawId": "RqaAdnj8sHTkH5Loao6bJFy6yKA",
+    "type": "public-key",
+    "response": {
+      "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoibmVCOEZqYlF0V00zQl95QVVSeW5qaVEtdHh2RVJzdV9IQnQ0eEVrekxVbyIsIm9yaWdpbiI6Imh0dHBzOi8vcGFzc2tpLmFsaXJlemFpeWFuLmNvbSJ9",
+      "authenticatorData": "_SOLy3quES5Mbd5Gu7NZZ6nCI_MNhtEQg2rF31oRm6MdAAAAAA",
+      "signature": "MEQCIGl16z4LnBHj1FbDGgaQIvd68YWuIKHmpVbn9gxBMZMYAiBaGmAy-PhaUv2ZSqQoYQR0JPM6U4OgfOYbTHsdUM7BEQ",
+      "userHandle": "mcCPp3dJlO3urIsLDgJHoA"
+    },
+    "authenticatorAttachment": "platform",
+    "clientExtensionResults": {}
+  }
+}
