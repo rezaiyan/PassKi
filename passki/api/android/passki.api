@@ -224,6 +224,10 @@ public final class com/alirezaiyan/passki/Passkeys$DefaultImpls {
 	public static synthetic fun signIn$default (Lcom/alirezaiyan/passki/Passkeys;Ljava/lang/String;Lcom/alirezaiyan/passki/SignInMode;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
+public final class com/alirezaiyan/passki/PasskeysAutofill_androidKt {
+	public static final fun autofillSignIn (Lcom/alirezaiyan/passki/Passkeys;Ljava/lang/String;Landroid/view/View;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class com/alirezaiyan/passki/Passkeys_androidKt {
 	public static final fun Passkeys ()Lcom/alirezaiyan/passki/Passkeys;
 }

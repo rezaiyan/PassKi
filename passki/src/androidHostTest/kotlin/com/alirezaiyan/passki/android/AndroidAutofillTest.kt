@@ -40,4 +40,34 @@ class AndroidAutofillTest {
         assertEquals("Autofill needs a focused text field", error.message)
         assertTrue("PasskeyUsernameField" in error.fixHint, error.fixHint)
     }
+
+    @Test
+    fun explicitAnchorWinsAndPrefersItsFocusedDescendant() {
+        val windows = listOf(WindowFocus(hasWindowFocus = true, focused = "dialog-field"))
+        assertEquals("anchor-child", chooseAutofillTarget("anchor", "anchor-child", windows, "activity-field"))
+        assertEquals("anchor", chooseAutofillTarget("anchor", null, windows, "activity-field"))
+    }
+
+    @Test
+    fun focusedWindowWinsOverTheActivityWindow() {
+        // A Compose Dialog or ModalBottomSheet is its own window: the activity's currentFocus is a stale view behind it.
+        val windows = listOf(
+            WindowFocus(hasWindowFocus = false, focused = "activity-field"),
+            WindowFocus(hasWindowFocus = true, focused = "dialog-field"),
+        )
+        assertEquals("dialog-field", chooseAutofillTarget(null, null, windows, "activity-field"))
+    }
+
+    @Test
+    fun fallsBackToActivityFocusWhenNoWindowHasFocus() {
+        val windows = listOf(WindowFocus<String>(hasWindowFocus = false, focused = null))
+        assertEquals("activity-field", chooseAutofillTarget(null, null, windows, "activity-field"))
+        assertNull(chooseAutofillTarget<String>(null, null, emptyList(), null))
+    }
+
+    @Test
+    fun focusedWindowWithoutFocusedViewFallsBack() {
+        val windows = listOf(WindowFocus<String>(hasWindowFocus = true, focused = null))
+        assertEquals("activity-field", chooseAutofillTarget(null, null, windows, "activity-field"))
+    }
 }
