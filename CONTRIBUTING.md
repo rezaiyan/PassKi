@@ -32,8 +32,9 @@ klib. Consumers need no Swift code or linker flags; keep it that way.
   - Check that the sample `iosApp` still builds in Xcode without new settings.
 - **`xcrun: error: unable to find utility "swiftc"`:** select a full Xcode, not just the Command Line Tools:
   `sudo xcode-select -s /Applications/Xcode.app`.
-- **Gradle's up-to-date check covers the files in `passki-ios-bridge/`, but not the Xcode version.** After switching
-  Xcode, run `./gradlew clean` or delete `passki/build/passkiSwift/`.
+- **Gradle's up-to-date check covers the files in `passki-ios-bridge/` and the toolchain:** the `swiftc --version`
+  output and the iOS SDK version and build are task inputs, so switching or upgrading Xcode rebuilds the archive by
+  itself. No `clean` needed.
 
 ## Checks before a pull request
 

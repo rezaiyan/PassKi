@@ -38,9 +38,26 @@ kotlin {
         iosSimulatorArm64() to ("iphonesimulator" to "arm64-apple-ios16.0-simulator"),
     ).forEach { (target, sdk) ->
         val outDir = layout.buildDirectory.dir("passkiSwift/${target.name}")
+        // The toolchain is an input too, so switching or upgrading Xcode rebuilds the archive. Lazy ValueSources:
+        // only run when the task's inputs are fingerprinted (macOS), and config-cache compatible.
+        val swiftcVersion = providers.exec {
+            commandLine("xcrun", "--sdk", sdk.first, "swiftc", "--version")
+            isIgnoreExitValue = true
+        }.standardOutput.asText.map { it.trim() }
+        val sdkVersion = providers.exec {
+            commandLine("xcrun", "--sdk", sdk.first, "--show-sdk-version")
+            isIgnoreExitValue = true
+        }.standardOutput.asText.map { it.trim() }
+        val sdkBuildVersion = providers.exec {
+            commandLine("xcrun", "--sdk", sdk.first, "--show-sdk-build-version")
+            isIgnoreExitValue = true
+        }.standardOutput.asText.map { it.trim() }
         val buildSwift = tasks.register<Exec>("buildPassKiSwift${target.name.replaceFirstChar { it.uppercase() }}") {
             val script = rootProject.file("passki-ios-bridge/build.sh")
             inputs.dir(rootProject.file("passki-ios-bridge"))
+            inputs.property("swiftcVersion", swiftcVersion)
+            inputs.property("sdkVersion", sdkVersion)
+            inputs.property("sdkBuildVersion", sdkBuildVersion)
             outputs.dir(outDir)
             commandLine(script.absolutePath, sdk.first, sdk.second, outDir.get().asFile.absolutePath)
         }
