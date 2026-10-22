@@ -289,4 +289,46 @@ class AutofillControllerTest {
         assertEquals(1, passkeys.calls.size, "a tap retries")
         job.cancel()
     }
+
+    /** Counts calls into [FakePasskeys] itself (no gating): its Autofill waits when there is nothing to offer. */
+    private inner class CountingFake : Passkeys by fake {
+        var calls = 0
+
+        override suspend fun signIn(optionsJson: String, mode: SignInMode): PasskeyResult<PasskeyAssertion> {
+            calls++
+            return fake.signIn(optionsJson, mode)
+        }
+    }
+
+    @Test
+    fun fakeWithoutPasskeyKeepsOneOfferOpenWithoutSpinning() = runTest {
+        val passkeys = CountingFake()
+        val recorder = Recorder()
+        val controller = controller(passkeys, recorder)
+        val job = launch { controller.run() }
+
+        controller.onFocusChanged(true)
+        advanceTimeBy(60_000)
+
+        assertEquals(1, passkeys.calls, "one open offer, no retry loop")
+        assertTrue(recorder.errors.isEmpty())
+        assertTrue(recorder.signedIn.isEmpty())
+        job.cancel()
+    }
+
+    @Test
+    fun fakeWithPasskeySignsInLikePickingTheSuggestion() = runTest {
+        val registration = fake.register(TestOptions.creation(rpId)).getOrThrow()
+        val passkeys = CountingFake()
+        val recorder = Recorder()
+        val controller = controller(passkeys, recorder)
+        val job = launch { controller.run() }
+
+        controller.onFocusChanged(true)
+        advanceTimeBy(5_000)
+
+        assertEquals(registration.credentialId, recorder.signedIn.single().credentialId)
+        assertEquals(1, passkeys.calls)
+        job.cancel()
+    }
 }

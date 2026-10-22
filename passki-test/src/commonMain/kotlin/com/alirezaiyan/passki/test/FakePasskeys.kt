@@ -13,6 +13,7 @@ import com.alirezaiyan.passki.SignInMode
 import com.alirezaiyan.passki.internal.SignalRequests
 import com.alirezaiyan.passki.internal.parseAssertion
 import com.alirezaiyan.passki.internal.parseRegistration
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.random.Random
@@ -89,7 +90,15 @@ public class FakePasskeys(origin: String, random: Random = Random.Default) : Pas
     /**
      * [SignInMode.Autofill] is available ([PasskeyCapabilities.autofill]). When false,
      * `signIn(mode = Autofill)` fails with [PasskeyError.NotSupported]. Default true.
-     * When true, Autofill behaves like [SignInMode.Modal]: it completes at once as if the user picked the suggestion.
+     *
+     * When true, `signIn(mode = Autofill)` models a keyboard suggestion:
+     * - If a passkey matches the request, the call completes at once as if the user picked the suggestion
+     *   (same assertion as [SignInMode.Modal]). Register a passkey first to "pick" one.
+     * - If no passkey matches, nothing is offered and the call suspends until it is cancelled, like a real
+     *   autofill request. It never returns [PasskeyError.NoCredentials] by itself, and it does not block other
+     *   operations while it waits.
+     * - An error queued with [failNextWith] ends the call at once with that error (for example to simulate the
+     *   user dismissing the suggestion with [PasskeyError.Cancelled]).
      */
     public var autofillSupported: Boolean = true
 
@@ -137,9 +146,24 @@ public class FakePasskeys(origin: String, random: Random = Random.Default) : Pas
     override suspend fun signIn(optionsJson: String, mode: SignInMode): PasskeyResult<PasskeyAssertion> =
         when (mode) {
             SignInMode.ImmediateOnly -> result(immediateSignIn, "immediateSignIn") { assertion(optionsJson) }
-            SignInMode.Autofill -> result(autofillSupported, "autofillSupported") { assertion(optionsJson) }
+            SignInMode.Autofill -> autofill(optionsJson)
             SignInMode.Modal -> result { assertion(optionsJson) }
         }
+
+    /** See [autofillSupported]: no matching passkey means no suggestion, so wait (outside [lock]) until cancelled. */
+    private suspend fun autofill(optionsJson: String): PasskeyResult<PasskeyAssertion> {
+        var nothingToOffer = false
+        val result = result(autofillSupported, "autofillSupported") {
+            try {
+                assertion(optionsJson)
+            } catch (e: PasskeyException) {
+                if (e.error == PasskeyError.NoCredentials) nothingToOffer = true
+                throw e
+            }
+        }
+        if (nothingToOffer) awaitCancellation()
+        return result
+    }
 
     private suspend fun assertion(optionsJson: String): PasskeyAssertion = parseAssertion(authenticator.signIn(optionsJson))
 

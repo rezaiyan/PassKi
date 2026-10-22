@@ -9,6 +9,8 @@ import com.alirezaiyan.passki.internal.Base64Url
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kotlin.test.Test
@@ -16,6 +18,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.hours
 
 class FakePasskeysTest {
     private val rpId = "passki.example"
@@ -115,6 +118,36 @@ class FakePasskeysTest {
         val registration = passkeys.register(TestOptions.creation(rpId)).getOrThrow()
         val assertion = passkeys.signIn(TestOptions.request(rpId), SignInMode.Autofill).getOrThrow()
         assertEquals(registration.credentialId, assertion.credentialId)
+    }
+
+    @Test
+    fun autofillWithoutMatchingPasskeySuspendsUntilCancelled() = runTest {
+        val call = async { passkeys.signIn(TestOptions.request(rpId), SignInMode.Autofill) }
+        advanceTimeBy(1.hours)
+        runCurrent()
+        assertTrue(call.isActive, "Autofill with no matching passkey must keep waiting like a real suggestion")
+        call.cancel()
+        call.join()
+        assertTrue(call.isCancelled)
+    }
+
+    @Test
+    fun suspendedAutofillDoesNotBlockOtherOperations() = runTest {
+        val call = async { passkeys.signIn(TestOptions.request(rpId), SignInMode.Autofill) }
+        runCurrent()
+        // The waiting autofill call must not hold the fake's lock.
+        val registration = passkeys.register(TestOptions.creation(rpId)).getOrThrow()
+        assertEquals(registration.credentialId, passkeys.signIn(TestOptions.request(rpId)).getOrThrow().credentialId)
+        call.cancel()
+    }
+
+    @Test
+    fun queuedErrorEndsAutofillAtOnce() = runTest {
+        passkeys.failNextWith(PasskeyError.NoCredentials)
+        assertEquals(
+            PasskeyResult.Failure(PasskeyError.NoCredentials),
+            passkeys.signIn(TestOptions.request(rpId), SignInMode.Autofill),
+        )
     }
 
     @Test

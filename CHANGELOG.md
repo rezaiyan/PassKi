@@ -27,7 +27,8 @@ listed here.
   - iOS maps them to AuthenticationServices (PRF on iOS 18+, largeBlob on iOS 17+); Android passes them to the
     credential provider.
 - **passki-test:**
-  - `FakePasskeys.autofillSupported`.
+  - `FakePasskeys.autofillSupported`. Autofill models a keyboard suggestion: with a matching passkey it completes at
+    once (as if the user picked it); with none it suspends until cancelled instead of returning `NoCredentials`.
   - Deterministic, test-only PRF and in-memory large blobs in `FakeAuthenticator`, switched with `prfSupported` /
     `largeBlobSupported`.
   - A recorded Android registration and assertion pair from the demo relying party.
