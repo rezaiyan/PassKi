@@ -168,7 +168,7 @@ fun App(
             return "Setup check ($platform)\n$doctor\nServer ($DEMO_RP_URL/api/demo/server-config):\n$server\ncatalog IDs: ${ids.joinToString()}"
         }
 
-        val signInState = rememberPasskeySignIn(passkeys) { rp.authenticationOptions() }
+        val signInState = rememberPasskeySignIn(requestOptions = { rp.authenticationOptions() }, passkeys = passkeys)
 
         // Unattended smoke run (simulator/CI): steps that never show UI first, then the ones that may
         // open a system sheet (these wait for a tap).

@@ -104,17 +104,24 @@ public class PasskeySignInState internal constructor(
 /**
  * Remembers a [PasskeySignInState] for a sign-in button or custom passkey UI.
  *
+ * Parameters follow the same order as [PasskeyUsernameField]: required first, then optional ones with defaults,
+ * `passkeys` first among them.
+ *
+ * ```kotlin
+ * val state = rememberPasskeySignIn(requestOptions = { api.authenticationOptions() })
+ * ```
+ *
+ * @param requestOptions fetches fresh WebAuthn request options JSON from your server. Called once per sign-in
+ *   attempt; the latest lambda is always used, so it may capture changing values such as a typed username.
  * @param passkeys the passkeys implementation; defaults to the platform one from [rememberPasskeys].
  *   Pass a fake (for example passki-test's `FakePasskeys`) in previews and tests.
  * @param mode how the system sheet presents itself.
- * @param requestOptions fetches fresh WebAuthn request options JSON from your server. Called once per sign-in
- *   attempt; the latest lambda is always used, so it may capture changing values such as a typed username.
  */
 @Composable
 public fun rememberPasskeySignIn(
+    requestOptions: suspend () -> String,
     passkeys: Passkeys = rememberPasskeys(),
     mode: SignInMode = SignInMode.Modal,
-    requestOptions: suspend () -> String,
 ): PasskeySignInState {
     val currentRequestOptions by rememberUpdatedState(requestOptions)
     return remember(passkeys, mode) {

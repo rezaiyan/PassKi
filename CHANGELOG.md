@@ -8,8 +8,11 @@ listed here.
 ### Added
 - **`passki-compose`** (new artifact `com.alirezaiyan.passki:passki-compose`), Compose Multiplatform helpers:
   - `rememberPasskeys()`
-  - `rememberPasskeySignIn(passkeys, mode) { options }`, which returns a headless `PasskeySignInState` (`isRunning`,
-    `lastError`, `signIn()`). Double taps join the running request, and `Cancelled` is never stored as an error.
+  - `rememberPasskeySignIn(requestOptions, passkeys = rememberPasskeys(), mode = Modal)`, which returns a headless
+    `PasskeySignInState` (`isRunning`, `lastError`, `signIn()`). Double taps join the running request, and
+    `Cancelled` is never stored as an error.
+  - Parameters follow the Compose convention in every helper: required ones first, then `modifier`, then optional
+    ones with defaults, `passkeys` first among them.
   - `PasskeySignInButton`, a Material 3 button.
   - `PasskeyUsernameField`, a username field with passkey autofill. On iOS it hosts a UIKit `UITextField`, because
     Compose's username content type does not trigger passkey QuickType.

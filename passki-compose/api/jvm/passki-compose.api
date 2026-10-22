@@ -16,7 +16,7 @@ public final class com/alirezaiyan/passki/compose/PasskeySignInState {
 }
 
 public final class com/alirezaiyan/passki/compose/PasskeySignInStateKt {
-	public static final fun rememberPasskeySignIn (Lcom/alirezaiyan/passki/Passkeys;Lcom/alirezaiyan/passki/SignInMode;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)Lcom/alirezaiyan/passki/compose/PasskeySignInState;
+	public static final fun rememberPasskeySignIn (Lkotlin/jvm/functions/Function1;Lcom/alirezaiyan/passki/Passkeys;Lcom/alirezaiyan/passki/SignInMode;Landroidx/compose/runtime/Composer;II)Lcom/alirezaiyan/passki/compose/PasskeySignInState;
 }
 
 public final class com/alirezaiyan/passki/compose/PasskeyUsernameFieldKt {

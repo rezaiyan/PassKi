@@ -106,7 +106,7 @@ fun SignInScreen(api: MyApi) {
     )
 
     // A Material 3 button: disabled with a progress indicator while running, double taps are safe.
-    val signIn = rememberPasskeySignIn(passkeys) { api.authenticationOptions() }
+    val signIn = rememberPasskeySignIn(requestOptions = { api.authenticationOptions() }, passkeys = passkeys)
     PasskeySignInButton(
         state = signIn,
         onSignedIn = { assertion -> scope.launch { api.finishSignIn(assertion.json) } },
@@ -115,11 +115,14 @@ fun SignInScreen(api: MyApi) {
 }
 ```
 
-For custom UI, use the headless state from `rememberPasskeySignIn(passkeys, mode) { options }`. `isRunning` and
+For custom UI, use the headless state from `rememberPasskeySignIn(requestOptions, passkeys, mode)`. `isRunning` and
 `lastError` are Compose state, and `signIn()` returns a `PasskeyResult<PasskeyAssertion>`:
 
 ```kotlin
-val state = rememberPasskeySignIn(mode = SignInMode.ImmediateOnly) { api.authenticationOptions() }
+val state = rememberPasskeySignIn(
+    requestOptions = { api.authenticationOptions() },
+    mode = SignInMode.ImmediateOnly,
+)
 Button(enabled = !state.isRunning, onClick = {
     scope.launch { state.signIn().onSuccess { api.finishSignIn(it.json) } }
 }) { Text("Sign in") }
@@ -128,7 +131,8 @@ state.lastError?.let { Text(it.message) } // Cancelled is never stored
 
 A `signIn()` call made while another one is running joins it instead of opening a second sheet. If `requestOptions`
 throws, the exception comes back as `PasskeyError.Unknown` with the exception as its `cause`. Every helper takes an
-optional `passkeys` parameter, so you can pass `FakePasskeys` in previews and tests.
+optional `passkeys` parameter, so you can pass `FakePasskeys` in previews and tests. Parameters follow the Compose
+convention: required ones first, then `modifier` (for UI), then optional ones with defaults, `passkeys` first.
 
 ### PasskeyUsernameField
 

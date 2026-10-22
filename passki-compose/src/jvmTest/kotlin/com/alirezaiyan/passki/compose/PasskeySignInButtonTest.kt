@@ -46,7 +46,7 @@ class PasskeySignInButtonTest {
         val passkeys = GatedPasskeys()
         var signedIn: PasskeyAssertion? = null
         setContent {
-            val state = rememberPasskeySignIn(passkeys) { TestOptions.request(rpId) }
+            val state = rememberPasskeySignIn(requestOptions = { TestOptions.request(rpId) }, passkeys = passkeys)
             PasskeySignInButton(state, onSignedIn = { signedIn = it })
         }
         val button = onNode(hasClickAction())
@@ -72,7 +72,7 @@ class PasskeySignInButtonTest {
     fun cancelledIsNotReportedToOnErrorButOtherErrorsAre() = runComposeUiTest {
         val errors = mutableListOf<PasskeyError>()
         setContent {
-            val state = rememberPasskeySignIn(fake) { TestOptions.request(rpId) }
+            val state = rememberPasskeySignIn({ TestOptions.request(rpId) }, fake)
             PasskeySignInButton(state, onSignedIn = {}, onError = { errors += it })
         }
         val button = onNode(hasClickAction())

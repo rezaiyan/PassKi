@@ -15,6 +15,8 @@ Compose Multiplatform helpers for PassKi: passkey sign-in in a few lines of UI c
   passkeys. On other platforms it is a plain text field.
 
 Every helper takes an optional `passkeys` parameter: pass passki-test's `FakePasskeys` in previews and tests.
+Parameters follow the Compose convention: required ones first, then `modifier` (for UI), then optional ones with
+defaults, `passkeys` first among them.
 
 # Package com.alirezaiyan.passki.compose
 
