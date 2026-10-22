@@ -2,7 +2,12 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Marked, Renderer } from "marked";
 
-const escapeHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const escapeHtml = (s: string) =>
+  s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 
 const renderer = new Renderer();
 // Docs use literal placeholders like <rpId>; never pass raw HTML through.
@@ -16,6 +21,7 @@ export function checkDocHtml(id: string): string | null {
   if (!existsSync(file)) return null;
   const md = readFileSync(file, "utf8")
     .replace(/^# .*\n+/, "") // the page renders its own title
+    .replace(/^Platform: .*\n+/, "") // and platform/severity in its sidebar
     .replace(/\]\(([A-Z]{3}-\d{2})\.md\)/g, "](/checks/$1)");
   const html = marked.parse(md) as string;
   return html.replace(/<a href="(https?:)/g, '<a rel="noopener" href="$1');
