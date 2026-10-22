@@ -1,7 +1,7 @@
 import { getDb } from "@/lib/db";
 import { demoConfig } from "@/lib/demo/config";
 import { captureFixture, verifyRegistration } from "@/lib/demo/rp";
-import { errorResponse, json, readJson } from "@/lib/http";
+import { errorResponse, json, limited, readJson } from "@/lib/http";
 
 /**
  * POST RegistrationResponseJSON, or {response, capture?: {platform}} to opt in to storing the raw response
@@ -9,6 +9,8 @@ import { errorResponse, json, readJson } from "@/lib/http";
  */
 export async function POST(req: Request) {
   try {
+    const tooMany = limited(req, "demo-register-verify", 60);
+    if (tooMany) return tooMany;
     const body = await readJson(req);
     const response = (body.response && typeof body.response === "object" && "id" in body.response ? body.response : body) as never;
     const verdict = await verifyRegistration(getDb(), response);

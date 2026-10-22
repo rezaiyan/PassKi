@@ -58,16 +58,16 @@ Verdict: `{verified, credentialId, signCount, userVerified, backupEligible, back
 ## Security notes
 
 - **SSRF:** every outbound fetch goes through `lib/net/fetch.ts`. It allows only HTTPS on port 443 to a validated public domain (no IP literals, `localhost`, `.local`, `.internal` or other reserved names). The custom `lookup` resolves A/AAAA and refuses the request if any address is private or reserved, and the socket connects only to the addresses it validated (pinned, so DNS rebinding can't slip in). Redirects are never followed, only reported. Requests time out after 10 s and bodies are capped at 1 MiB (64 KiB for SRV endpoints). User-supplied domains can only reach `/.well-known/{assetlinks.json,apple-app-site-association}`. Google DAL and the Apple CDN use fixed URL templates.
-- **Rate limits:** per hashed client IP (first `X-Forwarded-For` entry, as set by Caddy): verify 20/min, server-check 10/min, reports 30/h, demo register 30/min, demo login 60/min, iOS self-service 5/day.
+- **Rate limits:** per hashed client IP (first `X-Forwarded-For` entry, as set by Caddy): verify 20/min, generate 30/min, server-check 10/min, reports 30/h, demo register 30/min, demo login 60/min, demo register/login verify 60/min each, iOS self-service 5/day.
 - **Reports** are re-validated before storage. Only catalog IDs and known statuses are kept, and titles, severities and docs links come from the catalog.
 - **Cleanup:** expired rows are purged on startup (`instrumentation.ts`) and lazily on every access.
 
-## Deploy (not done; each step needs explicit confirmation)
+## Deploy
 
-1. **DNS:** add an `A` record `passki.alirezaiyan.com → 148.230.109.213` (and `AAAA` if the VPS has IPv6).
-2. **Code on the VPS:** get `passki-web/` onto the VPS (e.g. pull the PassKi repo after the commits are pushed).
-3. **Env:** create `passki-web/.env.production` from `.env.example` with a random `PASSKI_IP_SALT`. Double-check `PASSKI_ANDROID_FINGERPRINTS` once the sample debug keystore is committed (Phase 2).
-4. **Compose:** add the service from `deploy/docker-compose.snippet.yml` (container port 3000 → `127.0.0.1:3100`, named volume for `/app/data`), then `docker compose up -d --build passki-web`.
-5. **Caddy:** add the site block from `deploy/Caddyfile.snippet` and reload Caddy (TLS is issued automatically once DNS resolves).
-6. **`ali` target (optional):** add a `passki` deploy/logs/restart target to `~/bin/ali`.
-7. **Smoke test:** `https://passki.alirezaiyan.com/.well-known/assetlinks.json` and `/.well-known/apple-app-site-association` return 200 `application/json` with no redirect, then run `/verify?rpId=passki.alirezaiyan.com`.
+Live at https://passki.alirezaiyan.com.
+
+- **Container:** `passki-passki-web-1`, defined in `/var/www/passki-deploy/docker-compose.yml` on the VPS (compose project `passki`).
+- **Env:** `/var/www/passki-deploy/.env.production` (mode 600, not in git); see `.env.example` for the variables.
+- **Caddy:** the `passki.alirezaiyan.com` block in `/etc/caddy/Caddyfile` reverse-proxies to the container.
+- **Deploy:** run `ali passki` from the MacBook. It does a `git push`, a `git pull` on the VPS, then `docker compose -p passki up -d --build`.
+- **Smoke test:** `https://passki.alirezaiyan.com/.well-known/assetlinks.json` and `/.well-known/apple-app-site-association` return 200 `application/json` with no redirect, then run `/verify?rpId=passki.alirezaiyan.com`.
