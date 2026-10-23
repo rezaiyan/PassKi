@@ -145,7 +145,7 @@ public abstract class PasskiSetupTask : PasskiAppleTask() {
         if (byPackage.isNotEmpty()) {
             steps += "Android: Google caches asset links, so a new app can take a few minutes before passkeys work; passkiCheck AND-04 shows when Google sees it."
         }
-        steps += "In the app, use PasskiDemoServer (com.alirezaiyan.passki:passki-demo) for options and verification. Registrations expire after 7 days; re-run passkiSetup to renew."
+        steps += "In the app, use PasskiDemoServer (com.alirezaiyan.passki:passki-demo) for options and verification. Registrations expire on the date shown above; run passkiSetup again after that to register again."
         return failed
     }
 
