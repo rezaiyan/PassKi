@@ -2,10 +2,12 @@ import { zipSync, strToU8 } from "fflate";
 import { androidOrigin } from "@/lib/fingerprints";
 import type { AndroidExpectation } from "@/lib/checks/types";
 
+export const GET_LOGIN_CREDS = "delegate_permission/common.get_login_creds";
+
 /** Same relations, key order and formatting as the Gradle plugin's `WellKnownFiles`. */
 const RELATIONS = [
   "delegate_permission/common.handle_all_urls",
-  "delegate_permission/common.get_login_creds",
+  GET_LOGIN_CREDS,
 ];
 
 const render = (value: unknown) => JSON.stringify(value, null, 2) + "\n";
@@ -29,7 +31,10 @@ export interface GeneratedFile {
 }
 
 /** One statement per package (sorted), fingerprints de-duplicated and sorted. */
-export function assetLinks(android: AndroidExpectation[]): string {
+export function assetLinks(
+  android: AndroidExpectation[],
+  relations: string[] = RELATIONS,
+): string {
   const statements = [...android]
     .sort((a, b) =>
       a.packageName < b.packageName
@@ -39,7 +44,7 @@ export function assetLinks(android: AndroidExpectation[]): string {
           : 0,
     )
     .map((a) => ({
-      relation: RELATIONS,
+      relation: relations,
       target: {
         namespace: "android_app",
         package_name: a.packageName,

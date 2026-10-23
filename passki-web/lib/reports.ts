@@ -1,4 +1,9 @@
-import { randomBytes } from "node:crypto";
+import {
+  createHash,
+  createHmac,
+  randomBytes,
+  timingSafeEqual,
+} from "node:crypto";
 import { check, docsPath, isCheckId } from "@/lib/catalog";
 import { clock, DAY, purgeExpired, type Db } from "@/lib/db";
 import { summarize } from "@/lib/checks/run";
@@ -10,6 +15,12 @@ import type {
 import { validateDomain } from "@/lib/net/ssrf";
 
 export const REPORT_TTL = 7 * DAY;
+/** A stored report is at most this many bytes of JSON; real verifier reports are a few KB. */
+export const MAX_REPORT_BYTES = 64 * 1024;
+/** Shared reports kept at once (at most MAX_ACTIVE_REPORTS × MAX_REPORT_BYTES on disk). */
+export const MAX_ACTIVE_REPORTS = Number(
+  process.env.PASSKI_MAX_REPORTS || 2000,
+);
 const MAX_RESULTS = 100;
 const STATUSES: CheckStatus[] = ["pass", "warn", "fail", "skip"];
 
@@ -76,13 +87,35 @@ export function sanitizeReport(raw: unknown): VerifyReport {
           : [],
       }));
   if (Array.isArray(rin.ios))
-    input.ios = rin.ios
-      .slice(0, 10)
-      .map((a: Record<string, unknown>) => ({
-        teamId: text(a?.teamId, 10),
-        bundleId: text(a?.bundleId, 155) ?? "",
-      }));
+    input.ios = rin.ios.slice(0, 10).map((a: Record<string, unknown>) => ({
+      teamId: text(a?.teamId, 10),
+      bundleId: text(a?.bundleId, 155) ?? "",
+    }));
   return { rpId, checkedAt, input, results, summary: summarize(results) };
+}
+
+let processKey: Buffer | undefined;
+
+/** HMAC key for report signatures: from PASSKI_REPORT_SECRET, else the IP salt, else random per process. */
+function reportKey(): Buffer {
+  const secret = process.env.PASSKI_REPORT_SECRET || process.env.PASSKI_IP_SALT;
+  if (secret)
+    return createHash("sha256").update(`passki-report|${secret}`).digest();
+  processKey ??= randomBytes(32);
+  return processKey;
+}
+
+const mac = (report: VerifyReport) =>
+  createHmac("sha256", reportKey())
+    .update(JSON.stringify(report))
+    .digest("base64url");
+
+/**
+ * Signs what /api/verify returns, so only reports this server produced can be shared under its domain.
+ * The signature covers the sanitized form, which is what {@link saveReport} rebuilds and checks.
+ */
+export function signReport(raw: unknown): string {
+  return mac(sanitizeReport(raw));
 }
 
 export function saveReport(
@@ -90,12 +123,27 @@ export function saveReport(
   raw: unknown,
 ): { id: string; expiresAt: string } {
   const report = sanitizeReport(raw);
+  const signature = (raw as { signature?: unknown } | null)?.signature;
+  const expected = Buffer.from(mac(report));
+  const given = Buffer.from(typeof signature === "string" ? signature : "");
+  if (given.length !== expected.length || !timingSafeEqual(given, expected))
+    throw new ReportError(
+      "only reports from this site's verifier can be shared; run the check again",
+    );
+  const json = JSON.stringify(report);
+  if (Buffer.byteLength(json) > MAX_REPORT_BYTES)
+    throw new ReportError("report too large to share");
   purgeExpired(db, "reports");
+  const { n } = db.prepare("SELECT COUNT(*) AS n FROM reports").get() as {
+    n: number;
+  };
+  if (n >= MAX_ACTIVE_REPORTS)
+    throw new ReportError("report storage is full right now; try again later");
   const id = randomBytes(12).toString("base64url");
   const now = clock.now();
   db.prepare(
     "INSERT INTO reports (id, json, created_at, expires_at) VALUES (?, ?, ?, ?)",
-  ).run(id, JSON.stringify(report), now, now + REPORT_TTL);
+  ).run(id, json, now, now + REPORT_TTL);
   return { id, expiresAt: new Date(now + REPORT_TTL).toISOString() };
 }
 

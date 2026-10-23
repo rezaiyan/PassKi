@@ -13,7 +13,7 @@ import {
   isPackageName,
   normalizeFingerprint,
 } from "@/lib/fingerprints";
-import { assetLinks } from "@/lib/generator";
+import { assetLinks, GET_LOGIN_CREDS } from "@/lib/generator";
 import { demoConfig, type DemoConfig } from "./config";
 import { DemoError } from "./rp";
 
@@ -51,7 +51,11 @@ export function listAndroidApps(db: Db): AndroidAppEntry[] {
   }));
 }
 
-/** The demo package from env + non-expired self-service entries, one statement per package. */
+/**
+ * The demo package from env + non-expired self-service entries, one statement per package. Only
+ * `get_login_creds`: anyone can list an app here (and the sample's debug key is public), so granting
+ * `handle_all_urls` would let any app open links to the demo domain as a verified App Link.
+ */
 export function demoAssetLinks(db: Db, cfg: DemoConfig = demoConfig()): string {
   const byPackage = new Map<string, Set<string>>([
     [cfg.androidPackage, new Set(cfg.androidFingerprints)],
@@ -65,6 +69,7 @@ export function demoAssetLinks(db: Db, cfg: DemoConfig = demoConfig()): string {
       packageName,
       fingerprints: [...fps],
     })),
+    [GET_LOGIN_CREDS],
   );
 }
 

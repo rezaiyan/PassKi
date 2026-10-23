@@ -27,7 +27,11 @@ The passki-web console tools generate well-known files, check a live domain and 
 - **THEN** the server answers with an input error asking for one of them
 
 ### Requirement: Shareable reports
-`POST /api/reports` SHALL store a verifier report (at most 256 KB) for 7 days and return `{id, url: "/r/<id>", expiresAt}`; `GET /api/reports/<id>` and the page `/r/<id>` SHALL show it read-only, and expired or unknown ids MUST return 404.
+`POST /api/reports` SHALL store only a report signed by `/api/verify` (at most 64 KB, at most 2000 stored at once) for 7 days and return `{id, url: "/r/<id>", expiresAt}`; `GET /api/reports/<id>` and the page `/r/<id>` SHALL show it read-only, and expired or unknown ids MUST return 404.
+
+#### Scenario: Report not produced by the verifier
+- **WHEN** a client posts a report without a valid signature, or with any result text changed
+- **THEN** the server answers 400 and stores nothing
 
 #### Scenario: Expired report
 - **WHEN** a report link is opened after 7 days

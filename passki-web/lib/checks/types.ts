@@ -51,4 +51,6 @@ export interface VerifyReport {
   input: VerifyInput;
   results: CheckResult[];
   summary: { pass: number; warn: number; fail: number; skip: number };
+  /** Set by /api/verify; /api/reports only stores reports that carry a valid one. */
+  signature?: string;
 }

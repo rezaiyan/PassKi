@@ -73,6 +73,23 @@ describe("self-service Android registration", () => {
     expect(demoConfigFor(db, cfg).origins).toEqual(cfg.origins);
   });
 
+  it("should grant only get_login_creds in the demo assetlinks, never App Links", () => {
+    registerAndroidApp(
+      db,
+      { packageName: "com.attacker.app", fingerprints: [OTHER] },
+      "1.2.3.4",
+      cfg,
+    );
+
+    const relations = (
+      JSON.parse(demoAssetLinks(db, cfg)) as { relation: string[] }[]
+    ).map((s) => s.relation);
+    expect(relations).toEqual([
+      ["delegate_permission/common.get_login_creds"],
+      ["delegate_permission/common.get_login_creds"],
+    ]);
+  });
+
   it("should be idempotent: a re-run reports the existing entry and costs no rate limit", () => {
     registerAndroidApp(
       db,

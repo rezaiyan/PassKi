@@ -19,6 +19,8 @@ import {
 import {
   authenticationOptions,
   captureFixture,
+  DEMO_MAX_CHALLENGES,
+  DEMO_MAX_USERS,
   DemoError,
   FIXTURES_PER_PLATFORM,
   listFixtures,
@@ -27,7 +29,12 @@ import {
   verifyRegistration,
 } from "@/lib/demo/rp";
 import { androidOrigin } from "@/lib/fingerprints";
-import { loadReport, saveReport } from "@/lib/reports";
+import {
+  loadReport,
+  MAX_ACTIVE_REPORTS,
+  saveReport,
+  signReport,
+} from "@/lib/reports";
 import { FP } from "./helpers";
 import { SoftAuthenticator } from "./softAuthenticator";
 
@@ -72,11 +79,39 @@ describe("Gradle plugin contract", () => {
 
   it("should issue registration options that satisfy SRV-03", async () => {
     const o = await registrationOptions(db, {}, cfg);
-    const bytes = (v: string) => (/^[A-Za-z0-9_-]+$/.test(v) ? Buffer.from(v, "base64url").length : -1);
+    const bytes = (v: string) =>
+      /^[A-Za-z0-9_-]+$/.test(v) ? Buffer.from(v, "base64url").length : -1;
     expect(o.rp.id).toBe(cfg.rpId);
     expect(bytes(o.challenge)).toBeGreaterThanOrEqual(16);
     expect(bytes(o.user.id)).toBeGreaterThanOrEqual(1);
     expect(bytes(o.user.id)).toBeLessThanOrEqual(64);
+  });
+});
+
+describe("demo storage caps", () => {
+  const fill = (sql: string, n: number) => {
+    const insert = db.prepare(sql);
+    db.transaction(() => {
+      for (let i = 0; i < n; i++) insert.run(`x${i}`, t, t + DAY);
+    })();
+  };
+
+  it("should refuse new demo users while the user table is full", async () => {
+    fill(
+      "INSERT INTO demo_users (id, name, created_at, expires_at) VALUES (?, 'n', ?, ?)",
+      DEMO_MAX_USERS,
+    );
+
+    await expect(registrationOptions(db, {}, cfg)).rejects.toThrow(/busy/);
+  });
+
+  it("should refuse new challenges while the challenge table is full", async () => {
+    fill(
+      "INSERT INTO challenges (challenge, kind, created_at, expires_at) VALUES (?, 'auth', ?, ?)",
+      DEMO_MAX_CHALLENGES,
+    );
+
+    await expect(authenticationOptions(db, {}, cfg)).rejects.toThrow(/busy/);
   });
 });
 
@@ -335,9 +370,72 @@ describe("rate limiter and reports", () => {
     expect(rateLimit(db, "b", "k", 2, MINUTE)).toBe(true);
   });
 
+  const verified = (results: Record<string, unknown>[]) => {
+    const raw = {
+      rpId: "alirezaiyan.com",
+      checkedAt: "2026-10-21T12:00:00.000Z",
+      results,
+    };
+    return { ...raw, signature: signReport(raw) };
+  };
+
+  it("should refuse a report the verifier did not sign", () => {
+    const report = verified([
+      { id: "AND-01", status: "fail", message: "not found" },
+    ]);
+
+    expect(() => saveReport(db, { ...report, signature: undefined })).toThrow(
+      /verifier/,
+    );
+    expect(() =>
+      saveReport(db, {
+        ...report,
+        results: [
+          {
+            id: "AND-01",
+            status: "fail",
+            message: "Download the fix at https://evil.example",
+          },
+        ],
+      }),
+    ).toThrow(/verifier/);
+    expect(saveReport(db, report).id).toMatch(/^[A-Za-z0-9_-]{16}$/);
+  });
+
+  it("should refuse a report over the size cap", () => {
+    const big = "x".repeat(2000);
+    const report = verified(
+      Array.from({ length: 40 }, () => ({
+        id: "AND-01",
+        status: "fail",
+        message: big,
+        fix: big,
+      })),
+    );
+
+    expect(() => saveReport(db, report)).toThrow(/too large/);
+  });
+
+  it("should refuse new reports while the store is full", () => {
+    const insert = db.prepare(
+      "INSERT INTO reports (id, json, created_at, expires_at) VALUES (?, '{}', ?, ?)",
+    );
+    db.transaction(() => {
+      for (let i = 0; i < MAX_ACTIVE_REPORTS; i++)
+        insert.run(`r${i}`, t, t + DAY);
+    })();
+
+    expect(() =>
+      saveReport(
+        db,
+        verified([{ id: "AND-01", status: "pass", message: "ok" }]),
+      ),
+    ).toThrow(/full/);
+  });
+
   it("should store sanitized reports for 7 days", () => {
     const { id } = saveReport(db, {
-      rpId: "alirezaiyan.com",
+      ...verified([{ id: "AND-01", status: "pass", message: "ok" }]),
       results: [
         {
           id: "AND-01",

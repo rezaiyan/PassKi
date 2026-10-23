@@ -65,8 +65,11 @@ Verdict: `{verified, credentialId, signCount, userVerified, backupEligible, back
 ## Security notes
 
 - **SSRF:** every outbound fetch goes through `lib/net/fetch.ts`. It allows only HTTPS on port 443 to a validated public domain (no IP literals, `localhost`, `.local`, `.internal` or other reserved names). The custom `lookup` resolves A/AAAA and refuses the request if any address is private or reserved, and the socket connects only to the addresses it validated (pinned, so DNS rebinding can't slip in). Redirects are never followed, only reported. Requests time out after 10 s and bodies are capped at 1 MiB (64 KiB for SRV endpoints). User-supplied domains can only reach `/.well-known/{assetlinks.json,apple-app-site-association}`. Google DAL and the Apple CDN use fixed URL templates.
-- **Rate limits:** per hashed client IP (first `X-Forwarded-For` entry, as set by Caddy): verify 20/min, generate 30/min, server-check 10/min, reports 30/h, demo register 30/min, demo login 60/min, demo register/login verify 60/min each, iOS and Android self-service 5 new registrations/day each (an Android re-registration of listed keys is free).
-- **Reports** are re-validated before storage. Only catalog IDs and known statuses are kept, and titles, severities and docs links come from the catalog.
+- **Rate limits:** per hashed client IP (first `X-Forwarded-For` entry, as set by Caddy): verify 20/min, generate 30/min, server-check 10/min, reports 10/h, demo register 30/min, demo login 60/min, demo register/login verify 60/min each, iOS and Android self-service 5 new registrations/day each (an Android re-registration of listed keys is free).
+- **Reports** are re-validated before storage. Only catalog IDs and known statuses are kept, and titles, severities and docs links come from the catalog. `/api/verify` signs each report (HMAC keyed by `PASSKI_REPORT_SECRET`, else `PASSKI_IP_SALT`), and `/api/reports` stores only reports with a valid signature, so nobody can publish their own text under this domain. Stored reports are capped at 64 KB each and 2000 in total.
+- **Storage caps:** at most 5000 live demo users and 10000 live challenges; past that the demo answers 503 until rows expire, so many IPs together can't fill the disk.
+- **Demo `assetlinks.json`** grants only `get_login_creds`, never `handle_all_urls`: anyone can list an app there (and the sample's debug key is public), so App Links would let any app open links to this domain.
+- **Headers:** HSTS, a Content-Security-Policy (`default-src 'self'`, no framing, no plugins), a Permissions-Policy, `nosniff`, `X-Frame-Options: DENY` and a referrer policy on every response.
 - **Cleanup:** expired rows are purged on startup (`instrumentation.ts`) and lazily on every access.
 
 ## Deploy

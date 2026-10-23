@@ -17,6 +17,11 @@ export const USER_TTL = DAY;
 export const FIXTURE_TTL = 7 * DAY;
 export const FIXTURES_PER_PLATFORM = 20;
 export const FIXTURE_PLATFORMS = ["android", "ios", "web", "other"] as const;
+/** Global caps so per-IP limits from many addresses can't fill the disk. */
+export const DEMO_MAX_USERS = Number(process.env.PASSKI_DEMO_MAX_USERS || 5000);
+export const DEMO_MAX_CHALLENGES = Number(
+  process.env.PASSKI_DEMO_MAX_CHALLENGES || 10000,
+);
 
 export class DemoError extends Error {
   constructor(
@@ -38,6 +43,18 @@ export interface Verdict {
   userHandle: string;
   origin: string;
   rpId: string;
+}
+
+const busy = () =>
+  new DemoError("the demo is busy right now; try again in a few minutes", 503);
+
+/** Throws {@link busy} when [table] already holds [max] live rows. */
+function assertRoom(db: Db, table: "demo_users" | "challenges", max: number) {
+  purgeExpired(db, table);
+  const { n } = db.prepare(`SELECT COUNT(*) AS n FROM ${table}`).get() as {
+    n: number;
+  };
+  if (n >= max) throw busy();
 }
 
 function storeChallenge(
@@ -98,7 +115,8 @@ export async function registrationOptions(
   body: { username?: unknown },
   cfg: DemoConfig = demoConfig(),
 ) {
-  purgeExpired(db, "demo_users");
+  assertRoom(db, "demo_users", DEMO_MAX_USERS);
+  assertRoom(db, "challenges", DEMO_MAX_CHALLENGES);
   const userId = randomBytes(16);
   const handle = userId.toString("base64url");
   const name = sanitizeName(body.username);
@@ -190,6 +208,7 @@ export async function authenticationOptions(
   body: { userHandle?: unknown },
   cfg: DemoConfig = demoConfig(),
 ) {
+  assertRoom(db, "challenges", DEMO_MAX_CHALLENGES);
   purgeExpired(db, "credentials");
   let allow:
     | { id: string; transports?: AuthenticatorTransport[] }[]
