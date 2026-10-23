@@ -21,7 +21,14 @@ data class Activity(val seq: Int, val label: String, val outcome: Outcome, val t
     val title: String get() = text.lineSequence().first()
     val detail: String get() = text.lineSequence().drop(1).filterNot { it.startsWith("fix: ") }.joinToString("\n")
     val fixHint: String? get() = text.lineSequence().firstOrNull { it.startsWith("fix: ") }?.removePrefix("fix: ")
+    /** Catalog ID of the failed check, read from the `[Type ID]` part of a [failureLog] title; null otherwise. */
+    val checkId: String? get() = CHECK_ID_IN_TITLE.find(title)?.groupValues?.get(1)
 }
+
+private val CHECK_ID_IN_TITLE = Regex("""✗ \[\w+ ([A-Z]{3}-\d{2})]""")
+
+/** The docs page of a catalog check, as on the PassKi website (the same page as `PasskeyError.docsUrl`). */
+fun checkDocsUrl(id: String): String = "${PasskiDemoServer.URL}/checks/$id"
 
 /** The server-verified sign-in shown on the account screen. */
 data class Session(val verdict: DemoVerdict, val via: String)

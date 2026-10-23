@@ -24,6 +24,20 @@ class ActivityTest {
     }
 
     @Test
+    fun readsTheCheckIdOfACatalogFailure() {
+        val entry = failureLog("Register", PasskeyError.Misconfigured("App X is not associated with d.com.", "Serve the file.", "IOS-02"))
+        assertEquals("IOS-02", Activity(1, "Register", Outcome.Failed, entry).checkId)
+
+        val plain = failureLog("Sign in", PasskeyError.Cancelled)
+        assertNull(Activity(2, "Sign in", Outcome.Failed, plain).checkId)
+    }
+
+    @Test
+    fun checkDocsUrlPointsAtTheCheckPage() {
+        assertEquals("https://passki.alirezaiyan.com/checks/AND-03", checkDocsUrl("AND-03"))
+    }
+
+    @Test
     fun keepsVerdictLinesAsDetail() {
         val activity = Activity(2, "Sign in", Outcome.Ok, "Sign in ✓\nverified by server ✓ signCount 3\n  credentialId abc")
         assertEquals("Sign in ✓", activity.title)

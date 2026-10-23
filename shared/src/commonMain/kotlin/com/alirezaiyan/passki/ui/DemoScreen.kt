@@ -181,8 +181,9 @@ private fun SignInCard(controller: DemoController, signIn: PasskeySignInState) {
                                 failure.label + " didn't finish",
                                 style = MaterialTheme.typography.titleSmall,
                                 color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(start = 10.dp),
+                                modifier = Modifier.padding(start = 10.dp).weight(1f),
                             )
+                            failure.checkId?.let { IdChip(it) }
                         }
                         Text(
                             failure.title.substringAfter("✗ ").ifBlank { failure.title },

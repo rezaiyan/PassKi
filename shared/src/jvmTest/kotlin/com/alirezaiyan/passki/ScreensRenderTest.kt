@@ -4,10 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.toAwtImage
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.captureToImage
@@ -19,6 +22,7 @@ import com.alirezaiyan.passki.compose.rememberPasskeySignIn
 import com.alirezaiyan.passki.demo.DemoVerdict
 import com.alirezaiyan.passki.demo.PasskiDemoServer
 import com.alirezaiyan.passki.ui.DemoScreen
+import com.alirezaiyan.passki.ui.IdChip
 import com.alirezaiyan.passki.ui.LabScreen
 import com.alirezaiyan.passki.ui.PassKiTheme
 import com.alirezaiyan.passki.ui.SetupScreen
@@ -114,6 +118,19 @@ class ScreensRenderTest {
         waitUntil(timeoutMillis = 10_000) { controller.checks != null }
         onNodeWithText("SRV-01").assertExists()
         save("setup")
+    }
+
+    @Test
+    fun checkIdChipOpensItsDocsPage() = runDesktopComposeUiTest(200, 60) {
+        val opened = mutableListOf<String>()
+        val uriHandler = object : UriHandler {
+            override fun openUri(uri: String) {
+                opened += uri
+            }
+        }
+        setContent { CompositionLocalProvider(LocalUriHandler provides uriHandler) { PassKiTheme { IdChip("AND-03") } } }
+        onNodeWithText("AND-03").performClick()
+        check(opened == listOf("https://passki.alirezaiyan.com/checks/AND-03")) { "opened $opened" }
     }
 
     @Test

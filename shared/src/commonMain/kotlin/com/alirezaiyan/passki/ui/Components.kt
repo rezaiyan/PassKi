@@ -34,6 +34,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -41,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import com.alirezaiyan.passki.Activity
 import com.alirezaiyan.passki.DoctorStatus
 import com.alirezaiyan.passki.Outcome
+import com.alirezaiyan.passki.checkDocsUrl
 
 /** Visual status shared by activities and checks. */
 enum class Tone { Pass, Warn, Fail, Skip, Busy }
@@ -93,21 +97,28 @@ fun StatusMark(tone: Tone, size: Int = 26) {
     }
 }
 
-/** Catalog ID such as `AND-01`, set in mono on a chip. */
+/** Catalog ID such as `AND-01`, set in mono on a chip; tapping it opens the check's docs page in the browser. */
 @Composable
 fun IdChip(id: String) {
-    Text(
-        id,
-        fontFamily = Mono,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 12.sp,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier
+    val uriHandler = LocalUriHandler.current
+    Row(
+        Modifier
             .clip(RoundedCornerShape(6.dp))
+            .clickable(onClickLabel = "Open the $id docs", role = Role.Button) { uriHandler.openUri(checkDocsUrl(id)) }
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
             .padding(horizontal = 6.dp, vertical = 3.dp),
-    )
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(id, fontFamily = Mono, fontWeight = FontWeight.SemiBold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+        // Visual hint only: the click label already says it opens the docs.
+        Text(
+            " ↗",
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.clearAndSetSemantics {},
+        )
+    }
 }
 
 /** Outlined surface that groups rows; rows inside get dividers from [Rows]. */
