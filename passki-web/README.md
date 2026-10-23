@@ -38,6 +38,8 @@ The SQLite database is created at `PASSKI_DB_PATH` (default `./data/passki.db`, 
 | `PASSKI_IP_SALT` | `passki` | Salt for hashed client IPs (rate limits); set a random value in production |
 | `PASSKI_IOS_PER_IP_PER_DAY` | `5` | Self-service iOS registrations per IP per day |
 | `PASSKI_IOS_MAX_ACTIVE` | `500` | Global cap of active self-service entries |
+| `PASSKI_ANDROID_PER_IP_PER_DAY` | `5` | New Android self-service registrations per client IP per day |
+| `PASSKI_ANDROID_MAX_ACTIVE` | `500` | Global cap of active Android package/fingerprint entries |
 
 See `.env.example`.
 
@@ -49,16 +51,21 @@ See `.env.example`.
 | POST | `/api/demo/register/verify` | `RegistrationResponseJSON` or `{response, capture: {platform}}` → verdict |
 | POST | `/api/demo/login/options` | `{userHandle?}` → request options (`allowCredentials` for that user, else discoverable) |
 | POST | `/api/demo/login/verify` | `AuthenticationResponseJSON` → verdict |
-| GET | `/api/demo/server-config` | `{rpId, origins}` |
+| GET | `/api/demo/server-config` | `{rpId, origins}` (includes the origins of registered Android apps) |
 | GET | `/api/demo/fixtures?platform=` | captured registration responses (last 20 per platform, 7 days) |
 | GET/POST/DELETE | `/api/demo/ios-apps` | list / `{teamId, bundleId}` → `{appId, expiresAt, deleteToken, entitlement}` / `{appId, token}` |
+| GET/POST/DELETE | `/api/demo/android-apps` | list / `{packageName, fingerprints[]}` → `{packageName, fingerprints, origins, created, expiresAt, deleteToken?}` (201 new, 200 already listed) / `{packageName, token}` |
+
+`passkiSetup` with `passki { useDemoServer() }` calls both registration endpoints. Self-service entries are listed in
+the demo `assetlinks.json` / `apple-app-site-association` for 7 days, and registered Android signing keys are accepted
+as origins by the verify endpoints.
 
 Verdict: `{verified, credentialId, signCount, userVerified, backupEligible, backedUp, aaguid?, userHandle, origin, rpId}`. The challenge is looked up from `clientDataJSON`, so no cookies are needed. Challenges expire after 5 minutes and can be used once.
 
 ## Security notes
 
 - **SSRF:** every outbound fetch goes through `lib/net/fetch.ts`. It allows only HTTPS on port 443 to a validated public domain (no IP literals, `localhost`, `.local`, `.internal` or other reserved names). The custom `lookup` resolves A/AAAA and refuses the request if any address is private or reserved, and the socket connects only to the addresses it validated (pinned, so DNS rebinding can't slip in). Redirects are never followed, only reported. Requests time out after 10 s and bodies are capped at 1 MiB (64 KiB for SRV endpoints). User-supplied domains can only reach `/.well-known/{assetlinks.json,apple-app-site-association}`. Google DAL and the Apple CDN use fixed URL templates.
-- **Rate limits:** per hashed client IP (first `X-Forwarded-For` entry, as set by Caddy): verify 20/min, generate 30/min, server-check 10/min, reports 30/h, demo register 30/min, demo login 60/min, demo register/login verify 60/min each, iOS self-service 5/day.
+- **Rate limits:** per hashed client IP (first `X-Forwarded-For` entry, as set by Caddy): verify 20/min, generate 30/min, server-check 10/min, reports 30/h, demo register 30/min, demo login 60/min, demo register/login verify 60/min each, iOS and Android self-service 5 new registrations/day each (an Android re-registration of listed keys is free).
 - **Reports** are re-validated before storage. Only catalog IDs and known statuses are kept, and titles, severities and docs links come from the catalog.
 - **Cleanup:** expired rows are purged on startup (`instrumentation.ts`) and lazily on every access.
 

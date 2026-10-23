@@ -1,12 +1,11 @@
-import { demoConfig } from "@/lib/demo/config";
-import { assetLinks } from "@/lib/generator";
+import { getDb } from "@/lib/db";
+import { demoAssetLinks } from "@/lib/demo/androidApps";
 
 export const dynamic = "force-dynamic";
 
-/** Served at /.well-known/assetlinks.json (rewrite): the demo package + env fingerprints. */
+/** Served at /.well-known/assetlinks.json (rewrite): the demo package + env fingerprints + non-expired self-service entries. */
 export function GET() {
-  const cfg = demoConfig();
-  return new Response(assetLinks([{ packageName: cfg.androidPackage, fingerprints: cfg.androidFingerprints }]), {
+  return new Response(demoAssetLinks(getDb()), {
     headers: { "content-type": "application/json", "cache-control": "public, max-age=300" },
   });
 }

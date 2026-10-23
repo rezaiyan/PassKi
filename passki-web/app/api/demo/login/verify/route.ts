@@ -1,4 +1,5 @@
 import { getDb } from "@/lib/db";
+import { demoConfigFor } from "@/lib/demo/androidApps";
 import { verifyAuthentication } from "@/lib/demo/rp";
 import { errorResponse, json, limited, readJson } from "@/lib/http";
 
@@ -9,7 +10,7 @@ export async function POST(req: Request) {
     if (tooMany) return tooMany;
     const body = await readJson(req);
     const response = (body.response && typeof body.response === "object" && "id" in body.response ? body.response : body) as never;
-    return json(await verifyAuthentication(getDb(), response));
+    return json(await verifyAuthentication(getDb(), response, demoConfigFor(getDb())));
   } catch (e) {
     return errorResponse(e);
   }

@@ -18,6 +18,7 @@ const TTL_TABLES = [
   "credentials",
   "reports",
   "ios_apps",
+  "android_apps",
   "fixtures",
 ] as const;
 type TtlTable = (typeof TTL_TABLES)[number];
@@ -62,6 +63,14 @@ CREATE TABLE IF NOT EXISTS ios_apps (
   token_hash TEXT NOT NULL,
   created_at INTEGER NOT NULL,
   expires_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS android_apps (
+  package_name TEXT NOT NULL,
+  fingerprint TEXT NOT NULL,
+  token_hash TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL,
+  PRIMARY KEY (package_name, fingerprint)
 );
 CREATE TABLE IF NOT EXISTS fixtures (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

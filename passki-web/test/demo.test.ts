@@ -6,6 +6,7 @@ import {
   openDb,
   purgeAll,
   rateLimit,
+  setDb,
   type Db,
 } from "@/lib/db";
 import { demoConfig } from "@/lib/demo/config";
@@ -61,7 +62,9 @@ describe("demo config", () => {
 describe("Gradle plugin contract", () => {
   it("should serve exactly {rpId, origins} from GET /api/demo/server-config", async () => {
     const { GET } = await import("@/app/api/demo/server-config/route");
+    setDb(db);
     const body = await GET().json();
+    setDb(undefined);
     expect(Object.keys(body).sort()).toEqual(["origins", "rpId"]);
     expect(body.rpId).toBe(demoConfig().rpId);
     expect(body.origins).toEqual(demoConfig().origins);
