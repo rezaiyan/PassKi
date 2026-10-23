@@ -33,7 +33,12 @@ kotlin {
     js { browser() }
 
     @OptIn(ExperimentalWasmDsl::class)
-    wasmJs { browser() }
+    wasmJs {
+        // Tests run on Node: kotlinx-io (from cryptography-kotlin) reads `import.meta` in its Wasm glue, which the
+        // Karma browser runner loads as a classic script ("Cannot use 'import.meta' outside a module").
+        browser { testTask { enabled = false } }
+        nodejs()
+    }
 
     sourceSets {
         all {
