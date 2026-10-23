@@ -443,7 +443,8 @@ call against the demo server, and the server checks every response. It has three
   sample's plugin block is `passki { useDemoServer() }`, so `passkiSetup` reads both values from Xcode, shows what it
   sends, and registers the app with the demo server for 7 days. You don't edit any tracked file. Without
   `Local.xcconfig`, the app still builds for the simulator, but passkey calls fail with `Misconfigured` (IOS-02) because
-  iOS can't link the app to the demo domain.
+  iOS can't link the app to the demo domain. Don't pick a team in Xcode's **Signing & Capabilities** tab: Xcode would
+  write it into `project.pbxproj`, and CI rejects that.
 - **Setup problems show at launch.** The app runs the setup check when it starts. If a check fails, a banner names it
   (for example `Setup: 1 problem (IOS-02)`), and tapping the banner opens the Setup tab with the fix.
 - **Automatic test run.** Start the app with the autorun flag. It first runs the steps that need no taps

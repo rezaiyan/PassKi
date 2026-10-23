@@ -11,7 +11,9 @@ The iOS passkey sheet and Face ID can't be tapped by CI, so this run is done by 
    `Local.xcconfig.example` if it doesn't).
 4. Run `./gradlew passkiSetup`. For the maintainer's team it answers "already permanently listed"; for another team it
    registers the app for 7 days.
-5. Open `iosApp/iosApp.xcodeproj` in Xcode and run the `iosApp` scheme on the simulator.
+5. Open `iosApp/iosApp.xcodeproj` in Xcode and run the `iosApp` scheme on the simulator. Don't change the team in
+   **Signing & Capabilities**: it comes from `Local.xcconfig`. If `git status` shows `project.pbxproj` changed
+   afterwards, restore it with `git checkout -- iosApp/iosApp.xcodeproj/project.pbxproj`.
 6. If the simulator's **Settings > Developer** shows **Associated Domains Development**, turn it on.
 
 When the simulator asks for Face ID, choose **Features > Face ID > Matching Face** (⌥⌘M).

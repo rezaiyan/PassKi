@@ -36,6 +36,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
       - name: Docs links
         run: python3 ci/check-docs-links.py
+      - name: Xcode project takes the team from Local.xcconfig
+        run: python3 ci/check-xcode-project.py
       - name: Library tests
         run: >
           ./gradlew

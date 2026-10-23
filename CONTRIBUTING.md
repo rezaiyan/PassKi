@@ -50,7 +50,12 @@ Gradle runs with the configuration cache on (`gradle.properties`). Keep new task
 ./gradlew -p passki-gradle-plugin test
 (cd passki-web && npm ci && npm test)
 python3 ci/check-docs-links.py
+python3 ci/check-xcode-project.py
 ```
+
+`ci/check-xcode-project.py` fails when `iosApp/iosApp.xcodeproj/project.pbxproj` hardcodes a team, bundle ID or
+entitlements file. Xcode writes the team into that file when you pick one in **Signing & Capabilities**; set
+`TEAM_ID` in `iosApp/Configuration/Local.xcconfig` instead, and don't commit Xcode's change.
 
 CI (`.github/workflows/ci.yml`) runs the same checks, plus two that protect the onboarding paths:
 
