@@ -71,6 +71,11 @@ listed here.
   Its debug build is signed with a committed sample keystore, which is not for release.
 
 ### Changed
+- CI (GitHub Actions): library, plugin and web tests; a clone-and-run job for the sample against the demo server; iOS
+  tests, API dumps, the Xcode sample build, and consumer apps on Kotlin 2.2.21 and on AGP's built-in Kotlin with
+  `compileSdk` 35 (`ci/consumers/`). Docs links are checked too.
+- The Gradle plugin's build resolves its JDK 17 toolchain itself (Foojay), so a fresh clone on a machine without JDK 17
+  configures.
 - Wider compatibility for apps: the libraries publish Kotlin 2.2 metadata and depend on `kotlin-stdlib` 2.2.21 (JVM and
   Android), so Android apps on Kotlin 2.1+ can use them; before, they needed Kotlin 2.4. Their AARs require
   `compileSdk` 35 (the `androidx.credentials` floor) instead of PassKi's own 37. `passki-demo` uses Ktor's Android engine

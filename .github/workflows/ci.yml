@@ -1,0 +1,155 @@
+name: CI
+
+# Linux jobs run on every push to main and every pull request. The macOS job (iOS) runs on the same events: GitHub bills
+# macOS minutes at 10x on private repositories, so it is not triggered for other branches. Run it by hand with
+# "Run workflow".
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=false
+
+jobs:
+  # Library, Gradle plugin and sample on the JVM and Android; docs links.
+  library:
+    name: Library and plugin (JVM, Android, Wasm)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: |
+            17
+            21
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Docs links
+        run: python3 ci/check-docs-links.py
+      - name: Library tests
+        run: >
+          ./gradlew
+          :passki:jvmTest :passki:testAndroidHostTest
+          :passki-test:jvmTest
+          :passki-compose:jvmTest :passki-compose:testAndroidHostTest
+          :passki-demo:jvmTest :passki-demo:wasmJsBrowserTest
+          :shared:jvmTest :androidApp:assembleDebug
+          dokkaGenerate
+      - name: Gradle plugin tests (unit and TestKit)
+        run: ./gradlew -p passki-gradle-plugin test
+      - name: Test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: library-test-reports
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+
+  web:
+    name: passki-web (demo server and dashboard)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: passki-web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: passki-web/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build
+
+  # README path A, the way a new user runs it: a fresh clone, the Android sample, then the setup tasks against the live
+  # demo relying party. Needs network; a failure here means the onboarding path is broken (or the demo server is down).
+  sample:
+    name: Sample against the demo server (clone and run)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: |
+            17
+            21
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Build the Android sample
+        run: ./gradlew :androidApp:assembleDebug
+      - name: passkiSetup --preview (prints what it would write and send)
+        run: ./gradlew passkiSetup --preview
+      - name: passkiCheck against passki.alirezaiyan.com
+        run: ./gradlew passkiCheck
+      - name: passkiCheck report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: passki-check-report
+          path: androidApp/build/reports/passki/
+          if-no-files-found: ignore
+
+  apple:
+    name: iOS, API dumps and consumer apps (macOS)
+    runs-on: macos-26
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: |
+            17
+            21
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Kotlin/Native toolchain cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+      - name: Xcode
+        run: xcodebuild -version
+      - name: iOS tests and API dumps
+        run: >
+          ./gradlew
+          :passki:iosSimulatorArm64Test :passki-test:iosSimulatorArm64Test
+          :passki-compose:iosSimulatorArm64Test :passki-demo:iosSimulatorArm64Test
+          :shared:iosSimulatorArm64Test
+          :passki:checkLegacyAbi :passki-test:checkLegacyAbi :passki-compose:checkLegacyAbi :passki-demo:checkLegacyAbi
+      - name: iOS sample app (Xcode, simulator, no Team ID)
+        run: >
+          xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -configuration Debug
+          -sdk iphonesimulator -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO build
+      # Apps on the oldest supported toolchains, resolving PassKi from Maven Local as the README describes.
+      - name: Publish to Maven Local
+        run: |
+          ./gradlew :passki:publishToMavenLocal :passki-compose:publishToMavenLocal :passki-test:publishToMavenLocal :passki-demo:publishToMavenLocal
+          ./gradlew -p passki-gradle-plugin publishToMavenLocal
+      - name: Consumer app, Kotlin 2.2.21 (iOS simulator and JVM tests)
+        run: ./gradlew -p ci/consumers/kmp iosSimulatorArm64Test jvmTest
+      - name: Consumer app, AGP built-in Kotlin, compileSdk 35 (README "try it in your app")
+        run: ./gradlew -p ci/consumers/android assembleDebug passkiSetup --preview
+      - name: Test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: apple-test-reports
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/

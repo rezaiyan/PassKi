@@ -49,7 +49,20 @@ Gradle runs with the configuration cache on (`gradle.properties`). Keep new task
   :shared:jvmTest :androidApp:assembleDebug dokkaGenerate
 ./gradlew -p passki-gradle-plugin test
 (cd passki-web && npm ci && npm test)
+python3 ci/check-docs-links.py
 ```
+
+CI (`.github/workflows/ci.yml`) runs the same checks, plus two that protect the onboarding paths:
+
+| Job | Runs on | What it checks |
+|---|---|---|
+| Library and plugin | Ubuntu, every push to `main` and pull request | JVM/Android/Wasm tests, the Gradle plugin's unit and TestKit tests, Dokka, the Android sample build, docs links |
+| passki-web | Ubuntu | tests, typecheck, production build |
+| Sample against the demo server | Ubuntu | README path A: a fresh clone builds the sample, then `passkiSetup --preview` and `passkiCheck` against passki.alirezaiyan.com |
+| iOS, API dumps and consumer apps | macOS 26 (`main`, pull requests and manual runs only: macOS minutes cost 10x on a private repository) | iOS simulator tests, ABI dumps, the Xcode build of the iOS sample, and the [consumer apps](ci/consumers/README.md): an app on Kotlin 2.2.21 and an Android app on AGP's built-in Kotlin with `compileSdk` 35, both using PassKi from Maven Local |
+
+The consumer apps fail when a Kotlin or dependency upgrade would lock out apps on older toolchains. Run them locally
+with the commands in [`ci/consumers/README.md`](ci/consumers/README.md).
 
 - **Kotlin version:** PassKi is built with Kotlin 2.2 so apps on Kotlin 2.2+ can read its iOS/JS/Wasm libraries.
   Before upgrading Kotlin or a dependency, check which Kotlin built the new release (its klib `manifest` has
