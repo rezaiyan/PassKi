@@ -19,15 +19,16 @@
     <th>iOS 26.3 · Face ID</th>
   </tr>
   <tr>
-    <td><img src="docs/media/android-register-sign-in.gif" width="300" alt="Registering a passkey and signing in with it on Android"></td>
-    <td><img src="docs/media/ios-register-sign-in.gif" width="300" alt="Registering a passkey and signing in with it on iOS"></td>
+    <td><img src="docs/media/android-register-sign-in.gif" width="300" alt="Android: Create an account opens the Google Password Manager sheet, then the app shows Verified by the server; after signing out, Sign in with a passkey signs back in"></td>
+    <td><img src="docs/media/ios-register-sign-in.gif" width="300" alt="iOS: Create an account opens the Add a passkey sheet, Face ID, then Verified by the server; after signing out, Sign in with a passkey signs back in"></td>
   </tr>
 </table>
 
 <p align="center"><sub>
-  The <a href="#sample-app">sample app</a> registers a passkey, then signs in with it. The demo server verifies every
-  response ("verified by server ✓"). On Android the screen-lock PIN screen is cut out because the system hides it from
-  screen recording, and the Google account address is blurred.
+  The <a href="#sample-app">sample app</a>: <b>Create an account</b> makes a passkey, the demo server checks the
+  response (<b>Verified by the server</b>), then <b>Sign in with a passkey</b> after signing out. On Android the
+  screen-lock PIN screen is cut out because the system hides it from screen recording, and the Google account address
+  is blurred.
 </sub></p>
 
 ---
@@ -207,8 +208,8 @@ fun SignInScreen(api: MyApi) {
 
 </td>
 <td width="260">
-<img src="docs/media/android-autofill.png" width="250" alt="PasskeyUsernameField on Android: the passkey appears as a suggestion chip above the keyboard">
-<p align="center"><sub><code>PasskeyUsernameField</code> on Android 16: the passkey shows up as a suggestion above the keyboard.</sub></p>
+<img src="docs/media/android-autofill.png" width="250" alt="PasskeyUsernameField on Android: saved passkeys appear as suggestion chips above the keyboard, under a Sign in with a passkey button">
+<p align="center"><sub><code>PasskeyUsernameField</code> and <code>PasskeySignInButton</code> in the sample app on Android 16: saved passkeys show up as suggestions above the keyboard.</sub></p>
 </td>
 </tr>
 </table>
@@ -504,8 +505,8 @@ if (BuildConfig.DEBUG) {
 
 </td>
 <td width="260">
-<img src="docs/media/android-setup-check.png" width="250" alt="The sample app's Setup check on Android 16: doctor 0 failures, 0 warnings, and server checks SRV-01 and SRV-02 pass">
-<p align="center"><sub>The sample app's <b>Setup check</b>: <code>PasskeyDoctor</code> plus the server checks, on Android 16.</sub></p>
+<img src="docs/media/android-setup-check.png" width="250" alt="The sample app's Setup tab on Android 16: Ready for passkeys, 8 passed, with a checklist of DEV-03, DEV-01, AND-06 and AND-03">
+<p align="center"><sub>The sample app's <b>Setup</b> tab: <code>PasskeyDoctor</code> plus the server checks, each with its catalog ID.</sub></p>
 </td>
 </tr>
 </table>
@@ -513,16 +514,28 @@ if (BuildConfig.DEBUG) {
 ### Web dashboard and demo server
 
 [passki.alirezaiyan.com](https://passki.alirezaiyan.com) is a hosted relying party with a setup dashboard, built on
-SimpleWebAuthn. Its source is in `passki-web/`.
+SimpleWebAuthn. Its source is in `passki-web/`. Type your domain on the home page and it draws the trust link between
+your Android app, your domain and your iOS app, turning each check green as it passes:
 
 <p align="center">
-  <img src="docs/media/web-verifier.png" width="760" alt="The web verifier checking passki.alirezaiyan.com: AND-01 to AND-04 and IOS-01 to IOS-03 with results">
+  <a href="https://passki.alirezaiyan.com"><img src="docs/media/web-hero.png" width="800" alt="passki.alirezaiyan.com home page: a domain check for passki.alirezaiyan.com links an Android phone and an iOS phone to the domain's .well-known files, with AND-01 to AND-04 and IOS-01 to IOS-03 marked"></a>
 </p>
 
-- **Verifier:** enter your RP ID. The server fetches your `assetlinks.json` and `apple-app-site-association`, asks
-  Google Digital Asset Links and the Apple CDN, and runs the same catalog checks (same IDs and fixes) as
-  `passkiCheck`. It re-checks live while you deploy, and can save a shareable report link that expires after 7 days.
-  Optionally it checks your server's options endpoint (SRV checks).
+- **Verifier:** enter your RP ID, and optionally your package, fingerprints, Team ID and bundle ID. The server fetches
+  your `assetlinks.json` and `apple-app-site-association`, asks Google Digital Asset Links and the Apple CDN, and runs
+  the same catalog checks (same IDs and fixes) as `passkiCheck`, grouped by platform. It re-checks every 10 s while
+  you deploy, and can create a read-only report link that expires after 7 days. Optionally it checks your server's
+  options endpoint (SRV checks).
+
+  <details>
+  <summary>Screenshot</summary>
+
+  <p align="center">
+    <img src="docs/media/web-verifier.png" width="720" alt="The web verifier for passki.alirezaiyan.com: 6 passed, 0 warnings, 0 failed, 1 skipped, with Android and iOS check lists, a share link and server checks">
+  </p>
+
+  </details>
+
 - **Generator:** enter the RP ID, packages, SHA-256 fingerprints, Team ID and bundle ID, and get both well-known files,
   the entitlements and `xcconfig` lines and the server origin allow-list, as a zip.
 - **Check docs:** one page per check ID, the same pages as [`docs/checks/`](docs/checks/README.md).
@@ -550,9 +563,25 @@ If you don't use the Gradle plugin:
 ## Sample app
 
 `androidApp`, `iosApp` and `shared/` make up the Compose Multiplatform sample shown at the top. It runs every PassKi
-call against the demo relying party, and the server verifies every response. Its UI has `PasskeyUsernameField`,
-`PasskeySignInButton`, buttons for register, device-only sign-in, passkey-or-password, upgrade, signals and PRF, and
-a **Setup check** that runs `PasskeyDoctor` and the server checks SRV-01/02.
+call against the demo relying party, and the server verifies every response. It has three tabs:
+
+<table>
+  <tr>
+    <th>Demo</th>
+    <th>Lab</th>
+    <th>Setup</th>
+  </tr>
+  <tr>
+    <td><img src="docs/media/android-signed-in.png" width="240" alt="Demo tab after signing in: You're signed in, and a Verified by the server card with credential, sign count, user verified, synced, origin and AAGUID"></td>
+    <td><img src="docs/media/android-lab.png" width="240" alt="Lab tab: grouped flows for sign in (device only, passkey or password, autofill in a dialog), create (register with PRF, upgrade) and extensions and signals"></td>
+    <td><img src="docs/media/android-setup-check.png" width="240" alt="Setup tab: Ready for passkeys, 8 passed, with a checklist of catalog IDs"></td>
+  </tr>
+  <tr>
+    <td valign="top"><sub>A real sign-in screen built with <code>PasskeyUsernameField</code> and <code>PasskeySignInButton</code>. After a sign-in it shows what the server checked: credential, sign count, user verification, backup state, origin and AAGUID.</sub></td>
+    <td valign="top"><sub>Every other flow, one tap each: device-only sign-in, passkey or password, autofill in a dialog, register with PRF, upgrade, PRF key derivation and signals, with a result per row and an activity log.</sub></td>
+    <td valign="top"><sub><b>Run setup check</b> runs <code>PasskeyDoctor</code> and the server checks SRV-01/02 as a checklist with catalog IDs, plus what this device supports.</sub></td>
+  </tr>
+</table>
 
 - **Android, zero config:** the debug build is signed with the committed `androidApp/sample-debug.keystore`, whose
   fingerprint the demo `assetlinks.json` lists. See [`androidApp/README.md`](androidApp/README.md).
