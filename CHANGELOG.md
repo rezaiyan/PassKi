@@ -6,6 +6,10 @@ listed here.
 ## 0.1.0-alpha02 (unreleased)
 
 ### Added
+- **Errors name their setup check:** `PasskeyError.checkId` and `docsUrl`. `Misconfigured` errors carry the catalog ID
+  that covers them (`AND-03` asset links, `DEV-01` credential provider, `AND-06` initialisation, `IOS-02` association),
+  and `InvalidOptions` for a missing or malformed RP ID carries `CFG-01`. The same ID `PasskeyDoctor`, `passkiCheck`
+  and the web verifier report. `PasskeyException`'s message adds the docs link; `FakePasskeys` reports `CFG-01` too.
 - **`passki-demo`** (new artifact `com.alirezaiyan.passki:passki-demo`): `PasskiDemoServer`, a client for the hosted
   demo relying party, so you can try passkeys in your own app before you have a domain or a server. It returns the
   server's full verdict (`DemoVerdict`) for every response. Ktor lives in this artifact only, never in `passki`.
@@ -67,6 +71,8 @@ listed here.
   Its debug build is signed with a committed sample keystore, which is not for release.
 
 ### Changed
+- `PasskeyError.Misconfigured` and `InvalidOptions` include `checkId` in `equals`, `hashCode` and `toString` (omitted
+  from `toString` when null). The existing constructors are kept; new ones take the ID.
 - Gradle plugin: `passki { rpId }` must be a bare domain. `https://example.com/` or `Example.com` fail when a task runs,
   with the corrected value in the message.
 - Gradle plugin: `passkiSetup` and `passkiCheck` are the two front-door tasks (group `passki`, with

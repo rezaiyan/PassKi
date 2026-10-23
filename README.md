@@ -53,7 +53,8 @@
 - **One API for Android and iOS.** `register`, `signIn`, `signInOrPassword`, `upgrade` and `signals` from
   `commonMain`. No `Activity`, no `UIWindow`.
 - **Errors you can act on.** Every failure is a typed `PasskeyError`. Setup problems come back as
-  `PasskeyError.Misconfigured` with a `fixHint` that says exactly what is wrong.
+  `PasskeyError.Misconfigured` with a `fixHint` that says exactly what is wrong, and a `checkId` (such as `AND-03`)
+  that `PasskeyDoctor`, `passkiCheck` and the web verifier use for the same problem.
 - **Setup that checks itself.** A Gradle plugin writes your `.well-known` files and entitlements, then checks the
   live domain. `PasskeyDoctor` runs the same checks on a device.
 - **Compose-ready.** `PasskeySignInButton` and `PasskeyUsernameField`, which offers passkeys in the keyboard.
@@ -141,7 +142,7 @@ passkeys.register(api.registrationOptions())
     .onFailure { error ->
         when (error) {
             PasskeyError.Cancelled -> Unit
-            is PasskeyError.Misconfigured -> log(error.fixHint) // tells you exactly what's wrong
+            is PasskeyError.Misconfigured -> log("${error.fixHint} ${error.docsUrl}") // what's wrong + its check's docs page
             else -> showError(error.message)
         }
     }
@@ -151,6 +152,20 @@ passkeys.signIn(api.authenticationOptions()).onSuccess { api.finishSignIn(it.jso
 
 The options are your server's WebAuthn JSON, used as-is (a `{"publicKey": ...}` envelope is fine). Verify the
 returned `json` on your server with java-webauthn-server, webauthn4j, SimpleWebAuthn or py_webauthn.
+
+Setup errors name the [catalog check](docs/checks/README.md) that covers them, so a runtime error, the device doctor
+and `passkiCheck` all point to the same docs page:
+
+| Error | `checkId` |
+|---|---|
+| Android: the RP ID is not associated with the app (asset links) | `AND-03` (the doctor and `passkiCheck` also report `AND-01`/`AND-02` when those fail) |
+| Android: no credential provider can create or return the passkey | `DEV-01` |
+| Android: PassKi not initialised, or no foreground Activity | `AND-06` |
+| iOS: the app is not associated with the domain (AASA or entitlement) | `IOS-02` (`passkiCheck` also covers the entitlement: `IOS-04`..`IOS-06`) |
+| Options without an RP ID, or an RP ID that isn't a bare domain (`InvalidOptions`) | `CFG-01` |
+
+`error.docsUrl` links the check's page, and `getOrThrow()`'s exception message includes the fix and the link. Errors
+that no setup check covers (for example autofill without a focused field) have no `checkId`.
 
 | Call | What it does |
 |---|---|

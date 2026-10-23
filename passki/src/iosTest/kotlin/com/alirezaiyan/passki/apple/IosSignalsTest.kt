@@ -35,6 +35,7 @@ class IosSignalsTest {
         val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
         assertEquals("App ABCDE12345.com.example.app is not associated with example.com.", misconfigured.message)
         assertEquals(concreteAasaHint("ABCDE12345.com.example.app", "example.com"), misconfigured.fixHint)
+        assertEquals("IOS-02", misconfigured.checkId)
     }
 
     @Test
@@ -45,6 +46,7 @@ class IosSignalsTest {
         val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
         assertEquals(NOT_ASSOCIATED_SIGNAL_MESSAGE, misconfigured.message)
         assertEquals(AASA_HINT, misconfigured.fixHint)
+        assertEquals("IOS-02", misconfigured.checkId)
     }
 
     @Test

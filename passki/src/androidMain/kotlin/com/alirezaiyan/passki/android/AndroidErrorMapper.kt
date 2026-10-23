@@ -23,6 +23,7 @@ import androidx.credentials.exceptions.publickeycredential.GetPublicKeyCredentia
 import androidx.credentials.exceptions.publickeycredential.SignalCredentialSecurityException
 import androidx.credentials.exceptions.publickeycredential.SignalCredentialStateProviderConfigurationException
 import com.alirezaiyan.passki.PasskeyError
+import com.alirezaiyan.passki.internal.doctor.CheckIds
 
 internal const val ASSET_LINKS_HINT: String =
     "The RP ID is not associated with this app. Serve https://<rpId>/.well-known/assetlinks.json containing " +
@@ -81,17 +82,17 @@ private fun Throwable.toBasePasskeyError(conditional: Boolean, context: AndroidE
     is NoCredentialException -> PasskeyError.NoCredentials
     is CreateCredentialInterruptedException, is GetCredentialInterruptedException -> PasskeyError.Interrupted
     is CreateCredentialProviderConfigurationException, is GetCredentialProviderConfigurationException ->
-        PasskeyError.Misconfigured(messageOr("No credential provider configured."), PROVIDER_HINT)
+        PasskeyError.Misconfigured(messageOr("No credential provider configured."), PROVIDER_HINT, CheckIds.DEV_01)
     is CreateCredentialNoCreateOptionException ->
         if (conditional) {
             PasskeyError.NotSupported("$CONDITIONAL_DECLINED.")
         } else {
-            PasskeyError.Misconfigured(messageOr("No provider can create this credential."), PROVIDER_HINT)
+            PasskeyError.Misconfigured(messageOr("No provider can create this credential."), PROVIDER_HINT, CheckIds.DEV_01)
         }
     is SignalCredentialStateProviderConfigurationException ->
         PasskeyError.NotSupported("No credential provider on this device supports the Signal API.")
     is SignalCredentialSecurityException ->
-        PasskeyError.Misconfigured(messageOr("Signal rejected for this RP ID."), assetLinksHint(context))
+        PasskeyError.Misconfigured(messageOr("Signal rejected for this RP ID."), assetLinksHint(context), CheckIds.AND_03)
     is CreateCredentialUnsupportedException, is GetCredentialUnsupportedException ->
         PasskeyError.NotSupported(messageOr("Passkeys are not supported on this device."))
     is CreatePublicKeyCredentialDomException -> domError.toPasskeyError(messageOr(domError.type), this, context)
@@ -111,10 +112,10 @@ private fun DomError.toPasskeyError(message: String, cause: Throwable, context: 
     when (this) {
         is InvalidStateError -> PasskeyError.AlreadyRegistered
         is NotAllowedError -> PasskeyError.Cancelled
-        is SecurityError -> PasskeyError.Misconfigured(message, assetLinksHint(context))
+        is SecurityError -> PasskeyError.Misconfigured(message, assetLinksHint(context), CheckIds.AND_03)
         // Credential Manager reports an unverifiable asset-links association as a DataError, not a SecurityError.
         is DataError if message.contains("RP ID cannot be validated", ignoreCase = true) ->
-            PasskeyError.Misconfigured(message, assetLinksHint(context))
+            PasskeyError.Misconfigured(message, assetLinksHint(context), CheckIds.AND_03)
         is NotSupportedError -> PasskeyError.NotSupported(message)
         else -> PasskeyError.Unknown(message, platformCode = type, cause = cause)
     }

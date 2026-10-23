@@ -32,6 +32,7 @@ class AppleErrorMapperTest {
         )
         val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
         assertTrue("apple-app-site-association" in misconfigured.fixHint)
+        assertEquals("IOS-02", misconfigured.checkId)
     }
 
     @Test
@@ -133,6 +134,7 @@ class AppleErrorMapperTest {
         val error = appleErrorToPasskeyError(1004, "The app is not associated with domain")
         val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
         assertEquals(AASA_HINT, misconfigured.fixHint)
+        assertEquals("IOS-02", misconfigured.checkId)
     }
 
     @Test

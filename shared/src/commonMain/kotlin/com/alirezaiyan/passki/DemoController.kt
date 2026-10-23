@@ -273,4 +273,6 @@ class DemoController(
 
 /** One log entry per failure: the error type and message, then the fix hint on its own line when there is one. */
 internal fun failureLog(label: String, error: PasskeyError): String =
-    "$label ✗ [${error::class.simpleName}] ${error.message}" + error.fixHint?.let { "\nfix: $it" }.orEmpty()
+    "$label ✗ [${error::class.simpleName}${error.checkId?.let { " $it" }.orEmpty()}] ${error.message}" +
+        error.fixHint?.let { "\nfix: $it" }.orEmpty() +
+        error.docsUrl?.let { "\ndocs: $it" }.orEmpty()

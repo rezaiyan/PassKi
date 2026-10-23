@@ -644,12 +644,19 @@ final class com.alirezaiyan.passki/PrfResults { // com.alirezaiyan.passki/PrfRes
 sealed class com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/PasskeyError|null[0]
     abstract val message // com.alirezaiyan.passki/PasskeyError.message|{}message[0]
         abstract fun <get-message>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.message.<get-message>|<get-message>(){}[0]
+    final val docsUrl // com.alirezaiyan.passki/PasskeyError.docsUrl|{}docsUrl[0]
+        final fun <get-docsUrl>(): kotlin/String? // com.alirezaiyan.passki/PasskeyError.docsUrl.<get-docsUrl>|<get-docsUrl>(){}[0]
+    open val checkId // com.alirezaiyan.passki/PasskeyError.checkId|{}checkId[0]
+        open fun <get-checkId>(): kotlin/String? // com.alirezaiyan.passki/PasskeyError.checkId.<get-checkId>|<get-checkId>(){}[0]
     open val fixHint // com.alirezaiyan.passki/PasskeyError.fixHint|{}fixHint[0]
         open fun <get-fixHint>(): kotlin/String? // com.alirezaiyan.passki/PasskeyError.fixHint.<get-fixHint>|<get-fixHint>(){}[0]
 
     final class InvalidOptions : com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/PasskeyError.InvalidOptions|null[0]
         constructor <init>(kotlin/String) // com.alirezaiyan.passki/PasskeyError.InvalidOptions.<init>|<init>(kotlin.String){}[0]
+        constructor <init>(kotlin/String, kotlin/String?) // com.alirezaiyan.passki/PasskeyError.InvalidOptions.<init>|<init>(kotlin.String;kotlin.String?){}[0]
 
+        final val checkId // com.alirezaiyan.passki/PasskeyError.InvalidOptions.checkId|{}checkId[0]
+            final fun <get-checkId>(): kotlin/String? // com.alirezaiyan.passki/PasskeyError.InvalidOptions.checkId.<get-checkId>|<get-checkId>(){}[0]
         final val fixHint // com.alirezaiyan.passki/PasskeyError.InvalidOptions.fixHint|{}fixHint[0]
             final fun <get-fixHint>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.InvalidOptions.fixHint.<get-fixHint>|<get-fixHint>(){}[0]
         final val message // com.alirezaiyan.passki/PasskeyError.InvalidOptions.message|{}message[0]
@@ -662,7 +669,10 @@ sealed class com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/Pas
 
     final class Misconfigured : com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/PasskeyError.Misconfigured|null[0]
         constructor <init>(kotlin/String, kotlin/String) // com.alirezaiyan.passki/PasskeyError.Misconfigured.<init>|<init>(kotlin.String;kotlin.String){}[0]
+        constructor <init>(kotlin/String, kotlin/String, kotlin/String?) // com.alirezaiyan.passki/PasskeyError.Misconfigured.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?){}[0]
 
+        final val checkId // com.alirezaiyan.passki/PasskeyError.Misconfigured.checkId|{}checkId[0]
+            final fun <get-checkId>(): kotlin/String? // com.alirezaiyan.passki/PasskeyError.Misconfigured.checkId.<get-checkId>|<get-checkId>(){}[0]
         final val fixHint // com.alirezaiyan.passki/PasskeyError.Misconfigured.fixHint|{}fixHint[0]
             final fun <get-fixHint>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.Misconfigured.fixHint.<get-fixHint>|<get-fixHint>(){}[0]
         final val message // com.alirezaiyan.passki/PasskeyError.Misconfigured.message|{}message[0]

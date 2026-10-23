@@ -258,7 +258,8 @@ public class FakeAuthenticator(
         if (!origin.startsWith("https://") && !origin.startsWith("http://")) {
             return requested
                 ?: throw PasskeyException(
-                    PasskeyError.InvalidOptions("rpId is required when origin is not https (got $origin)"),
+                    // Same catalog check as the real implementation's RP ID errors.
+                    PasskeyError.InvalidOptions("rpId is required when origin is not https (got $origin)", "CFG-01"),
                 )
         }
         val host = hostOf(origin)

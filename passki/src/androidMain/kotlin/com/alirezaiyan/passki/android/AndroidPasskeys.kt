@@ -34,6 +34,7 @@ import com.alirezaiyan.passki.PasskeySignals
 import com.alirezaiyan.passki.Passkeys
 import com.alirezaiyan.passki.SignInCredential
 import com.alirezaiyan.passki.SignInMode
+import com.alirezaiyan.passki.internal.doctor.CheckIds
 import com.alirezaiyan.passki.internal.SignalRequests
 import com.alirezaiyan.passki.internal.WebAuthnOptions
 import com.alirezaiyan.passki.internal.parseAssertion
@@ -50,6 +51,12 @@ internal const val INIT_HINT: String =
 /** Autofill (View.setPendingCredentialRequest) needs Android 15 (API 35). Null when available. */
 internal fun autofillUnsupported(sdkInt: Int): PasskeyError.NotSupported? =
     if (sdkInt >= 35) null else PasskeyError.NotSupported("Passkey autofill requires Android 15 (API 35) or newer.")
+
+internal val NO_FOREGROUND_ACTIVITY: PasskeyError.Misconfigured =
+    PasskeyError.Misconfigured("No foreground Activity to show the passkey sheet.", INIT_HINT, CheckIds.AND_06)
+
+internal val NOT_INITIALISED: PasskeyError.Misconfigured =
+    PasskeyError.Misconfigured("PassKi is not initialised.", INIT_HINT, CheckIds.AND_06)
 
 internal val NO_FOCUSED_FIELD: PasskeyError.Misconfigured = PasskeyError.Misconfigured(
     "Autofill needs a focused text field",
@@ -277,10 +284,10 @@ internal class AndroidPasskeys(private val tracker: ActivityTracker = ActivityTr
     }
 
     private fun requireActivity(): Activity = tracker.currentActivity
-        ?: throw PasskeyException(PasskeyError.Misconfigured("No foreground Activity to show the passkey sheet.", INIT_HINT))
+        ?: throw PasskeyException(NO_FOREGROUND_ACTIVITY)
 
     private fun requireApplication(): Application = tracker.application
-        ?: throw PasskeyException(PasskeyError.Misconfigured("PassKi is not initialised.", INIT_HINT))
+        ?: throw PasskeyException(NOT_INITIALISED)
 
     private fun unexpected(value: Any): PasskeyException =
         PasskeyException(PasskeyError.Unknown("Unexpected credential type ${value::class.simpleName}.", null))

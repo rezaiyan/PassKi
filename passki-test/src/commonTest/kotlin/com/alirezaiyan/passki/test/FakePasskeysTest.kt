@@ -323,7 +323,7 @@ class FakePasskeysTest {
         val origin = "android:apk-key-hash:abc"
         val fake = FakePasskeys(origin = origin)
         val expected = PasskeyResult.Failure(
-            PasskeyError.InvalidOptions("rpId is required when origin is not https (got $origin)"),
+            PasskeyError.InvalidOptions("rpId is required when origin is not https (got $origin)", "CFG-01"),
         )
         assertEquals(expected, fake.register(creationWithoutRpId))
         assertEquals(expected, fake.signIn(requestWithoutRpId))

@@ -8,6 +8,7 @@ import com.alirezaiyan.passki.apple.swift.passki_report_all_accepted
 import com.alirezaiyan.passki.apple.swift.passki_report_details
 import com.alirezaiyan.passki.apple.swift.passki_report_unknown
 import com.alirezaiyan.passki.internal.Base64Url
+import com.alirezaiyan.passki.internal.doctor.CheckIds
 import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CPointerVar
@@ -54,7 +55,7 @@ private fun signalError(message: String?): PasskeyError {
     val description = stripAppleBoilerplate(text.substringAfter(": ", text))
     return when {
         text.contains("not associated with domain", ignoreCase = true) -> associationError(description)
-        AUTHORIZATION_ERROR_1004.containsMatchIn(text) -> PasskeyError.Misconfigured(NOT_ASSOCIATED_SIGNAL_MESSAGE, AASA_HINT)
+        AUTHORIZATION_ERROR_1004.containsMatchIn(text) -> PasskeyError.Misconfigured(NOT_ASSOCIATED_SIGNAL_MESSAGE, AASA_HINT, CheckIds.IOS_02)
         else -> PasskeyError.Unknown(text, "ASCredentialUpdater")
     }
 }

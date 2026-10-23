@@ -66,12 +66,13 @@ class AndroidErrorMapperTest {
         val error = GetPublicKeyCredentialDomException(SecurityError(), "rp mismatch").toPasskeyError()
         val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
         assertTrue("assetlinks.json" in misconfigured.fixHint)
+        assertEquals("AND-03", misconfigured.checkId)
     }
 
     @Test
     fun providerConfigurationIsMisconfigured() {
         val error = CreateCredentialProviderConfigurationException("no provider").toPasskeyError()
-        assertIs<PasskeyError.Misconfigured>(error)
+        assertEquals("DEV-01", assertIs<PasskeyError.Misconfigured>(error).checkId)
     }
 
     @Test
@@ -104,6 +105,7 @@ class AndroidErrorMapperTest {
         val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
         assertEquals("not allowed", misconfigured.message)
         assertTrue("assetlinks.json" in misconfigured.fixHint)
+        assertEquals("AND-03", misconfigured.checkId)
     }
 
     @Test
@@ -111,6 +113,7 @@ class AndroidErrorMapperTest {
         val error = CreateCredentialNoCreateOptionException("no option").toPasskeyError()
         val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
         assertTrue("credential provider" in misconfigured.fixHint)
+        assertEquals("DEV-01", misconfigured.checkId)
     }
 
     @Test
@@ -147,6 +150,7 @@ class AndroidErrorMapperTest {
         val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
         assertEquals("RP ID cannot be validated.", misconfigured.message)
         assertEquals(ASSET_LINKS_HINT, misconfigured.fixHint)
+        assertEquals("AND-03", misconfigured.checkId)
     }
 
     @Test

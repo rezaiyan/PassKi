@@ -39,6 +39,14 @@ class AndroidAutofillTest {
         val error = NO_FOCUSED_FIELD
         assertEquals("Autofill needs a focused text field", error.message)
         assertTrue("PasskeyUsernameField" in error.fixHint, error.fixHint)
+        assertNull(error.checkId, "a usage error, not a setup check")
+    }
+
+    @Test
+    fun missingInitialisationNamesAnd06() {
+        assertEquals("AND-06", NOT_INITIALISED.checkId)
+        assertEquals("AND-06", NO_FOREGROUND_ACTIVITY.checkId)
+        assertEquals(INIT_HINT, NO_FOREGROUND_ACTIVITY.fixHint)
     }
 
     @Test

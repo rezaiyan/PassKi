@@ -92,9 +92,14 @@ wasm, CONTRIBUTING check list green, sample autorun on the Android 16 emulator t
 Google's cache picks up the new key. Open: an interactive register/sign-in through `passki-demo` on a device.
 
 ### Phase 3: errors and doctor speak the catalog
-- [ ] Add `checkId: String?` to `PasskeyError.Misconfigured` (and `docsUrl` derived from it, pointing at `passki.alirezaiyan.com/checks/<ID>`). Map: assetlinks errors → `AND-02/AND-03`, AASA / 1004 → `IOS-02`, entitlements → `IOS-04`, no provider → `DEV-01`, not initialised → `CFG-01` (confirm IDs against `docs/checks/catalog.json`). `fixHint` text unchanged. Update `api/` dumps + CHANGELOG (alpha, binary change noted).
-- [ ] `toString()` of `Misconfigured` includes the ID, so a plain log line shows it.
-- [ ] Tests in `AndroidErrorMapperTest` / `AppleErrorMapperTest` assert the ID per error case.
+- [x] Add `checkId: String?` to `PasskeyError.Misconfigured` (and `docsUrl` derived from it, pointing at `passki.alirezaiyan.com/checks/<ID>`). Map: assetlinks errors → `AND-02/AND-03`, AASA / 1004 → `IOS-02`, entitlements → `IOS-04`, no provider → `DEV-01`, not initialised → `CFG-01` (confirm IDs against `docs/checks/catalog.json`). `fixHint` text unchanged. Update `api/` dumps + CHANGELOG (alpha, binary change noted).
+- [x] `toString()` of `Misconfigured` includes the ID, so a plain log line shows it.
+- [x] Tests in `AndroidErrorMapperTest` / `AppleErrorMapperTest` assert the ID per error case.
+
+Phase 3 status (2026-10-23): `checkId` + `docsUrl` live on the `PasskeyError` base (also on `InvalidOptions` for
+`CFG-01`), old constructors kept (ABI additions only). Mapping: asset links → AND-03, provider → DEV-01, init / no
+Activity → AND-06, iOS association → IOS-02, RP ID → CFG-01; autofill-without-field and no-window stay null.
+`FakePasskeys` and the sample's failure log follow. Tests green on JVM, Android host, iOS simulator.
 
 ### Phase 4: sample clones and runs
 - [ ] iOS: `Config.xcconfig` gets `#include? "Local.xcconfig"` (gitignored) and `PRODUCT_BUNDLE_IDENTIFIER = com.alirezaiyan.passki.PassKi.$(TEAM_ID)`, so the only per-developer value is `TEAM_ID`. Commit `Local.xcconfig.example`. The owner's Team ID moves to the owner's own `Local.xcconfig`. Check: `passkiSetup` still resolves Team/bundle via `xcodebuild -showBuildSettings`, and the demo AASA keeps the owner's existing entry.

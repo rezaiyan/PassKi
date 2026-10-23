@@ -1,6 +1,7 @@
 package com.alirezaiyan.passki.apple
 
 import com.alirezaiyan.passki.PasskeyError
+import com.alirezaiyan.passki.internal.doctor.CheckIds
 
 internal const val AASA_HINT: String =
     "Add the Associated Domains entitlement 'webcredentials:<rpId>' to your app target and serve " +
@@ -23,9 +24,9 @@ internal fun concreteAasaHint(appId: String, domain: String): String =
         "{\"webcredentials\":{\"apps\":[\"$appId\"]}}."
 
 internal fun associationError(message: String): PasskeyError.Misconfigured {
-    val match = NOT_ASSOCIATED.find(message) ?: return PasskeyError.Misconfigured(message, AASA_HINT)
+    val match = NOT_ASSOCIATED.find(message) ?: return PasskeyError.Misconfigured(message, AASA_HINT, CheckIds.IOS_02)
     val (appId, domain) = match.destructured
-    return PasskeyError.Misconfigured("App $appId is not associated with $domain.", concreteAasaHint(appId, domain))
+    return PasskeyError.Misconfigured("App $appId is not associated with $domain.", concreteAasaHint(appId, domain), CheckIds.IOS_02)
 }
 
 /** [presented] is true once the system asked for a presentation anchor, i.e. a sheet was (about to be) shown. */

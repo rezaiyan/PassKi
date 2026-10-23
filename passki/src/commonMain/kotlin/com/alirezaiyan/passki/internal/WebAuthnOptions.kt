@@ -3,6 +3,7 @@ package com.alirezaiyan.passki.internal
 import com.alirezaiyan.passki.InternalPasskiApi
 import com.alirezaiyan.passki.PasskeyError
 import com.alirezaiyan.passki.PasskeyException
+import com.alirezaiyan.passki.internal.doctor.CheckIds
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -36,9 +37,9 @@ public object WebAuthnOptions {
      * it explicitly. It must be a bare domain (no scheme, port, path or query), as in `example.com`.
      */
     public fun requireRpId(rpId: String?, field: String): String {
-        rpId ?: throw invalid("$field is required: apps have no web origin to derive it from. Set $field in your server's options.")
+        rpId ?: throw invalid("$field is required: apps have no web origin to derive it from. Set $field in your server's options.", CheckIds.CFG_01)
         if (rpId.isEmpty() || rpId.any { it.isWhitespace() || it in NON_DOMAIN_CHARS }) {
-            throw invalid("$field must be a bare domain such as example.com, without scheme, port or path (got \"$rpId\").")
+            throw invalid("$field must be a bare domain such as example.com, without scheme, port or path (got \"$rpId\").", CheckIds.CFG_01)
         }
         return rpId
     }
@@ -103,5 +104,5 @@ public object WebAuthnOptions {
         return JsonObject(LinkedHashMap(this).also { it[key] = JsonArray(rewritten) })
     }
 
-    private fun invalid(message: String) = PasskeyException(PasskeyError.InvalidOptions(message))
+    private fun invalid(message: String, checkId: String? = null) = PasskeyException(PasskeyError.InvalidOptions(message, checkId))
 }

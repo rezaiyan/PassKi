@@ -2,6 +2,8 @@ package com.alirezaiyan.passki
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PasskeyErrorTest {
@@ -23,5 +25,39 @@ class PasskeyErrorTest {
     @Test
     fun unknownCauseDefaultsToNull() {
         assertEquals(null, PasskeyError.Unknown("m", "c").cause)
+    }
+
+    @Test
+    fun misconfiguredNamesItsCatalogCheckAndDocsPage() {
+        val error = PasskeyError.Misconfigured("m", "h", checkId = "AND-03")
+        assertEquals("AND-03", error.checkId)
+        assertEquals("https://passki.alirezaiyan.com/checks/AND-03", error.docsUrl)
+        assertEquals("Misconfigured(message=m, fixHint=h, checkId=AND-03)", error.toString())
+    }
+
+    @Test
+    fun checkIdIsOptionalAndPartOfEquality() {
+        val plain = PasskeyError.Misconfigured("m", "h")
+        assertNull(plain.checkId)
+        assertNull(plain.docsUrl)
+        assertEquals("Misconfigured(message=m, fixHint=h)", plain.toString())
+        assertNotEquals<PasskeyError>(plain, PasskeyError.Misconfigured("m", "h", checkId = "AND-03"))
+        assertNull(PasskeyError.Cancelled.checkId)
+        assertNull(PasskeyError.Cancelled.docsUrl)
+    }
+
+    @Test
+    fun invalidOptionsCanNameACheckToo() {
+        val error = PasskeyError.InvalidOptions("rpId must be a bare domain", checkId = "CFG-01")
+        assertEquals("CFG-01", error.checkId)
+        assertEquals("InvalidOptions(message=rpId must be a bare domain, checkId=CFG-01)", error.toString())
+        assertEquals("InvalidOptions(message=x)", PasskeyError.InvalidOptions("x").toString())
+        assertNotEquals<PasskeyError>(PasskeyError.InvalidOptions("x"), PasskeyError.InvalidOptions("x", checkId = "CFG-01"))
+    }
+
+    @Test
+    fun exceptionMessageLinksTheDocsPage() {
+        val e = PasskeyException(PasskeyError.Misconfigured("broken", "do X", checkId = "IOS-02"))
+        assertEquals("broken Fix: do X Docs: https://passki.alirezaiyan.com/checks/IOS-02", e.message)
     }
 }

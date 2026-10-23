@@ -7,6 +7,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class WebAuthnOptionsTest {
@@ -182,6 +183,16 @@ class WebAuthnOptionsTest {
                 val message = invalidMessage { WebAuthnOptions.requireRpId(value, "rpId") }
                 assertTrue("rpId must be a bare domain" in message, "$value -> $message")
             }
+    }
+
+    @Test
+    fun rpIdErrorsNameCheckCfg01AndOtherOptionErrorsNoCheck() {
+        val missing = assertFailsWith<PasskeyException> { WebAuthnOptions.requireRpId(null, "rp.id") }
+        assertEquals("CFG-01", missing.error.checkId)
+        val url = assertFailsWith<PasskeyException> { WebAuthnOptions.requireRpId("https://example.com", "rpId") }
+        assertEquals("CFG-01", url.error.checkId)
+        val json = assertFailsWith<PasskeyException> { WebAuthnOptions.parseRequest("not json") }
+        assertNull(json.error.checkId)
     }
 
     @Test

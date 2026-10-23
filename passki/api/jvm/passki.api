@@ -69,6 +69,8 @@ public final class com/alirezaiyan/passki/PasskeyDoctor {
 }
 
 public abstract class com/alirezaiyan/passki/PasskeyError {
+	public fun getCheckId ()Ljava/lang/String;
+	public final fun getDocsUrl ()Ljava/lang/String;
 	public fun getFixHint ()Ljava/lang/String;
 	public abstract fun getMessage ()Ljava/lang/String;
 }
@@ -99,7 +101,9 @@ public final class com/alirezaiyan/passki/PasskeyError$Interrupted : com/alireza
 
 public final class com/alirezaiyan/passki/PasskeyError$InvalidOptions : com/alirezaiyan/passki/PasskeyError {
 	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getCheckId ()Ljava/lang/String;
 	public fun getFixHint ()Ljava/lang/String;
 	public fun getMessage ()Ljava/lang/String;
 	public fun hashCode ()I
@@ -108,7 +112,9 @@ public final class com/alirezaiyan/passki/PasskeyError$InvalidOptions : com/alir
 
 public final class com/alirezaiyan/passki/PasskeyError$Misconfigured : com/alirezaiyan/passki/PasskeyError {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getCheckId ()Ljava/lang/String;
 	public fun getFixHint ()Ljava/lang/String;
 	public fun getMessage ()Ljava/lang/String;
 	public fun hashCode ()I
