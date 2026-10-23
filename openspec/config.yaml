@@ -1,0 +1,39 @@
+schema: spec-driven
+
+context: |
+  PassKi is a public open-source Kotlin Multiplatform passkey library; public API is a contract with adopters
+  Every change to the core library must state impact on each target: Android, iOS, JVM, JS, Wasm
+  Developer experience is the product: setup must stay one-step, errors must say what to do next
+  Breaking public API changes must be called out in the proposal and recorded in CHANGELOG.md
+  passki-web UI must look product-grade, not like a demo
+
+# Project context (optional)
+# Add only constraints that should guide OpenSpec artifacts and workflows.
+# Include constraints an agent cannot infer by reading the code.
+# Keep general project documentation and discoverable codebase facts out.
+# Example:
+#   context: |
+#     Designs and tasks must cover Windows, macOS, and Linux
+#     Write all artifacts in Spanish
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always state what is out of scope
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
