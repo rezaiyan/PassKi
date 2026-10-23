@@ -51,6 +51,19 @@ class ExtensionsJsonTest {
     }
 
     @Test
+    fun jsonNullInputsAreTreatedAsAbsent() {
+        // Server-side WebAuthn libraries often serialise unset optional members as null.
+        val input = ExtensionsJson.prfInput(obj("""{"prf":{"eval":{"first":"AQ","second":null},"evalByCredential":null}}"""))!!
+        assertContentEquals(byteArrayOf(1), input.eval!!.first)
+        assertNull(input.eval.second)
+        assertTrue(input.evalByCredential.isEmpty())
+        assertNull(ExtensionsJson.prfInput(obj("""{"prf":{"eval":null}}"""))!!.eval)
+        assertIs<ExtensionsJson.LargeBlobAssertion.Read>(
+            ExtensionsJson.largeBlobAssertion(obj("""{"largeBlob":{"read":true,"write":null}}""")),
+        )
+    }
+
+    @Test
     fun largeBlobRegistrationSupportDefaultsToPreferred() {
         assertNull(ExtensionsJson.largeBlobSupport(obj("{}")))
         assertEquals("preferred", ExtensionsJson.largeBlobSupport(obj("""{"largeBlob":{}}""")))
@@ -179,6 +192,14 @@ class ExtensionsJsonTest {
         val r = parseRegistration(json)
         assertEquals(true, r.prfEnabled)
         assertNull(r.prf)
+    }
+
+    @Test
+    fun prfResultsWithJsonNullSecondKeepFirst() {
+        val a = assertion(obj("""{"prf":{"results":{"first":"AQ","second":null}}}"""))
+        assertEquals(PrfResults(byteArrayOf(1), null), a.prf)
+        val r = registration(obj("""{"prf":{"enabled":true,"results":{"first":"AQ","second":null}}}"""))
+        assertEquals(PrfResults(byteArrayOf(1), null), r.prf)
     }
 
     @Test

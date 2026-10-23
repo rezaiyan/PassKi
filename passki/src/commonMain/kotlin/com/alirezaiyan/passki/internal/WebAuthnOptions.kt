@@ -30,6 +30,21 @@ public object WebAuthnOptions {
                 .withDescriptors("allowCredentials")
         }
 
+    /**
+     * The RP ID from options [field] (`rp.id` or `rpId`), which native apps must set. WebAuthn lets browsers default
+     * it to the caller's origin; an app has no web origin, so Credential Manager and AuthenticationServices both need
+     * it explicitly. It must be a bare domain (no scheme, port, path or query), as in `example.com`.
+     */
+    public fun requireRpId(rpId: String?, field: String): String {
+        rpId ?: throw invalid("$field is required: apps have no web origin to derive it from. Set $field in your server's options.")
+        if (rpId.isEmpty() || rpId.any { it.isWhitespace() || it in NON_DOMAIN_CHARS }) {
+            throw invalid("$field must be a bare domain such as example.com, without scheme, port or path (got \"$rpId\").")
+        }
+        return rpId
+    }
+
+    private const val NON_DOMAIN_CHARS = "/:?#@"
+
     private const val MAX_USER_ID_BYTES = 64
 
     private fun <T> parse(

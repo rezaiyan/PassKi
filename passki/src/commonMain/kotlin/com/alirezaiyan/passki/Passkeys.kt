@@ -4,7 +4,9 @@ package com.alirezaiyan.passki
  * Entry point. Obtain with [Passkeys]; no platform handles needed.
  *
  * Every `optionsJson` parameter is the WebAuthn options JSON produced by your server,
- * optionally wrapped in `{"publicKey": ...}`.
+ * optionally wrapped in `{"publicKey": ...}`. It must name the RP ID (`rp.id` in creation options, `rpId` in
+ * request options) as a bare domain such as `example.com`: browsers derive it from the page's origin, but apps have
+ * no origin, so a missing or malformed RP ID fails with [PasskeyError.InvalidOptions].
  * Every returned `json` is ready to POST to your server's verifier.
  *
  * Implementing this interface is supported (e.g. for fakes; prefer passki-test's FakePasskeys).
@@ -19,6 +21,10 @@ public interface Passkeys {
      * Creates a passkey.
      * Typical errors: [PasskeyError.Cancelled], [PasskeyError.AlreadyRegistered], [PasskeyError.Misconfigured],
      * [PasskeyError.InvalidOptions], [PasskeyError.NotSupported].
+     *
+     * `excludeCredentials` needs iOS 17.4+. Older iOS versions ignore it, so they never report
+     * [PasskeyError.AlreadyRegistered] and may save a second passkey for the same account; the server still
+     * receives the new credential and can reject or replace the duplicate.
      */
     public suspend fun register(optionsJson: String): PasskeyResult<PasskeyRegistration>
 

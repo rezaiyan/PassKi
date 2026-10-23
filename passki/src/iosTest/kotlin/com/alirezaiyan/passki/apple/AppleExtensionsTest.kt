@@ -1,6 +1,8 @@
 package com.alirezaiyan.passki.apple
 
 import com.alirezaiyan.passki.LargeBlobSupport
+import com.alirezaiyan.passki.PasskeyError
+import com.alirezaiyan.passki.PasskeyException
 import com.alirezaiyan.passki.PasskeyExtensions
 import com.alirezaiyan.passki.internal.ExtensionsJson
 import com.alirezaiyan.passki.internal.WebAuthnOptions
@@ -11,6 +13,8 @@ import platform.Foundation.NSData
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -24,6 +28,20 @@ class AppleExtensionsTest {
 
     private fun assertion(json: String): ASAuthorizationPlatformPublicKeyCredentialAssertionRequest =
         AppleRequests.assertion(WebAuthnOptions.parseRequest(json).model)
+
+    @Test
+    fun missingOrMalformedRpIdIsInvalidOptions() {
+        val noRpId = assertFailsWith<PasskeyException> { assertion("""{"challenge":"AQID"}""") }
+        assertTrue("rpId is required" in assertIs<PasskeyError.InvalidOptions>(noRpId.error).message)
+        val noRpIdOnCreation = assertFailsWith<PasskeyException> {
+            registration("""{"rp":{"name":"Ex"},"user":{"id":"AQ","name":"a"},"challenge":"AQID"}""")
+        }
+        assertTrue("rp.id is required" in assertIs<PasskeyError.InvalidOptions>(noRpIdOnCreation.error).message)
+        val withScheme = assertFailsWith<PasskeyException> {
+            assertion("""{"challenge":"AQID","rpId":"https://example.com"}""")
+        }
+        assertTrue("bare domain" in assertIs<PasskeyError.InvalidOptions>(withScheme.error).message)
+    }
 
     @Test
     fun noExtensionsLeaveRequestsUntouched() {

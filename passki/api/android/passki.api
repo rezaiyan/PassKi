@@ -721,6 +721,7 @@ public final class com/alirezaiyan/passki/internal/WebAuthnOptions {
 	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/WebAuthnOptions;
 	public final fun parseCreation (Ljava/lang/String;)Lcom/alirezaiyan/passki/internal/NormalizedOptions;
 	public final fun parseRequest (Ljava/lang/String;)Lcom/alirezaiyan/passki/internal/NormalizedOptions;
+	public final fun requireRpId (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 }
 
 public final class com/alirezaiyan/passki/internal/WebAuthnResponses {

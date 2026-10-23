@@ -34,13 +34,21 @@ kotlin {
 
     jvm()
 
+    // Browser tests load the Skiko runtime that Compose UI pulls in, which needs a webpack-bundled executable
+    // (CMP-4906). It only affects test bundling: the published klib is the same.
     js {
         browser()
+        binaries.executable()
     }
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
-        browser()
+        // No Wasm test run: in the browser, kotlinx-io (from passki-test's cryptography-kotlin) reads `import.meta` in
+        // its Wasm glue, which the Karma runner loads as a classic script ("Cannot use 'import.meta' outside a
+        // module"); on Node, Compose UI's Skiko runtime does not load. The same commonTest runs on JVM, JS, Android
+        // and iOS.
+        browser { testTask { enabled = false } }
+        binaries.executable()
     }
 
     sourceSets {

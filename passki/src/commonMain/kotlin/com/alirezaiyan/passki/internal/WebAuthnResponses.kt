@@ -91,7 +91,8 @@ public fun parseAssertion(json: String): PasskeyAssertion {
     return PasskeyAssertion(
         json = json,
         credentialId = model.id,
-        userHandle = model.response.userHandle,
+        // WebAuthn reports a missing user handle as null; some providers send "" instead.
+        userHandle = model.response.userHandle?.takeUnless { it.isEmpty() },
         prf = ExtensionsJson.prfResults(extensions),
         largeBlob = ExtensionsJson.largeBlob(extensions),
         largeBlobWritten = ExtensionsJson.largeBlobWritten(extensions),

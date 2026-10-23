@@ -56,6 +56,7 @@ class AutofillControllerTest {
 
     private class Recorder {
         val signedIn = mutableListOf<PasskeyAssertion>()
+        val firstSignIn = CompletableDeferred<PasskeyAssertion>()
         val errors = mutableListOf<PasskeyError>()
     }
 
@@ -66,7 +67,10 @@ class AutofillControllerTest {
     ) = AutofillController(
         passkeys = passkeys,
         requestOptions = requestOptions,
-        onSignedIn = { recorder.signedIn += it },
+        onSignedIn = {
+            recorder.signedIn += it
+            recorder.firstSignIn.complete(it)
+        },
         onError = { recorder.errors += it },
         timeSource = testTimeSource,
     )
@@ -326,7 +330,9 @@ class AutofillControllerTest {
         val job = launch { controller.run() }
 
         controller.onFocusChanged(true)
-        advanceTimeBy(5_000)
+        // FakePasskeys signs with real crypto, which on JS completes on the event loop rather than in virtual time:
+        // wait for the sign-in itself instead of advancing the clock.
+        recorder.firstSignIn.await()
 
         assertEquals(registration.credentialId, recorder.signedIn.single().credentialId)
         assertEquals(1, passkeys.calls)
