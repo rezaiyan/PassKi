@@ -150,17 +150,25 @@ export default function Home() {
           </p>
           <ul className="ticks">
             <li>
-              <CheckIcon size={14} /><span>Every failure is a typed{" "}
-              <code>PasskeyError</code>. Setup problems carry a{" "}
-              <code>fixHint</code>.</span>
+              <CheckIcon size={14} />
+              <span>
+                Every failure is a typed <code>PasskeyError</code>. Setup
+                problems carry a <code>fixHint</code>.
+              </span>
             </li>
             <li>
-              <CheckIcon size={14} /><span>No <code>Activity</code>, no{" "}
-              <code>UIWindow</code>: call it from shared code.</span>
+              <CheckIcon size={14} />
+              <span>
+                No <code>Activity</code>, no <code>UIWindow</code>: call it from
+                shared code.
+              </span>
             </li>
             <li>
-              <CheckIcon size={14} /><span>Your server stays yours. PassKi never sees
-              it and keeps no state.</span>
+              <CheckIcon size={14} />
+              <span>
+                Your server stays yours. PassKi never sees it and keeps no
+                state.
+              </span>
             </li>
           </ul>
           <Link className="button secondary" href="/demo">
@@ -304,7 +312,9 @@ export default function Home() {
               src="/media/passki-check-report.png"
               alt="passkiCheck HTML report listing each check with its ID and fix"
               width={900}
-              height={868} loading="lazy" decoding="async"
+              height={868}
+              loading="lazy"
+              decoding="async"
             />
           </article>
           <article className="tile tile-doctor">
@@ -316,9 +326,11 @@ export default function Home() {
             <div className="mini-phone">
               <img
                 src="/media/android-setup-check.png"
-                alt="PasskeyDoctor output on Android: every check passed"
+                alt="The sample's Setup tab on Android: ready for passkeys, 8 checks passed, each with its catalog ID"
                 width={400}
-                height={696} loading="lazy" decoding="async"
+                height={898}
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </article>
