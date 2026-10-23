@@ -59,6 +59,18 @@ listed here.
   and `passki-compose`.
 - New binary API on Android: `Passkeys.autofillSignIn(optionsJson, anchor: View)` (`@InternalPasskiApi`), which
   `passki-compose` uses to anchor autofill to its own view.
+- Android now requires the RP ID (`rp.id` / `rpId`) in options, as iOS already did, and both platforms require it to
+  be a bare domain. A missing or malformed RP ID fails early with `InvalidOptions` instead of an opaque provider
+  error. New `@InternalPasskiApi` binary API: `WebAuthnOptions.requireRpId`.
+
+### Fixed
+- iOS: passkey autofill no longer competes with a modal request. Starting `register`, `signIn` or
+  `signInOrPassword` cancels a pending autofill request, and autofill waits until the modal request ends before
+  offering passkeys again. Previously the autofill retry could restart while a sign-in sheet was open.
+- JSON `null` in extension inputs and outputs (for example `"prf":{"results":{"first":"…","second":null}}`) is read
+  as absent. Previously a `null` `second` dropped the whole PRF result, and a `null` input was `InvalidOptions`.
+- An empty `userHandle` from the provider is reported as `PasskeyAssertion.userHandle == null` on Android, as on iOS.
+- Documented that iOS below 17.4 ignores `excludeCredentials`, so `register` there never returns `AlreadyRegistered`.
 
 ## 0.1.0-alpha01
 

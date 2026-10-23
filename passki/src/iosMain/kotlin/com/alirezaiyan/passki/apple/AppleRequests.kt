@@ -7,6 +7,7 @@ import com.alirezaiyan.passki.internal.CreationOptionsJson
 import com.alirezaiyan.passki.internal.CredentialDescriptorJson
 import com.alirezaiyan.passki.internal.ExtensionsJson
 import com.alirezaiyan.passki.internal.RequestOptionsJson
+import com.alirezaiyan.passki.internal.WebAuthnOptions
 import com.alirezaiyan.passki.internal.WebAuthnResponses
 import kotlinx.serialization.json.JsonObject
 import platform.AuthenticationServices.ASAuthorizationPlatformPublicKeyCredentialAssertion
@@ -33,7 +34,7 @@ internal object AppleRequests {
         options: CreationOptionsJson,
         conditional: Boolean,
     ): ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest {
-        val rpId = options.rp.id ?: throw invalid("rp.id is required on iOS. Set the RP ID in your server's registration options.")
+        val rpId = WebAuthnOptions.requireRpId(options.rp.id, "rp.id")
         val provider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier = rpId)
         val request = provider.createCredentialRegistrationRequestWithChallenge(
             challenge = Base64Url.decode(options.challenge).toNSData(),
@@ -69,7 +70,7 @@ internal object AppleRequests {
     }
 
     fun assertion(options: RequestOptionsJson): ASAuthorizationPlatformPublicKeyCredentialAssertionRequest {
-        val rpId = options.rpId ?: throw invalid("rpId is required on iOS. Set rpId in your server's authentication options.")
+        val rpId = WebAuthnOptions.requireRpId(options.rpId, "rpId")
         val provider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier = rpId)
         val request = provider.createCredentialAssertionRequestWithChallenge(Base64Url.decode(options.challenge).toNSData())
         if (options.allowCredentials.isNotEmpty()) {
@@ -179,8 +180,6 @@ internal object AppleRequests {
 
     private fun CredentialDescriptorJson.toApple() =
         ASAuthorizationPlatformPublicKeyCredentialDescriptor(credentialID = Base64Url.decode(id).toNSData())
-
-    private fun invalid(message: String) = PasskeyException(PasskeyError.InvalidOptions(message))
 
     private fun missing(field: String) =
         PasskeyException(PasskeyError.Unknown("iOS returned no $field.", platformCode = null))

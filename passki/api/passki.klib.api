@@ -787,6 +787,7 @@ final object com.alirezaiyan.passki.internal/SignalRequests { // com.alirezaiyan
 final object com.alirezaiyan.passki.internal/WebAuthnOptions { // com.alirezaiyan.passki.internal/WebAuthnOptions|null[0]
     final fun parseCreation(kotlin/String): com.alirezaiyan.passki.internal/NormalizedOptions<com.alirezaiyan.passki.internal/CreationOptionsJson> // com.alirezaiyan.passki.internal/WebAuthnOptions.parseCreation|parseCreation(kotlin.String){}[0]
     final fun parseRequest(kotlin/String): com.alirezaiyan.passki.internal/NormalizedOptions<com.alirezaiyan.passki.internal/RequestOptionsJson> // com.alirezaiyan.passki.internal/WebAuthnOptions.parseRequest|parseRequest(kotlin.String){}[0]
+    final fun requireRpId(kotlin/String?, kotlin/String): kotlin/String // com.alirezaiyan.passki.internal/WebAuthnOptions.requireRpId|requireRpId(kotlin.String?;kotlin.String){}[0]
 }
 
 final object com.alirezaiyan.passki.internal/WebAuthnResponses { // com.alirezaiyan.passki.internal/WebAuthnResponses|null[0]

@@ -23,7 +23,10 @@ public sealed class PasskeyError {
         override val message: String = "No passkey for this account is available on this device."
     }
 
-    /** A passkey from the options' `excludeCredentials` already exists on this device. */
+    /**
+     * A passkey from the options' `excludeCredentials` already exists on this device.
+     * Not reported below iOS 17.4, which ignores `excludeCredentials`.
+     */
     public data object AlreadyRegistered : PasskeyError() {
         override val message: String =
             "A passkey for this account already exists on this device (excludeCredentials matched)."

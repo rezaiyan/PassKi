@@ -102,8 +102,9 @@ internal class IosPasskeys(private val anchor: () -> UIWindow? = ::keyWindow) : 
         }
 
     /**
-     * Autofill keeps offering passkeys until one is picked: a dismissal (1001 not caused by us) restarts the
-     * request after a short pause, so a provider that answers 1001 immediately can't spin the main thread.
+     * Autofill keeps offering passkeys until one is picked: a dismissal, or a modal request taking over (1001 not
+     * caused by our own cancel), restarts the request after a short pause, so a provider that answers 1001
+     * immediately can't spin the main thread. The restart waits until no modal request runs ([AuthorizationArbiter]).
      * Our own cancel (coroutine cancelled) ends the loop through [delay] / the cancelled continuation.
      */
     private suspend fun autoFill(run: suspend () -> ASAuthorization): ASAuthorization {

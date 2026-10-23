@@ -11,6 +11,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class WebAuthnResponsesTest {
@@ -76,6 +77,15 @@ class WebAuthnResponsesTest {
         val assertion = parseAssertion(json)
         assertEquals("AQID", assertion.credentialId)
         assertEquals("Bw", assertion.userHandle)
+    }
+
+    @Test
+    fun emptyUserHandleIsNull() {
+        // WebAuthn: a credential without a user handle reports it as null; some providers send "" instead.
+        val auth = """{"id":"AQID","rawId":"AQID","response":{"clientDataJSON":"e30","authenticatorData":"e30","signature":"e30","userHandle":""}}"""
+        val assertion = parseAssertion(auth)
+        assertNull(assertion.userHandle)
+        assertEquals(auth, assertion.json)
     }
 
     @Test

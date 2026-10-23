@@ -163,6 +163,28 @@ class WebAuthnOptionsTest {
     }
 
     @Test
+    fun requireRpIdAcceptsBareDomains() {
+        listOf("example.com", "login.example.co.uk", "localhost").forEach { domain ->
+            assertEquals(domain, WebAuthnOptions.requireRpId(domain, "rpId"))
+        }
+    }
+
+    @Test
+    fun requireRpIdRejectsMissingRpId() {
+        val message = invalidMessage { WebAuthnOptions.requireRpId(null, "rp.id") }
+        assertTrue("rp.id is required" in message, message)
+    }
+
+    @Test
+    fun requireRpIdRejectsValuesThatAreNotBareDomains() {
+        listOf("", " ", "https://example.com", "example.com:443", "example.com/login", "example.com?x", "a@example.com", " example.com")
+            .forEach { value ->
+                val message = invalidMessage { WebAuthnOptions.requireRpId(value, "rpId") }
+                assertTrue("rpId must be a bare domain" in message, "$value -> $message")
+            }
+    }
+
+    @Test
     fun unknownFieldsPreservedInsideEnvelope() {
         val parsed = WebAuthnOptions.parseCreation("""{"publicKey":$creation}""")
         assertTrue("unknownField" in parsed.json)

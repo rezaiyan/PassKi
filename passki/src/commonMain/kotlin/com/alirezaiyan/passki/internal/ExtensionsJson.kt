@@ -5,6 +5,7 @@ import com.alirezaiyan.passki.PasskeyError
 import com.alirezaiyan.passki.PasskeyException
 import com.alirezaiyan.passki.PrfResults
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
@@ -34,8 +35,8 @@ public object ExtensionsJson {
     /** `extensions.prf`, or null when absent. Malformed salts throw [PasskeyError.InvalidOptions]. */
     public fun prfInput(extensions: JsonObject?): PrfInput? {
         val prf = extensions?.get("prf") as? JsonObject ?: return null
-        val eval = prf["eval"]?.let { prfValues(it, "extensions.prf.eval") }
-        val byCredential = (prf["evalByCredential"] as? JsonObject).orEmpty().mapValues { (id, value) ->
+        val eval = prf.member("eval")?.let { prfValues(it, "extensions.prf.eval") }
+        val byCredential = (prf.member("evalByCredential") as? JsonObject).orEmpty().mapValues { (id, value) ->
             prfValues(value, "extensions.prf.evalByCredential.$id")
         }
         return PrfInput(eval, byCredential)
@@ -50,7 +51,7 @@ public object ExtensionsJson {
     /** `extensions.largeBlob` read / write for an assertion, or null when absent or neither is requested. */
     public fun largeBlobAssertion(extensions: JsonObject?): LargeBlobAssertion? {
         val largeBlob = extensions?.get("largeBlob") as? JsonObject ?: return null
-        largeBlob["write"]?.let { return LargeBlobAssertion.Write(binary(it, "extensions.largeBlob.write")) }
+        largeBlob.member("write")?.let { return LargeBlobAssertion.Write(binary(it, "extensions.largeBlob.write")) }
         return if ((largeBlob["read"] as? JsonPrimitive)?.booleanOrNull == true) LargeBlobAssertion.Read else null
     }
 
@@ -93,7 +94,7 @@ public object ExtensionsJson {
     internal fun prfResults(results: JsonObject): PrfResults? {
         val values = results.obj("prf")?.obj("results") ?: return null
         val first = values.bytes("first") ?: return null
-        val second = if ("second" in values) values.bytes("second") ?: return null else null
+        val second = values.member("second")?.let { values.bytes("second") ?: return null }
         return PrfResults(first, second)
     }
 
@@ -112,8 +113,8 @@ public object ExtensionsJson {
 
     private fun prfValues(element: JsonElement, field: String): PrfValues {
         val obj = element as? JsonObject ?: throw invalid("$field must be an object")
-        val first = obj["first"] ?: throw invalid("$field.first is required")
-        return PrfValues(binary(first, "$field.first"), obj["second"]?.let { binary(it, "$field.second") })
+        val first = obj.member("first") ?: throw invalid("$field.first is required")
+        return PrfValues(binary(first, "$field.first"), obj.member("second")?.let { binary(it, "$field.second") })
     }
 
     private fun binary(element: JsonElement, field: String): ByteArray {
@@ -125,6 +126,9 @@ public object ExtensionsJson {
             throw invalid("$field is not base64url: ${e.message}")
         }
     }
+
+    /** [key]'s value, or null when absent or JSON `null`: serialisers often emit unset optional members as null. */
+    private fun JsonObject.member(key: String): JsonElement? = this[key]?.takeUnless { it is JsonNull }
 
     private fun JsonObject.obj(key: String): JsonObject? = this[key] as? JsonObject
 

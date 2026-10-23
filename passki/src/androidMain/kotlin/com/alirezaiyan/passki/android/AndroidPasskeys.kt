@@ -111,7 +111,7 @@ internal class AndroidPasskeys(private val tracker: ActivityTracker = ActivityTr
         return passkeyCatching({ it.toPasskeyError(context = context) }) {
             requireSupported()
             val options = WebAuthnOptions.parseRequest(optionsJson)
-            context = errorContext(options.model.rpId)
+            context = errorContext(WebAuthnOptions.requireRpId(options.model.rpId, "rpId"))
             val autofill = mode == SignInMode.Autofill
             if (autofill) autofillUnsupported(Build.VERSION.SDK_INT)?.let { throw PasskeyException(it) }
             val request = GetCredentialRequest(
@@ -131,7 +131,7 @@ internal class AndroidPasskeys(private val tracker: ActivityTracker = ActivityTr
         return passkeyCatching({ it.toPasskeyError(context = context) }) {
             requireSupported()
             val options = WebAuthnOptions.parseRequest(optionsJson)
-            context = errorContext(options.model.rpId)
+            context = errorContext(WebAuthnOptions.requireRpId(options.model.rpId, "rpId"))
             val request = GetCredentialRequest(
                 credentialOptions = listOf(
                     GetPublicKeyCredentialOption(requestJson = options.json),
@@ -174,7 +174,7 @@ internal class AndroidPasskeys(private val tracker: ActivityTracker = ActivityTr
         return passkeyCatching({ it.toPasskeyError(conditional, context) }) {
             requireSupported()
             val options = WebAuthnOptions.parseCreation(optionsJson)
-            context = errorContext(options.model.rp.id)
+            context = errorContext(WebAuthnOptions.requireRpId(options.model.rp.id, "rp.id"))
             val request = CreatePublicKeyCredentialRequest(requestJson = options.json, isConditional = conditional)
             when (val response = manager.createCredential(requireActivity(), request)) {
                 is CreatePublicKeyCredentialResponse -> parseRegistration(response.registrationResponseJson)
