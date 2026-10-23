@@ -80,15 +80,16 @@ Path B and C use the same tasks and the same report; only the RP changes. Moving
 - [x] README uses `./gradlew passkiSetup` / `./gradlew passkiCheck` from the root (Gradle runs the task in every project that has it).
 
 ### Phase 2: try PassKi in your own app (demo server)
-- [x] **Demo RP: self-service Android registration** (code + tests; **not deployed yet**), same rules as iOS: `POST /api/demo/android-apps` with package + SHA-256 list, 7-day TTL, rate limit per IP, entry cap. Served from the demo `assetlinks.json` and `server-config` origins. Input validation + tests in `passki-web`.
+- [x] **Demo RP: self-service Android registration** (deployed 2026-10-23), same rules as iOS: `POST /api/demo/android-apps` with package + SHA-256 list, 7-day TTL, rate limit per IP, entry cap. Served from the demo `assetlinks.json` and `server-config` origins. Input validation + tests in `passki-web`.
 - [x] **Plugin `passki { useDemoServer() }`:** sets `rpId = "passki.alirezaiyan.com"`, `server.configUrl` and `apple.developerMode = true`. In this mode `passkiSetup` skips the "upload files" step and instead registers the app with the demo RP (Android package + fingerprints from the build; `TEAM.bundle` from DSL/xcodebuild). It prints the exact JSON it sends, the URL, and the expiry date. `--dry-run` prints without sending. `passkiCheck` then runs unchanged against the demo domain.
 - [x] **`passki-demo` artifact** (new, Ktor lives here only, never in `passki`): `PasskiDemoServer` with `registrationOptions()`, `verifyRegistration(json)`, `authenticationOptions()`, `verifyAuthentication(json)`, returning the full `ServerVerdict`. Move it from `shared/DemoRelyingParty.kt`; the sample depends on it. Its KDoc and README say it is for evaluation only (24 h users, public demo domain).
 - [x] README **"Try it without a server"** section: 4 snippets (deps, plugin block, `passkiSetup`, 6-line Kotlin), then "Going to production: replace `useDemoServer()` with `rpId`, and `PasskiDemoServer` with your API".
 
 Phase 1 + 2 status (2026-10-23): plugin 139 tests, passki-web 139 tests, passki-demo 7 tests on JVM / iOS simulator /
 wasm, CONTRIBUTING check list green, sample autorun on the Android 16 emulator talks to the live demo server through
-`passki-demo` (Setup check 0 failures, SRV-01/02 pass). Open: deploy passki-web (Android registration endpoint), then
-run `passkiSetup` with `useDemoServer()` against the live server, and an interactive register/sign-in on a device.
+`passki-demo` (Setup check 0 failures, SRV-01/02 pass). Deployed 2026-10-23 (main 971335a). A throwaway app with
+`useDemoServer()` registered against the live server; passkiCheck: AND-01..03 and SRV-01/02 pass, AND-04 warns until
+Google's cache picks up the new key. Open: an interactive register/sign-in through `passki-demo` on a device.
 
 ### Phase 3: errors and doctor speak the catalog
 - [ ] Add `checkId: String?` to `PasskeyError.Misconfigured` (and `docsUrl` derived from it, pointing at `passki.alirezaiyan.com/checks/<ID>`). Map: assetlinks errors → `AND-02/AND-03`, AASA / 1004 → `IOS-02`, entitlements → `IOS-04`, no provider → `DEV-01`, not initialised → `CFG-01` (confirm IDs against `docs/checks/catalog.json`). `fixHint` text unchanged. Update `api/` dumps + CHANGELOG (alpha, binary change noted).
