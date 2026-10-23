@@ -61,6 +61,10 @@ CI (`.github/workflows/ci.yml`) runs the same checks, plus two that protect the 
 | Sample against the demo server | Ubuntu | README path A: a fresh clone builds the sample, then `passkiSetup --preview` and `passkiCheck` against passki.alirezaiyan.com |
 | iOS, API dumps and consumer apps | macOS 26 (`main`, pull requests and manual runs only: macOS minutes cost 10x on a private repository) | iOS simulator tests, ABI dumps, the Xcode build of the iOS sample, and the [consumer apps](ci/consumers/README.md): an app on Kotlin 2.2.21 and an Android app on AGP's built-in Kotlin with `compileSdk` 35, both using PassKi from Maven Local |
 
+The macOS job also runs `ci/doc-snippets.py`: every Kotlin example in the README and `docs/` must compile against the
+published artifacts, every `passki { }` block must configure, and every `com.alirezaiyan.passki` coordinate must name a
+published artifact and the current version. When you change an example, run it locally after publishing to Maven Local.
+
 The consumer apps fail when a Kotlin or dependency upgrade would lock out apps on older toolchains. Run them locally
 with the commands in [`ci/consumers/README.md`](ci/consumers/README.md).
 

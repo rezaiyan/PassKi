@@ -1,10 +1,10 @@
 # Setup tooling
 
-The Gradle plugin, `PasskeyDoctor` and the web dashboard in detail. The three steps are in the [README](../README.md#setup).
+The Gradle plugin, `PasskeyDoctor` and the web dashboard in detail. The three steps are in the
+[README](../README.md#setup).
 
-Most passkey failures are configuration: a missing fingerprint, a wrong Team ID, a redirecting `.well-known` file.
-PassKi checks these in three places, and all three use the same check IDs from the
-[check catalog](checks/README.md):
+Most passkey problems are configuration: a missing fingerprint, a wrong Team ID, or a well-known file that redirects.
+PassKi checks for these in three places, and all three use the same [check IDs](checks/README.md):
 
 ```mermaid
 flowchart LR
@@ -16,17 +16,23 @@ flowchart LR
 
 With the [Gradle plugin](#gradle-plugin) applied to your Android app module:
 
-1. **Generate and wire everything:** `./gradlew passkiSetup` (add `--preview` to see every change first)
-2. **Upload two files** from `build/passki/well-known/` to `https://<rpId>/.well-known/` (HTTP 200, no redirects).
-3. **Check it end to end:** `./gradlew passkiCheck`
+1. **Create the files and wire them up:** `./gradlew passkiSetup`. Add `--preview` to see every change first.
+2. **Upload two files** from `build/passki/well-known/` to `https://<your domain>/.well-known/`. They must load with
+   HTTP 200 and no redirect.
+3. **Check everything:** `./gradlew passkiCheck`
 
-`passkiSetup` writes `assetlinks.json` and `apple-app-site-association`, and adds `webcredentials:<rpId>` to your iOS
-entitlements. It wires them into Xcode through `Configuration/Config.xcconfig` (`CODE_SIGN_ENTITLEMENTS`; it never
-edits `project.pbxproj`). It also writes your server's RP ID and origins to `build/passki/server-config.json`, plus
-snippets for SimpleWebAuthn, webauthn4j, java-webauthn-server and py_webauthn. It is safe to re-run.
+## What passkiSetup does
 
-It ends with a summary of every file it created, changed or left unchanged, with a diff for your own files
-(entitlements, `xcconfig`), then the next steps. `--preview` prints the same summary and writes nothing:
+- It writes the two well-known files: `assetlinks.json` (Android) and `apple-app-site-association` (iOS).
+- It adds `webcredentials:<your domain>` to your iOS entitlements file.
+- It connects that file to your Xcode build through `Configuration/Config.xcconfig` (the `CODE_SIGN_ENTITLEMENTS`
+  setting). It never edits `project.pbxproj`.
+- It writes your server's RP ID and allowed origins to `build/passki/server-config.json`, plus ready-made code for
+  SimpleWebAuthn, webauthn4j, java-webauthn-server and py_webauthn.
+
+You can run it again at any time. It ends with a list of every file it created, changed or left unchanged, a diff of
+your own files (entitlements, `xcconfig`), and the next steps. With `--preview` it prints the same list and writes
+nothing:
 
 ```
 $ ./gradlew passkiSetup --preview
@@ -41,24 +47,32 @@ next steps
   1. Upload androidApp/build/passki/well-known/assetlinks.json and ... to https://example.com/.well-known/ ...
 ```
 
-`passkiCheck` prints one line per check (`[PASS] AND-01 ...`, with a `fix:` line under each problem) and writes an
-HTML report. This is the report for the sample app:
+With `useDemoServer()`, `passkiSetup` doesn't write well-known files or server config. Instead it registers your app
+with the [demo server](#web-dashboard-and-demo-server) and prints each request and the server's answer.
+
+## What passkiCheck does
+
+`passkiCheck` prints one line per check, such as `[PASS] AND-01 ...`. Under each problem it prints a `fix:` line. It
+also writes an HTML report. This is the report for the sample app:
 
 <p align="center">
   <img src="media/passki-check-report.png" width="760" alt="passkiCheck HTML report: 12 passed, 1 warning, 0 failed, 1 skipped, each with a check ID and a fix">
 </p>
 
 - Every check has a docs page: `docs/checks/<ID>.md`.
-- The report is written to `build/reports/passki/check.json` and `index.html`.
-- `passkiCheck` exits non-zero on any failure, so it works as a CI gate. Add
+- The report is saved as `build/reports/passki/check.json` and `index.html`.
+- `passkiCheck` fails the build when a check fails, so you can run it in CI. Add
   `-Ppasski.check.warningsAsErrors=true` to fail on warnings too.
-- Without Xcode (Linux CI) the Xcode checks are skipped.
+- Without Xcode (for example on Linux CI), the Xcode checks are skipped.
 
 ## Gradle plugin
 
-Apply it in your Android application module (`com.android.application`). Without one (an iOS-only app), apply it
-anywhere: `passkiSetup` and `passkiCheck` then run in iOS-only mode and say so. Applied to a module that isn't the
-Android app (such as `shared`), they also run in iOS-only mode and name the module to apply it to instead.
+Apply it in your Android app module (the one with `com.android.application`):
+
+- **iOS-only app:** apply it in any module. `passkiSetup` and `passkiCheck` then run without the Android part, and
+  say so.
+- **Wrong module** (for example `shared`): the tasks also run without Android, and tell you which module to apply the
+  plugin to instead.
 
 ```kotlin
 plugins {
@@ -99,22 +113,24 @@ passki {
 }
 ```
 
-The Android package and signing fingerprints are read from your Android build; `android { packageName = "..." }`
-overrides the base application ID. `assetlinks.json` gets one statement per package the build produces, so a build
-type with `applicationIdSuffix = ".debug"` gets its own `com.example.app.debug` statement with only the debug key.
-`extraFingerprints` go to the packages of non-debuggable variants.
+How the plugin finds your Android app's identity:
+
+- It reads the package name and signing fingerprints from your Android build. `android { packageName = "..." }`
+  overrides the base application ID.
+- `assetlinks.json` gets one entry per package your build produces. For example, a build type with
+  `applicationIdSuffix = ".debug"` gets its own `com.example.app.debug` entry, with only the debug key.
+- `extraFingerprints` (such as the Play App Signing key) go to the packages of release builds.
 
 ### Tasks
 
 | Task | What it does |
 |---|---|
-| `passkiSetup` | Writes the well-known files, iOS entitlements and their `xcconfig` wiring, `server-config.json` and verifier snippets (with `useDemoServer()`: registers the app with the demo server instead of writing well-known files and server config); ends with a summary and next steps. `--preview` changes nothing. `teamId`/`bundleId` default to `xcodebuild -showBuildSettings` |
-| `passkiCheck` | Runs the catalog checks AND-01..05, IOS-01..06 and SRV-01..03 and writes `build/reports/passki/`. Needs network and is not part of `check` |
-| `passkiFingerprints` | Prints package, variant, keystore and SHA-256 per variant, plus the `android:apk-key-hash:` origins for your server allow-list |
+| `passkiSetup` | Writes the well-known files, the iOS entitlements and their `xcconfig` link, `server-config.json` and the server code. With `useDemoServer()`, registers the app with the demo server instead. Ends with a summary and next steps. `--preview` changes nothing. Reads `teamId` and `bundleId` from Xcode (`xcodebuild -showBuildSettings`) when you don't set them |
+| `passkiCheck` | Runs the checks AND-01 to AND-05, IOS-01 to IOS-06 and SRV-01 to SRV-03, and writes `build/reports/passki/`. Needs network. Not part of `check` |
+| `passkiFingerprints` | Prints the package, variant, keystore and SHA-256 fingerprint of each build variant, and the `android:apk-key-hash:` origins your server must allow |
 
-Two more tasks are listed under "passki advanced" in `./gradlew tasks --all` and are kept for existing scripts:
-`passkiWellKnown` (only the well-known files of `passkiSetup`) and `passkiVerify` (only the hosted-file checks of
-`passkiCheck`, without a report).
+Two older tasks are kept for existing scripts. They appear under "passki advanced" in `./gradlew tasks --all`:
+`passkiWellKnown` (only the well-known files) and `passkiVerify` (only the hosted-file checks, without a report).
 
 ```
 $ ./gradlew passkiFingerprints
@@ -127,13 +143,13 @@ Android WebAuthn origins (server allow-list):
 ```
 
 > [!WARNING]
-> Keystore passwords are read from your signing configs but are not tracked task inputs (up-to-date checks use the
-> keystore file, alias and type). They are stored in the configuration-cache entry under
-> `.gradle/configuration-cache/`, which stays on your machine: don't share or upload that directory.
+> The plugin reads keystore passwords from your signing configs. They aren't used to decide whether a task is up to
+> date, but Gradle stores them in its configuration cache, in `.gradle/configuration-cache/`. That folder stays on
+> your machine. Don't share or upload it.
 
 ## PasskeyDoctor
 
-`PasskeyDoctor` runs the same checks on the device: platform support, screen lock, PassKi initialisation, the
+`PasskeyDoctor` runs the setup checks on the device itself: platform support, screen lock, PassKi's startup, the
 `INTERNET` permission, your hosted `assetlinks.json` (Android) or `apple-app-site-association` (iOS), and the origin
 your server must allow.
 
@@ -172,18 +188,18 @@ if (BuildConfig.DEBUG) {
 ## Web dashboard and demo server
 
 [passki.alirezaiyan.com](https://passki.alirezaiyan.com) is a hosted relying party with a setup dashboard, built on
-SimpleWebAuthn. Its source is in `passki-web/`. Type your domain on the home page and it draws the trust link between
-your Android app, your domain and your iOS app, turning each check green as it passes:
+SimpleWebAuthn. Its source is in `passki-web/`. Type your domain on the home page, and it draws the links between your
+Android app, your domain and your iOS app, turning each check green as it passes:
 
 <p align="center">
   <a href="https://passki.alirezaiyan.com"><img src="media/web-hero.png" width="800" alt="passki.alirezaiyan.com home page: a domain check for passki.alirezaiyan.com links an Android phone and an iOS phone to the domain's .well-known files, with AND-01 to AND-04 and IOS-01 to IOS-03 marked"></a>
 </p>
 
-- **Verifier:** enter your RP ID, and optionally your package, fingerprints, Team ID and bundle ID. The server fetches
-  your `assetlinks.json` and `apple-app-site-association`, asks Google Digital Asset Links and the Apple CDN, and runs
-  the same catalog checks (same IDs and fixes) as `passkiCheck`, grouped by platform. It re-checks every 10 s while
-  you deploy, and can create a read-only report link that expires after 7 days. Optionally it checks your server's
-  options endpoint (SRV checks).
+- **Verifier:** enter your domain, and optionally your package, fingerprints, Team ID and bundle ID. The server
+  downloads your well-known files, asks Google and Apple what they have cached, and runs the same checks (same IDs
+  and fixes) as `passkiCheck`, grouped by platform. It checks again every 10 seconds while you deploy. It can also
+  create a read-only report link that expires after 7 days, and optionally check your server's options endpoint (the
+  SRV checks).
 
   <details>
   <summary>Screenshot</summary>
@@ -194,29 +210,34 @@ your Android app, your domain and your iOS app, turning each check green as it p
 
   </details>
 
-- **Generator:** enter the RP ID, packages, SHA-256 fingerprints, Team ID and bundle ID, and get both well-known files,
-  the entitlements and `xcconfig` lines and the server origin allow-list, as a zip.
+- **Generator:** enter your domain, packages, SHA-256 fingerprints, Team ID and bundle ID. You get both well-known
+  files, the entitlements and `xcconfig` lines, and the list of origins your server must allow, as a zip.
 - **Check docs:** one page per check ID, the same pages as [`docs/checks/`](checks/README.md).
-- **Self-service iOS demo:** your Team ID differs from ours, so register your `TEAM.bundle` app ID on the demo page.
-  It is listed in the demo `apple-app-site-association` for 7 days. Use it with
-  `webcredentials:passki.alirezaiyan.com?mode=developer`. Registration is rate-limited per IP.
-- **Demo RP API:** `/api/demo/register/options|verify`, `/api/demo/login/options|verify` and
-  `/api/demo/server-config`. Challenges are real and single-use, and each response gets a server verdict. Demo users
-  expire after 24 hours.
+- **Demo server:** a working relying party for trying PassKi (path B in the README). Challenges are real and can be
+  used once, and every response gets the server's verdict. Demo users are deleted after 24 hours.
+  - To use it, your app must be registered with it. `passkiSetup` does that when your plugin block says
+    `useDemoServer()`: it registers your Android package and signing keys, and your iOS `TEAM.bundle` app ID, for 7
+    days. Registration is rate-limited per IP address.
+  - iOS apps use the entitlement `webcredentials:passki.alirezaiyan.com?mode=developer`, which skips Apple's cache.
+    You can also register an iOS app ID by hand on the demo page.
+  - API: `/api/demo/register/options|verify`, `/api/demo/login/options|verify`, `/api/demo/server-config`, and the
+    registration endpoints `/api/demo/android-apps` and `/api/demo/ios-apps`.
 
-The server fetches only `https://<domain>/.well-known/…` and the fixed Google and Apple endpoints. It blocks IP
-literals and private or reserved addresses, pins the validated DNS answer, never follows redirects, and caps the time
-and size of every fetch.
+When the server downloads files for a check, it only fetches `https://<domain>/.well-known/…` and fixed Google and
+Apple addresses. It refuses IP addresses and private or reserved networks, connects only to the address it checked
+(so a DNS change can't redirect it mid-request), never follows redirects, and limits the time and size of every
+download.
 
 ## Server setup by hand
 
 If you don't use the Gradle plugin:
 
-- **Android:** serve `https://<rpId>/.well-known/assetlinks.json` with `delegate_permission/common.get_login_creds`
-  and your signing SHA-256. Allow the origin `android:apk-key-hash:<base64url-sha256>` in your verifier.
-- **iOS:** add the Associated Domains `webcredentials:<rpId>` entitlement and serve
+- **Android:** serve `https://<your domain>/.well-known/assetlinks.json` with the relation
+  `delegate_permission/common.get_login_creds` and your signing SHA-256 fingerprint. Allow the origin
+  `android:apk-key-hash:<base64url-sha256>` in your server's verifier.
+- **iOS:** add the associated domain `webcredentials:<your domain>` to your app's entitlements, and serve
   `/.well-known/apple-app-site-association`.
-- See [`docs/setup/well-known/`](setup/well-known/README.md) for templates.
+- Templates: [`docs/setup/well-known/`](setup/well-known/README.md).
 
 ---
 

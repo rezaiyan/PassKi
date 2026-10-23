@@ -1,8 +1,10 @@
 # Autofill sign-in
 
-`SignInMode.Autofill` (WebAuthn "conditional mediation") offers passkeys in the keyboard or QuickType bar of the
-focused username field. It needs Android 15 (API 35)+ or iOS 16+ (`capabilities().autofill`).
-`PasskeyUsernameField` does all of this for you. To use it with your own field:
+`SignInMode.Autofill` offers the person's passkeys as suggestions in the keyboard of a focused username field.
+WebAuthn calls this "conditional mediation". It needs Android 15 (API 35) or newer, or iOS 16 or newer; check
+`capabilities().autofill`.
+
+`PasskeyUsernameField` from `passki-compose` does all of this for you. To use autofill with your own text field:
 
 ```kotlin
 // Your username field must be focused (content type username) when you call this.
@@ -23,15 +25,18 @@ flowchart LR
     O -- "focus lost: job.cancel()" --> X["Offer withdrawn"]
 ```
 
-- **The call suspends until the user picks a passkey.** Dismissing the suggestion or the sheet does not complete it.
-  Cancel the coroutine to withdraw the offer.
-- **Re-arming after a dismissal:** on Android the chip does not come back while the field stays focused, so cancel and
-  call again, for example when the field is tapped (`PasskeyUsernameField` re-arms on every tap). On iOS, PassKi
-  offers the passkeys again by itself, about 500 ms after a dismissal.
-- **Stale chips (Android):** a chip that has been visible for more than about a minute can fail in Google Password
-  Manager with "Flow has timed out". The next call offers a fresh one.
-- **Errors:** below Android 15, `NotSupported`. On Android with no focused view, `Misconfigured` ("Autofill needs a
-  focused text field"). On iOS, a missing association gives `Misconfigured`, as with the other calls.
+- **The call waits until the person picks a passkey.** Dismissing the suggestion or the sheet doesn't end it. Cancel
+  the coroutine to withdraw the offer.
+- **After a dismissal:**
+  - On Android, the suggestion doesn't come back while the field stays focused. Cancel and call again, for example
+    when the field is tapped. `PasskeyUsernameField` does this on every tap.
+  - On iOS, PassKi offers the passkeys again by itself, about 500 ms after a dismissal.
+- **Old suggestions on Android:** a suggestion that has been showing for more than about a minute can fail in Google
+  Password Manager with "Flow has timed out". The next call offers a fresh one.
+- **Errors:**
+  - Below Android 15: `NotSupported`.
+  - On Android, with no focused text field: `Misconfigured` ("Autofill needs a focused text field").
+  - On iOS, when the app isn't linked to the domain: `Misconfigured`, as with the other calls.
 
 ---
 

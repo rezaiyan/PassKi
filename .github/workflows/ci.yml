@@ -147,6 +147,8 @@ jobs:
         run: |
           ./gradlew :passki:publishToMavenLocal :passki-compose:publishToMavenLocal :passki-test:publishToMavenLocal :passki-demo:publishToMavenLocal
           ./gradlew -p passki-gradle-plugin publishToMavenLocal
+      - name: Docs examples compile and configure (README and docs/)
+        run: python3 ci/doc-snippets.py
       - name: Consumer app, Kotlin 2.2.21 (iOS simulator and JVM tests)
         run: ./gradlew -p ci/consumers/kmp iosSimulatorArm64Test jvmTest
       - name: Consumer app, AGP built-in Kotlin, compileSdk 35 (README "try it in your app")

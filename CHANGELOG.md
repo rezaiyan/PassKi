@@ -71,6 +71,11 @@ listed here.
   Its debug build is signed with a committed sample keystore, which is not for release.
 
 ### Changed
+- Docs rewritten in plain language: a "Words used here" table, one name per concept ("demo server"), numbered steps
+  with one idea per sentence. Path B now shows the `plugins { }` line and creates `passkeys` before using it.
+  `docs/setup.md` describes demo registration through `passkiSetup` (Android and iOS) and lists every demo endpoint.
+- CI checks the docs: `ci/doc-snippets.py` compiles every Kotlin example in the README and `docs/` against the
+  published artifacts on Kotlin 2.2.21, configures every `passki { }` block, and checks every dependency coordinate.
 - CI (GitHub Actions): library, plugin and web tests; a clone-and-run job for the sample against the demo server; iOS
   tests, API dumps, the Xcode sample build, and consumer apps on Kotlin 2.2.21 and on AGP's built-in Kotlin with
   `compileSdk` 35 (`ci/consumers/`). Docs links are checked too.

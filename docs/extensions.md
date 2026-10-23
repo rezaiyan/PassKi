@@ -1,9 +1,15 @@
 # PRF and largeBlob
 
-`PasskeyExtensions` adds typed WebAuthn extensions to the options JSON from your server. Use it when the inputs come
-from the device, for example a PRF salt for client-side encryption that the server must never see. Each helper
-returns new JSON, keeps other extensions and a `{"publicKey": ...}` envelope, and throws `IllegalArgumentException`
-for the wrong kind of options.
+Two WebAuthn extensions, added to the options from your server with `PasskeyExtensions`:
+
+- **PRF** gives you 32 secret bytes that depend on the passkey and a salt you choose. The same passkey and salt
+  always give the same bytes, so you can use them as an encryption key. The salt can come from the device, so your
+  server never sees it.
+- **largeBlob** stores a small amount of data with a passkey, and reads it back during sign-in.
+
+Each helper returns new options JSON. It keeps any other extensions and a `{"publicKey": ...}` wrapper. It throws
+`IllegalArgumentException` if you pass the wrong kind of options (for example request options to a registration-only
+helper).
 
 ```kotlin
 // PRF: the same passkey and salt always give the same 32 bytes, so they can derive an encryption key.
@@ -22,27 +28,29 @@ passkeys.signIn(PasskeyExtensions.withLargeBlobWrite(requestOptions, blob))     
 passkeys.signIn(PasskeyExtensions.withLargeBlobRead(requestOptions))                                // .largeBlob
 ```
 
-| Output | On |
+Where the results appear:
+
+| Result | On |
 |---|---|
-| `prf: PrfResults?` (`first`, `second`) | `PasskeyAssertion`; `PasskeyRegistration` when the provider evaluates PRF at registration |
+| `prf: PrfResults?` (`first`, `second`) | `PasskeyAssertion`. Also `PasskeyRegistration`, when the credential provider computes PRF during registration |
 | `prfEnabled: Boolean?` | `PasskeyRegistration` |
 | `largeBlobSupported: Boolean?` | `PasskeyRegistration` |
-| `largeBlob: ByteArray?` / `largeBlobWritten: Boolean?` | `PasskeyAssertion` |
+| `largeBlob: ByteArray?` and `largeBlobWritten: Boolean?` | `PasskeyAssertion` |
 
-The outputs are also in the response `json` (`clientExtensionResults`) for your server. PRF results and blobs are
-secrets: `PrfResults.toString()` prints only their sizes.
+The results are also in the response `json` (`clientExtensionResults`) that you send to your server. PRF results and
+blobs are secrets, so `PrfResults.toString()` prints only their sizes.
 
 ## Platform notes
 
-- **Android:** the options pass through to the credential provider unchanged. Support depends on the provider; Google
-  Password Manager returns PRF results.
-- **iOS:** PassKi maps the extensions to the AuthenticationServices PRF and largeBlob inputs. Below iOS 18 (PRF) or
-  iOS 17 (largeBlob) the extension is left out silently and its output is `null`, as in browsers. Without salts at
-  registration, iOS only reports `prfEnabled`.
-- **largeBlob writes** need the passkey named in `allowCredentials`. Read and write are exclusive:
-  `withLargeBlobWrite` replaces a `withLargeBlobRead` request.
-- **`FakePasskeys`** computes PRF deterministically (HMAC-SHA256 of a per-credential secret and the salt) and stores
-  large blobs, so you can test PRF-derived keys without a device. Don't use it as a real key source.
+- **Android:** PassKi passes the options to the credential provider unchanged. Whether the extensions work depends on
+  the provider. Google Password Manager returns PRF results.
+- **iOS:** PassKi turns the extensions into AuthenticationServices' PRF and largeBlob inputs. On iOS before 18 (PRF)
+  or 17 (largeBlob), the extension is left out without an error, and its result is `null`, as in browsers. If you
+  give no salt at registration, iOS reports only `prfEnabled`.
+- **Writing a large blob** needs the passkey to be named in `allowCredentials`. You can read or write in one request,
+  not both: `withLargeBlobWrite` replaces an earlier `withLargeBlobRead`.
+- **`FakePasskeys`** computes PRF in a repeatable way (HMAC-SHA256 of a secret per passkey and the salt) and stores
+  large blobs, so you can test PRF-based keys without a device. Never use it as a real key source.
 
 ---
 
