@@ -31,6 +31,21 @@
   is blurred.
 </sub></p>
 
+Your server creates WebAuthn options and checks the response. PassKi shows the native passkey sheet in between, from
+`commonMain`:
+
+```kotlin
+val passkeys = Passkeys() // no Activity, no UIWindow
+
+passkeys.register(api.registrationOptions())         // options JSON from your server
+    .onSuccess { api.finishRegistration(it.json) }  // your server checks the response
+
+passkeys.signIn(api.authenticationOptions())
+    .onSuccess { api.finishSignIn(it.json) }
+```
+
+Full example with error handling: [Usage](#usage).
+
 ---
 
 **Contents:**
@@ -39,7 +54,7 @@
 [Why PassKi](#why-passki) ·
 [How it works](#how-it-works) ·
 [Install](#install) ·
-[Quick start](#quick-start) ·
+[Usage](#usage) ·
 [Platforms](#platforms) ·
 [Compose](#compose) ·
 [Testing](#test-without-devices) ·
@@ -67,8 +82,17 @@ that before anything happens.
 
 ### A. Run the sample
 
+You need a device that can hold a passkey:
+
+- **Android 9+:** a phone, or an emulator with a Google Play system image. Sign in to a Google account and set a
+  screen lock.
+- **iOS 16+:** an iPhone, or a simulator with **Features → Face ID → Enrolled**.
+
+Then:
+
 1. Clone this repository and open it in Android Studio.
-2. **Android:** run `androidApp`. There is nothing to set up: the demo server already trusts the sample's debug key.
+2. **Android:** run `androidApp`. There is nothing to set up in the project: the demo server already trusts the
+   sample's debug key.
 3. **iOS:** copy `iosApp/Configuration/Local.xcconfig.example` to `iosApp/Configuration/Local.xcconfig`, and set
    `TEAM_ID` to your Apple Developer Team ID. Git ignores this file.
 4. **iOS:** run `./gradlew passkiSetup`. It registers your build of the sample with the demo server. Then run `iosApp`
@@ -85,8 +109,11 @@ and `passkiCheck` against the demo server.
 The demo server at [passki.alirezaiyan.com](https://passki.alirezaiyan.com) creates real challenges and checks every
 response. Use it to try PassKi, not in production: it deletes its users after 24 hours.
 
-1. Add `passki` and the demo server client. Until this version is on Maven Central, also follow the note in
-   [Install](#install).
+1. **Until this version is on Maven Central:** build PassKi into your local Maven repository once, using the commands
+   in [Install](#install). Then add `mavenLocal()` to your `repositories`, and to `pluginManagement { repositories }`
+   for the Gradle plugin.
+
+2. Add `passki` and the demo server client:
 
    ```kotlin
    commonMain.dependencies {
@@ -95,7 +122,7 @@ response. Use it to try PassKi, not in production: it deletes its users after 24
    }
    ```
 
-2. In your Android app module, apply the Gradle plugin and point it at the demo server:
+3. In your Android app module, apply the Gradle plugin and point it at the demo server:
 
    ```kotlin
    plugins {
@@ -107,14 +134,17 @@ response. Use it to try PassKi, not in production: it deletes its users after 24
    }
    ```
 
-3. Run `./gradlew passkiSetup`. It does two things:
+   The plugin also sets up your iOS app. It finds the Xcode project in `iosApp/`, where the KMP template puts it. If
+   yours is somewhere else, set `passki { apple { xcodeProject = ... } }`; see [all options](docs/setup.md#all-options).
+
+4. Run `./gradlew passkiSetup`. It does two things:
    - It adds the demo domain to your iOS app's associated domains.
    - It registers your app with the demo server for 7 days.
 
    It prints exactly what it sends: package names, signing key fingerprints and Apple app IDs. These are all public.
    Run it with `--preview` first to see the output without sending anything.
 
-4. Create a passkey, then sign in with it. The demo server provides the options and checks the result:
+5. Create a passkey, then sign in with it. The demo server provides the options and checks the result:
 
    ```kotlin
    val passkeys = Passkeys()
@@ -125,14 +155,14 @@ response. Use it to try PassKi, not in production: it deletes its users after 24
        .onSuccess { println(demo.verifyAuthentication(it.json)) }
    ```
 
-5. Optional: run `./gradlew passkiCheck` to check the whole setup.
+6. Optional: run `./gradlew passkiCheck` to check the whole setup.
 
 On Android, Google caches which apps a domain trusts. A newly registered app can take a few minutes to work. Check
 AND-04 in `passkiCheck` passes once Google has picked it up.
 
 ### C. Ship it
 
-1. [Install](#install) PassKi. Your app talks to your server in four places; see [Quick start](#quick-start).
+1. [Install](#install) PassKi. Your app talks to your server in four places; see [Usage](#usage).
 2. Apply the Gradle plugin with `passki { rpId = "example.com" }` (your domain), and run `./gradlew passkiSetup`.
 3. Upload the two files it lists to `https://example.com/.well-known/`.
 4. Configure your server with the RP ID and the allowed origins that `passkiSetup` printed. Ready-made code for
@@ -143,7 +173,7 @@ AND-04 in `passkiCheck` passes once Google has picked it up.
 Moving from path B: replace `useDemoServer()` with `rpId = "your.domain"`, and `PasskiDemoServer` with calls to your
 own server. The PassKi calls stay the same.
 
-### Words used here
+## Words used here
 
 | Term | Meaning |
 |---|---|
@@ -232,7 +262,7 @@ On Android, PassKi starts itself through `androidx.startup`. If your app turns t
 Your app and your domain must also trust each other through the well-known files and associated domains. The Gradle
 plugin creates and checks them for you: see [Setup](#setup).
 
-## Quick start
+## Usage
 
 Your server creates the options and checks the responses. In your app, that is four calls to your server, for example:
 

@@ -5,7 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 
 // What the docs' examples take for granted: your server API, a coroutine scope, logging and some inputs. `MyApi` itself
-// comes from the README's Quick start, so the examples compile against the interface readers see.
+// comes from the README's Usage section, so the examples compile against the interface readers see.
 
 lateinit var api: MyApi
 val passkeys: Passkeys get() = Passkeys()

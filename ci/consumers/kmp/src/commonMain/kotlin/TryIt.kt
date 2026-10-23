@@ -4,7 +4,7 @@ import com.alirezaiyan.passki.demo.PasskiDemoServer
 import com.alirezaiyan.passki.onFailure
 import com.alirezaiyan.passki.onSuccess
 
-/** The README's "try it in your app" code, plus the Quick start error handling. */
+/** The README's "try it in your app" code, plus the Usage error handling. */
 suspend fun tryIt(passkeys: Passkeys = Passkeys()) {
     val demo = PasskiDemoServer()
     passkeys.register(demo.registrationOptions("alice"))
