@@ -47,6 +47,12 @@ jobs:
           dokkaGenerate
       - name: Gradle plugin tests (unit and TestKit)
         run: ./gradlew -p passki-gradle-plugin test
+      # The TestKit tests skip themselves without an Android SDK; --no-skips makes sure they really ran.
+      - name: Test counts
+        if: success() || failure()
+        run: |
+          python3 ci/test-summary.py --no-skips passki-gradle-plugin
+          python3 ci/test-summary.py .
       - name: Test reports
         if: failure()
         uses: actions/upload-artifact@v7
@@ -145,6 +151,9 @@ jobs:
         run: ./gradlew -p ci/consumers/kmp iosSimulatorArm64Test jvmTest
       - name: Consumer app, AGP built-in Kotlin, compileSdk 35 (README "try it in your app")
         run: ./gradlew -p ci/consumers/android assembleDebug passkiSetup --preview
+      - name: Test counts
+        if: success() || failure()
+        run: python3 ci/test-summary.py .
       - name: Test reports
         if: failure()
         uses: actions/upload-artifact@v7

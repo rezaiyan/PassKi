@@ -147,8 +147,14 @@ passkiSwift.def (2.2-linked test binaries crashed on libswift_Concurrency), one 
 tests) and AGP 9.1.1 built-in Kotlin (compileSdk 36) building against the mavenLocal artifacts.
 
 ### Phase 6: prove it stays easy
-- [ ] GitHub Actions: (1) unit + plugin functional tests; (2) **fresh-clone job**: clone, `./gradlew :androidApp:assembleDebug passkiCheck` against the demo domain; (3) macOS job: iOS build + `passkiCheck` Xcode checks.
-- [ ] Manual "new user" run before release: throwaway KMP project from the JetBrains wizard, follow README path B word for word on Android emulator + iOS simulator, record every place a step was unclear, fix the doc.
+- [x] GitHub Actions: (1) unit + plugin functional tests; (2) **fresh-clone job**: clone, `./gradlew :androidApp:assembleDebug passkiCheck` against the demo domain; (3) macOS job: iOS build + `passkiCheck` Xcode checks.
+  Done 2026-10-23 (`.github/workflows/ci.yml`): library + plugin (Ubuntu, with docs links and test counts; plugin
+  TestKit tests must not be skipped), passki-web, sample clone-and-run against the demo server, and macOS 26 (iOS tests,
+  ABI dumps, Xcode sample build, consumer apps in `ci/consumers/` on Kotlin 2.2.21 and AGP built-in Kotlin /
+  compileSdk 35). First run caught two real problems: the plugin build had no JDK 17 toolchain resolver (fresh clones
+  without JDK 17 failed) and the Swift bridge task ran `xcrun` on Linux via dokkaGenerate. Second run: all green.
+- [ ] Manual "new user" run before release (partly covered: path B was followed word for word in throwaway apps on Kotlin 2.2.10/2.2.21/2.4.20; the
+  interactive register/sign-in on a device is still open): throwaway KMP project from the JetBrains wizard, follow README path B word for word on Android emulator + iOS simulator, record every place a step was unclear, fix the doc.
 
 ## Open Questions
 - Publishing: do you already have a Sonatype namespace for `com.alirezaiyan` and a signing key? Also publish the plugin to the Gradle Plugin Portal (easier for users: no `pluginManagement` change)?
