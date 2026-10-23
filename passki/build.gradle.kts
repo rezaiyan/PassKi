@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
+import org.jetbrains.kotlin.konan.target.HostManager
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -72,6 +73,8 @@ kotlin {
             inputs.property("sdkBuildVersion", sdkBuildVersion)
             outputs.dir(outDir)
             commandLine(script.absolutePath, sdk.first, sdk.second, outDir.get().asFile.absolutePath)
+            // Linux/Windows can't build Apple targets anyway; without this, dokkaGenerate (via cinterop) tried xcrun there.
+            onlyIf("the Swift bridge needs Xcode, so it builds on macOS only") { HostManager.hostIsMac }
         }
         target.compilations.getByName("main").cinterops.create("passkiSwift") {
             definitionFile.set(project.file("src/nativeInterop/cinterop/passkiSwift.def"))
