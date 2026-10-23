@@ -8,7 +8,7 @@ import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasProgressBarRangeInfo
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.test.runComposeUiTest
 import com.alirezaiyan.passki.PasskeyAssertion
 import com.alirezaiyan.passki.PasskeyError
 import com.alirezaiyan.passki.PasskeyResult

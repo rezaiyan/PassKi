@@ -45,13 +45,16 @@ Gradle runs with the configuration cache on (`gradle.properties`). Keep new task
   :passki-test:jvmTest \
   :passki-compose:jvmTest :passki-compose:testAndroidHostTest :passki-compose:iosSimulatorArm64Test \
   :passki-demo:jvmTest :passki-demo:iosSimulatorArm64Test \
-  :passki:checkKotlinAbi :passki-test:checkKotlinAbi :passki-compose:checkKotlinAbi :passki-demo:checkKotlinAbi \
+  :passki:checkLegacyAbi :passki-test:checkLegacyAbi :passki-compose:checkLegacyAbi :passki-demo:checkLegacyAbi \
   :shared:jvmTest :androidApp:assembleDebug dokkaGenerate
 ./gradlew -p passki-gradle-plugin test
 (cd passki-web && npm ci && npm test)
 ```
 
-- **Public API changes:** run `./gradlew updateKotlinAbi` and commit the updated files in `*/api/`.
+- **Kotlin version:** PassKi is built with Kotlin 2.2 so apps on Kotlin 2.2+ can read its iOS/JS/Wasm libraries.
+  Before upgrading Kotlin or a dependency, check which Kotlin built the new release (its klib `manifest` has
+  `compiler_version`): a release built with a newer Kotlin raises the minimum for every app using PassKi.
+- **Public API changes:** run `./gradlew updateLegacyAbi` and commit the updated files in `*/api/`.
   - New public declarations need KDoc: Dokka should report no undocumented declarations.
   - Constructors of result types are `@InternalPasskiApi`, so fields can be added later.
   - New enum entries and sealed subtypes are allowed in minor releases.

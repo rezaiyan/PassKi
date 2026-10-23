@@ -1,4 +1,7 @@
 public final class com/alirezaiyan/passki/test/FakeAuthenticator {
+	public static final field FLAGS_ASSERT I
+	public static final field FLAGS_CONDITIONAL_REGISTER I
+	public static final field FLAGS_REGISTER I
 	public fun <init> (Ljava/lang/String;Lkotlin/random/Random;)V
 	public synthetic fun <init> (Ljava/lang/String;Lkotlin/random/Random;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getLargeBlobSupported ()Z

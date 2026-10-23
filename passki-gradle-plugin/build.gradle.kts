@@ -17,8 +17,8 @@ kotlin {
     explicitApi()
     compilerOptions {
         // Must not exceed Gradle's embedded Kotlin (Gradle 9.5.1 → 2.3.20).
-        apiVersion.set(KotlinVersion.KOTLIN_2_3)
-        languageVersion.set(KotlinVersion.KOTLIN_2_3)
+        apiVersion.set(KotlinVersion.KOTLIN_2_2)
+        languageVersion.set(KotlinVersion.KOTLIN_2_2)
     }
 }
 

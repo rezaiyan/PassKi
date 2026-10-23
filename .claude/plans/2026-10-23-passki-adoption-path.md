@@ -138,6 +138,14 @@ AGP 9.1.1 built-in Kotlin 2.2.10 builds at compileSdk 36 and 35; KMP consumer on
 (`-Xklib-abi-version` is test-only), so KMP iOS/JS/Wasm consumers need Kotlin 2.4.20+. Only fix: build PassKi with an
 older Kotlin toolchain.
 
+Adopted (2026-10-23): built with Kotlin 2.2.21. Dependencies at releases built with Kotlin 2.2 (checked in each klib
+manifest): serialization 1.9.0, Ktor 3.3.3, cryptography 0.5.0, Compose MP 1.10.3 / material3 1.10.0-alpha05, lifecycle
+2.10.0, kotlin-wrappers 2025.12.4; coroutines 1.11.0 already was. Fixes it needed: `abiValidation { enabled; klib }`
+(Kotlin 2.2 silently skips the check otherwise; tasks are checkLegacyAbi/updateLegacyAbi), `-rpath /usr/lib/swift` in
+passkiSwift.def (2.2-linked test binaries crashed on libswift_Concurrency), one Compose test off `ui.test.v2`. Checked:
+909 tests green, Xcode iOS build, emulator autorun, and apps on Kotlin 2.2.21 and 2.4.20 (KMP: iOS simulator + JVM
+tests) and AGP 9.1.1 built-in Kotlin (compileSdk 36) building against the mavenLocal artifacts.
+
 ### Phase 6: prove it stays easy
 - [ ] GitHub Actions: (1) unit + plugin functional tests; (2) **fresh-clone job**: clone, `./gradlew :androidApp:assembleDebug passkiCheck` against the demo domain; (3) macOS job: iOS build + `passkiCheck` Xcode checks.
 - [ ] Manual "new user" run before release: throwaway KMP project from the JetBrains wizard, follow README path B word for word on Android emulator + iOS simulator, record every place a step was unclear, fix the doc.

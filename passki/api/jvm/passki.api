@@ -10,6 +10,9 @@ public final class com/alirezaiyan/passki/DoctorCheck {
 }
 
 public final class com/alirezaiyan/passki/DoctorReport {
+	public static final field HINT_CONTINUATION Ljava/lang/String;
+	public static final field HINT_INDENT Ljava/lang/String;
+	public static final field HINT_LABEL Ljava/lang/String;
 	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
 	public final fun getChecks ()Ljava/util/List;
 	public final fun getFailures ()Ljava/util/List;

@@ -185,10 +185,11 @@ commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1
 | Your app | Needs |
 |---|---|
 | Android (JVM) | Kotlin 2.1 or newer, `compileSdk` 35 or newer, `minSdk` 24 or newer (passkeys need Android 9, API 28, at runtime). Checked with AGP 9.1.1's built-in Kotlin 2.2.10 and `compileSdk` 35 |
-| iOS, JS and Wasm (Kotlin Multiplatform) | Kotlin 2.4.20 or newer: Kotlin/Native and web libraries can only be read by the Kotlin version that built them or a newer one |
+| iOS, JS and Wasm (Kotlin Multiplatform) | Kotlin 2.2 or newer. Checked with Kotlin 2.2.21 and 2.4.20 (iOS simulator and JVM tests of an app using PassKi) |
 
-PassKi publishes Kotlin 2.2 metadata and depends on `kotlin-stdlib` 2.2, so it doesn't force a newer Kotlin on Android
-apps.
+PassKi is built with Kotlin 2.2.21, publishes Kotlin 2.2 metadata and depends on `kotlin-stdlib` 2.2, so it doesn't push
+your app to a newer Kotlin. Its own dependencies are kept at releases built with Kotlin 2.2 for the same reason
+(kotlinx-serialization 1.9, Ktor 3.3 in `passki-demo`, Compose Multiplatform 1.10 in `passki-compose`).
 
 PassKi initialises itself through `androidx.startup`. If your app removes that initializer, call
 `PasskiAndroid.init(application)` in `Application.onCreate()`.

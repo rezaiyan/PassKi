@@ -28,7 +28,9 @@ kotlin {
 
     @OptIn(ExperimentalAbiValidation::class)
     abiValidation {
-        // Calling abiValidation { } enables ABI validation in Kotlin 2.4 (the `enabled` property was removed).
+        // In Kotlin 2.2, ABI validation is off unless enabled; without this, checkLegacyAbi is silently skipped.
+        enabled.set(true)
+        klib { enabled.set(true) }
     }
 
     android {

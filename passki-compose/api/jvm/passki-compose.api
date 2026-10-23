@@ -1,7 +1,7 @@
 public final class com/alirezaiyan/passki/compose/ComposableSingletons$PasskeySignInButtonKt {
 	public static final field INSTANCE Lcom/alirezaiyan/passki/compose/ComposableSingletons$PasskeySignInButtonKt;
 	public fun <init> ()V
-	public final fun getLambda$1786743314$PassKi_passki_compose ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$1786743314$passki_compose ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class com/alirezaiyan/passki/compose/PasskeySignInButtonKt {

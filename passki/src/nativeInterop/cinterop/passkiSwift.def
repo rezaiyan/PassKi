@@ -1,3 +1,6 @@
 package = com.alirezaiyan.passki.apple.swift
 headers = passki_swift.h
 staticLibraries = libPassKiSwift.a
+# The Swift bridge needs the OS Swift runtime (libswift_Concurrency); Xcode apps already search /usr/lib/swift, but
+# plain Kotlin/Native executables (e.g. iOS test binaries) do not unless the linker is told to.
+linkerOpts = -rpath /usr/lib/swift

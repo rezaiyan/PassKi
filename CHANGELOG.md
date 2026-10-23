@@ -74,10 +74,14 @@ listed here.
 - Wider compatibility for apps: the libraries publish Kotlin 2.2 metadata and depend on `kotlin-stdlib` 2.2.21 (JVM and
   Android), so Android apps on Kotlin 2.1+ can use them; before, they needed Kotlin 2.4. Their AARs require
   `compileSdk` 35 (the `androidx.credentials` floor) instead of PassKi's own 37. `passki-demo` uses Ktor's Android engine
-  instead of OkHttp, whose 5.x AAR also required `compileSdk` 37. iOS, JS and Wasm consumers still need Kotlin 2.4.20+,
-  because klibs can't be read by an older compiler.
+  instead of OkHttp, whose 5.x AAR also required `compileSdk` 37.
+- PassKi is built with Kotlin 2.2.21 instead of 2.4.20, so iOS, JS and Wasm apps on Kotlin 2.2+ can use it (klibs can
+  only be read by the compiler that built them or a newer one). Dependencies moved to releases built with Kotlin 2.2:
+  kotlinx-serialization 1.9.0, Ktor 3.3.3 (`passki-demo`), cryptography 0.5.0 (`passki-test`), Compose Multiplatform
+  1.10.3 (`passki-compose`). The iOS library now carries `-rpath /usr/lib/swift`, so plain Kotlin/Native executables
+  (such as iOS test binaries) find the Swift runtime the Signal API bridge needs.
 - README: starts with three paths (run the sample, try it in your app, ship it). Reference sections moved verbatim to
-  `docs/` (platforms, compose, autofill, extensions, setup, verified-on); Install states the Kotlin 2.4 / compileSdk 37
+  `docs/` (platforms, compose, autofill, extensions, setup, verified-on); Install states the Kotlin and compileSdk
   requirements and how to use the libraries before they are on Maven Central.
 - Sample, iOS: the only per-developer value is `TEAM_ID`, in the gitignored `iosApp/Configuration/Local.xcconfig`
   (copy `Local.xcconfig.example`). The Xcode project reads `DEVELOPMENT_TEAM` from it, and the bundle ID gets the Team
