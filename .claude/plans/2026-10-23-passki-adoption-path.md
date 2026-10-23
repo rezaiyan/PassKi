@@ -114,9 +114,20 @@ Checked with xcodebuild: maintainer → VFCFJC7Y5J.com.alirezaiyan.passki.PassKi
 builds for the simulator without a team. Platform* stays (used for the platform name).
 
 ### Phase 5: docs that follow the paths
-- [ ] README top: "Get started" with the three paths (A/B/C), each ≤ 5 steps, before any feature sections.
-- [ ] Move long reference sections (capability table, PRF/largeBlob platform notes, autofill details, "Verified on", plugin option reference) to `docs/*.md`, each linked from the README where it used to be. Target README ≤ ~300 lines. Nothing deleted.
-- [ ] Quick start defines the `api` it calls (a 4-function interface), so readers know exactly what their server must provide, and links to the generated `build/passki/server-snippets/`.
+- [x] README top: "Get started" with the three paths (A/B/C), each ≤ 5 steps, before any feature sections.
+- [x] Move long reference sections (capability table, PRF/largeBlob platform notes, autofill details, "Verified on", plugin option reference) to `docs/*.md`, each linked from the README where it used to be. Target README ≤ ~300 lines. Nothing deleted.
+- [x] Quick start defines the `api` it calls (a 4-function interface), so readers know exactly what their server must provide, and links to the generated `build/passki/server-snippets/`.
+
+Phase 5 status (2026-10-23): README 766 → 450 lines (header and media kept; ~300 was too tight without cutting the
+Compose example and the error table). Moved verbatim to docs/platforms.md, compose.md, autofill.md, extensions.md,
+setup.md, verified-on.md; a script confirmed every old line is in the README or a docs page (only headings, contents
+links and the old "Try it" intro were reworded), and every relative link and anchor resolves. Install now says plainly
+that alpha02 isn't on Maven Central, with the mavenLocal commands (checked: all artifacts and the plugin publish).
+Path B checked from mavenLocal in a throwaway app: plugin resolves, the README snippet compiles, the APK builds.
+**Found two adoption blockers** (not fixed yet, stated as requirements in Install): the libraries are compiled with
+Kotlin 2.4.20, so apps on Kotlin ≤ 2.2 (e.g. AGP 9.1.1's built-in Kotlin) can't read them; and the Android AARs
+require consumers' compileSdk 37 (the library's compileSdk becomes the AAR minCompileSdk; okhttp 5.5.0 from
+passki-demo needs 37 too). Fix: `languageVersion`/`apiVersion` 2.1 or 2.2 and `aarMetadata.minCompileSdk` 35/36.
 
 ### Phase 6: prove it stays easy
 - [ ] GitHub Actions: (1) unit + plugin functional tests; (2) **fresh-clone job**: clone, `./gradlew :androidApp:assembleDebug passkiCheck` against the demo domain; (3) macOS job: iOS build + `passkiCheck` Xcode checks.

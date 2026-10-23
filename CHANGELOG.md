@@ -71,6 +71,9 @@ listed here.
   Its debug build is signed with a committed sample keystore, which is not for release.
 
 ### Changed
+- README: starts with three paths (run the sample, try it in your app, ship it). Reference sections moved verbatim to
+  `docs/` (platforms, compose, autofill, extensions, setup, verified-on); Install states the Kotlin 2.4 / compileSdk 37
+  requirements and how to use the libraries before they are on Maven Central.
 - Sample, iOS: the only per-developer value is `TEAM_ID`, in the gitignored `iosApp/Configuration/Local.xcconfig`
   (copy `Local.xcconfig.example`). The Xcode project reads `DEVELOPMENT_TEAM` from it, and the bundle ID gets the Team
   ID as a suffix. The sample's plugin block uses `useDemoServer()`, so `passkiSetup` registers your iOS app with the demo
