@@ -71,6 +71,11 @@ listed here.
   Its debug build is signed with a committed sample keystore, which is not for release.
 
 ### Changed
+- Wider compatibility for apps: the libraries publish Kotlin 2.2 metadata and depend on `kotlin-stdlib` 2.2.21 (JVM and
+  Android), so Android apps on Kotlin 2.1+ can use them; before, they needed Kotlin 2.4. Their AARs require
+  `compileSdk` 35 (the `androidx.credentials` floor) instead of PassKi's own 37. `passki-demo` uses Ktor's Android engine
+  instead of OkHttp, whose 5.x AAR also required `compileSdk` 37. iOS, JS and Wasm consumers still need Kotlin 2.4.20+,
+  because klibs can't be read by an older compiler.
 - README: starts with three paths (run the sample, try it in your app, ship it). Reference sections moved verbatim to
   `docs/` (platforms, compose, autofill, extensions, setup, verified-on); Install states the Kotlin 2.4 / compileSdk 37
   requirements and how to use the libraries before they are on Maven Central.

@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
@@ -12,6 +13,13 @@ plugins {
 
 kotlin {
     explicitApi()
+    // Apps on older Kotlin than PassKi's build must be able to read the published metadata and stdlib dependency.
+    coreLibrariesVersion = libs.versions.kotlin.consumer.get()
+    compilerOptions {
+        val consumer = KotlinVersion.fromVersion(libs.versions.kotlin.consumer.get().substringBeforeLast('.'))
+        languageVersion.set(consumer)
+        apiVersion.set(consumer)
+    }
 
     compilerOptions {
         // PasskeyDoctor is an expect object; expect/actual classes are Beta (KT-61573).
@@ -27,6 +35,8 @@ kotlin {
         namespace = "com.alirezaiyan.passki.core"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
+        // Apps may compile against an older SDK than PassKi does; without this the AAR would require compileSdk.
+        aarMetadata { minCompileSdk = libs.versions.android.minCompileSdk.get().toInt() }
         compilerOptions {
             jvmTarget = JvmTarget.JVM_11
         }
@@ -81,6 +91,8 @@ kotlin {
     }
 
     sourceSets {
+        // Kotlin/JS and Wasm need the stdlib of the compiler that built them; coreLibrariesVersion is for JVM/Android.
+        webMain.dependencies { implementation(kotlin("stdlib", libs.versions.kotlin.asProvider().get())) }
         all {
             languageSettings.optIn("com.alirezaiyan.passki.InternalPasskiApi")
         }

@@ -129,6 +129,15 @@ Kotlin 2.4.20, so apps on Kotlin ≤ 2.2 (e.g. AGP 9.1.1's built-in Kotlin) can'
 require consumers' compileSdk 37 (the library's compileSdk becomes the AAR minCompileSdk; okhttp 5.5.0 from
 passki-demo needs 37 too). Fix: `languageVersion`/`apiVersion` 2.1 or 2.2 and `aarMetadata.minCompileSdk` 35/36.
 
+Blockers fixed (2026-10-23): `kotlin-consumer = "2.2.21"` in the catalog drives `languageVersion`/`apiVersion` 2.2 and
+`coreLibrariesVersion` in all four libraries (2.1 is deprecated in Kotlin 2.4 and the code uses `when` guards and
+stable Base64); `webMain` keeps the build's stdlib (Kotlin/Wasm requires it). `aarMetadata.minCompileSdk = 35`.
+passki-demo's Android engine is Ktor `android`, not OkHttp 5 (which needs 37). Checked from mavenLocal: Android app with
+AGP 9.1.1 built-in Kotlin 2.2.10 builds at compileSdk 36 and 35; KMP consumer on Kotlin 2.2.21 compiles JVM.
+**Still open, needs a decision:** the iOS klib has ABI 2.4.0 and Kotlin/Native can't write an older one
+(`-Xklib-abi-version` is test-only), so KMP iOS/JS/Wasm consumers need Kotlin 2.4.20+. Only fix: build PassKi with an
+older Kotlin toolchain.
+
 ### Phase 6: prove it stays easy
 - [ ] GitHub Actions: (1) unit + plugin functional tests; (2) **fresh-clone job**: clone, `./gradlew :androidApp:assembleDebug passkiCheck` against the demo domain; (3) macOS job: iOS build + `passkiCheck` Xcode checks.
 - [ ] Manual "new user" run before release: throwaway KMP project from the JetBrains wizard, follow README path B word for word on Android emulator + iOS simulator, record every place a step was unclear, fix the doc.
