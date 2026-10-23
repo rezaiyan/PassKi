@@ -77,6 +77,9 @@ that before anything happens.
 When the app starts, it checks its setup. If something is wrong, a banner names the problem, and tapping it opens the
 fix. More in [Sample app](#sample-app).
 
+CI follows this path on every push to `main`: a fresh clone builds the Android sample, then runs `passkiSetup --preview`
+and `passkiCheck` against the demo server.
+
 ### B. Try it in your app
 
 The demo server at [passki.alirezaiyan.com](https://passki.alirezaiyan.com) creates real challenges and checks every
@@ -216,8 +219,12 @@ commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1
 
 PassKi is built with Kotlin 2.2 and depends on `kotlin-stdlib` 2.2, so it doesn't push your app to a newer Kotlin. For
 the same reason, its dependencies stay at versions built with Kotlin 2.2: kotlinx-serialization 1.9, Ktor 3.3 (in
-`passki-demo`) and Compose Multiplatform 1.10 (in `passki-compose`). Tested with AGP 9.1.1 (built-in Kotlin 2.2.10,
-`compileSdk` 35), Kotlin 2.2.21 and Kotlin 2.4.20.
+`passki-demo`) and Compose Multiplatform 1.10 (in `passki-compose`).
+
+CI builds two apps against every change, using PassKi from Maven Local the way [Install](#install) describes: a
+Kotlin 2.2.21 app (iOS simulator and JVM tests), and an AGP 9.1.1 Android app on its built-in Kotlin 2.2.10 with
+`compileSdk` 35. If an upgrade would lock out apps on those toolchains, the build fails. Also tested with Kotlin 2.4.20.
+See [`ci/consumers`](ci/consumers/README.md).
 
 On Android, PassKi starts itself through `androidx.startup`. If your app turns that off, call
 `PasskiAndroid.init(application)` in `Application.onCreate()`.
@@ -463,6 +470,8 @@ call against the demo server, and the server checks every response. It has three
   even when `capabilities()` says they are available.
 - **iOS before 17.4 ignores `excludeCredentials`,** so the same person can end up with two passkeys. Remove duplicates
   on your server.
+- **On Android, clear the username field on sign-out.** With Gboard on Android 16, passkey suggestions show only while
+  the field is empty; text left in it shows up as a word suggestion instead. [Details](docs/autofill.md).
 
 All platform differences: [docs/platforms.md#good-to-know](docs/platforms.md#good-to-know).
 
@@ -476,7 +485,7 @@ All platform differences: [docs/platforms.md#good-to-know](docs/platforms.md#goo
 | [PRF and largeBlob](docs/extensions.md) | Encryption keys and data stored with a passkey |
 | [Setup tooling](docs/setup.md) | Gradle plugin options and tasks, `PasskeyDoctor`, the web dashboard, setting up by hand |
 | [Check catalog](docs/checks/README.md) | One page per check ID (`AND-01` … `SRV-03`) |
-| [Verified on](docs/verified-on.md) | What was tested on Android 16 and iOS 26.3, and what wasn't |
+| [Verified on](docs/verified-on.md) | What was tested on Android 16 (latest run 2026-10-23) and iOS 26.3, and what wasn't |
 
 ## API docs
 
@@ -487,6 +496,17 @@ aggregated into `build/dokka/html/`, or per module with `:passki:dokkaGenerate`)
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Building the iOS targets needs Xcode (the Swift bridge for the Signal API is
 compiled with `xcrun swiftc`).
+
+CI checks a few things that are easy to miss:
+
+- Every Kotlin example in this README and in `docs/` compiles against the published artifacts, and every relative link
+  and anchor resolves.
+- `iosApp/iosApp.xcodeproj/project.pbxproj` takes the team from `Local.xcconfig`. Don't commit the team Xcode writes
+  there when you pick one in **Signing & Capabilities**.
+- The plugin's TestKit tests must run, not skip.
+
+CI can't tap through a passkey sheet or Face ID. Before a release, run the iOS steps in
+[`ci/manual-checks-ios.md`](ci/manual-checks-ios.md).
 
 ## License
 
