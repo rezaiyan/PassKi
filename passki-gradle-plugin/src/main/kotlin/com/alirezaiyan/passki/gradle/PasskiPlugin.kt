@@ -17,62 +17,41 @@ import org.gradle.api.provider.Provider
 /**
  * Gradle plugin `com.alirezaiyan.passki`.
  *
- * Registers the [PasskiExtension] (`passki { }`). When `com.android.application` is applied it also
- * registers `passkiFingerprints`, `passkiWellKnown`, `passkiVerify`, `passkiSetup` and `passkiCheck`, fed from the
- * finalized Android DSL.
+ * Registers the [PasskiExtension] (`passki { }`) and the two front-door tasks, `passkiSetup` and `passkiCheck`.
+ * When `com.android.application` is applied they include the Android app (fed from the finalized Android DSL), and
+ * `passkiFingerprints` plus the advanced `passkiWellKnown` / `passkiVerify` are registered too. Without it the
+ * tasks run in iOS-only mode and say so.
  */
 public class PasskiPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         val extension = project.extensions.create("passki", PasskiExtension::class.java)
         extension.apple.developerMode.convention(true)
-        project.pluginManager.withPlugin("com.android.application") {
-            AndroidWiring(project, extension).wire()
-        }
+        val wiring = Wiring(project, extension)
+        wiring.registerFrontDoor()
+        project.pluginManager.withPlugin("com.android.application") { AndroidWiring(project, wiring).wire() }
+        ANDROID_LIBRARY_PLUGINS.forEach { id -> project.pluginManager.withPlugin(id) { wiring.androidLibrary.set(true) } }
     }
 
-    private class AndroidWiring(private val project: Project, private val extension: PasskiExtension) {
+    /** Task registration and the values Android wiring fills in; holds no AGP types, so iOS-only builds never load AGP. */
+    private class Wiring(val project: Project, val extension: PasskiExtension) {
         // Plain values captured in finalizeDsl; tasks only see these providers (configuration-cache safe).
-        private val applicationId: Property<String> = project.objects.property(String::class.java)
-        private val variants: ListProperty<VariantSpec> = project.objects.listProperty(VariantSpec::class.java)
+        val applicationId: Property<String> = project.objects.property(String::class.java)
+        val variants: ListProperty<VariantSpec> = project.objects.listProperty(VariantSpec::class.java).convention(emptyList())
+        val androidApp: Property<Boolean> = project.objects.property(Boolean::class.java).convention(false)
+        val androidLibrary: Property<Boolean> = project.objects.property(Boolean::class.java).convention(false)
 
-        fun wire() {
-            val components = project.extensions.getByType(ApplicationAndroidComponentsExtension::class.java)
-            components.finalizeDsl { dsl ->
-                AndroidSigning.applicationId(dsl)?.let(applicationId::set)
-                variants.set(AndroidSigning.variants(dsl))
-            }
-
-            project.tasks.register("passkiFingerprints", PasskiFingerprintsTask::class.java) { task ->
-                task.group = GROUP
-                task.description = "Prints Android packages, signing SHA-256 fingerprints and apk-key-hash origins."
-                configureSigning(task)
-            }
-            project.tasks.register("passkiWellKnown", PasskiWellKnownTask::class.java) { task ->
-                task.group = GROUP
-                task.description = "Generates assetlinks.json and apple-app-site-association into build/passki/well-known."
-                configureSigning(task)
-                task.appleAppIds.set(appleAppIds())
-                task.outputDir.set(project.layout.buildDirectory.dir("passki/well-known"))
-            }
-            project.tasks.register("passkiVerify", PasskiVerifyTask::class.java) { task ->
-                task.group = GROUP
-                task.description = "Checks the hosted .well-known files and entitlements against this build (network)."
-                configureSigning(task)
-                task.rpId.set(extension.rpId)
-                task.appleAppIds.set(appleAppIds())
-                task.entitlementsFile.set(extension.apple.entitlementsFile)
-                task.baseUrl.set(project.providers.gradleProperty("passki.verify.baseUrl"))
-            }
+        fun registerFrontDoor() {
             project.tasks.register("passkiSetup", PasskiSetupTask::class.java) { task ->
                 task.group = GROUP
-                task.description = "Generates well-known files, writes and wires iOS entitlements (via xcconfig) and server config."
+                task.description = "Writes and wires everything passkeys need (well-known files, iOS entitlements, server config). Add --preview to see the changes first."
                 configureApple(task)
                 task.developerMode.set(extension.apple.developerMode)
                 task.outputDir.set(project.layout.buildDirectory.dir("passki"))
+                task.rootDirectory.set(project.rootProject.layout.projectDirectory)
             }
             project.tasks.register("passkiCheck", PasskiCheckTask::class.java) { task ->
                 task.group = GROUP
-                task.description = "Runs the setup checklist (AND/IOS/SRV catalog checks) and writes build/reports/passki (network)."
+                task.description = "Checks the whole setup end to end (AND/IOS/SRV catalog checks) and writes build/reports/passki (network)."
                 configureApple(task)
                 val providers = project.providers
                 task.serverConfigUrl.set(extension.server.configUrl)
@@ -88,6 +67,9 @@ public class PasskiPlugin : Plugin<Project> {
             configureSigning(task)
             val apple = extension.apple
             task.rpId.set(extension.rpId)
+            task.demoServerUrl.set(extension.demoServerUrl.map { url -> project.providers.gradleProperty("passki.demo.url").getOrElse(url) })
+            task.androidApp.set(androidApp)
+            task.androidLibrary.set(androidLibrary)
             task.teamId.set(apple.teamId)
             task.bundleId.set(apple.bundleId)
             task.entitlementsFile.set(apple.entitlementsFile)
@@ -120,7 +102,43 @@ public class PasskiPlugin : Plugin<Project> {
             .orElse(emptyList())
     }
 
+    /** Only loaded once `com.android.application` is applied, so AGP is on the classpath. */
+    private class AndroidWiring(private val project: Project, private val wiring: Wiring) {
+        fun wire() {
+            wiring.androidApp.set(true)
+            val components = project.extensions.getByType(ApplicationAndroidComponentsExtension::class.java)
+            components.finalizeDsl { dsl ->
+                AndroidSigning.applicationId(dsl)?.let(wiring.applicationId::set)
+                wiring.variants.set(AndroidSigning.variants(dsl))
+            }
+
+            project.tasks.register("passkiFingerprints", PasskiFingerprintsTask::class.java) { task ->
+                task.group = GROUP
+                task.description = "Prints Android packages, signing SHA-256 fingerprints and apk-key-hash origins."
+                wiring.configureSigning(task)
+            }
+            project.tasks.register("passkiWellKnown", PasskiWellKnownTask::class.java) { task ->
+                task.group = ADVANCED_GROUP
+                task.description = "Only the well-known files of passkiSetup: writes assetlinks.json and apple-app-site-association to build/passki/well-known."
+                wiring.configureSigning(task)
+                task.appleAppIds.set(wiring.appleAppIds())
+                task.outputDir.set(project.layout.buildDirectory.dir("passki/well-known"))
+            }
+            project.tasks.register("passkiVerify", PasskiVerifyTask::class.java) { task ->
+                task.group = ADVANCED_GROUP
+                task.description = "Only the hosted-file checks of passkiCheck, without a report (network). Prefer passkiCheck."
+                wiring.configureSigning(task)
+                task.rpId.set(wiring.extension.rpId)
+                task.appleAppIds.set(wiring.appleAppIds())
+                task.entitlementsFile.set(wiring.extension.apple.entitlementsFile)
+                task.baseUrl.set(project.providers.gradleProperty("passki.verify.baseUrl"))
+            }
+        }
+    }
+
     private companion object {
         const val GROUP = "passki"
+        const val ADVANCED_GROUP = "passki advanced"
+        val ANDROID_LIBRARY_PLUGINS = listOf("com.android.library", "com.android.kotlin.multiplatform.library")
     }
 }

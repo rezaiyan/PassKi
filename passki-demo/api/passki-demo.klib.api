@@ -1,0 +1,134 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, js, wasmJs]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <PassKi:passki-demo>
+final class com.alirezaiyan.passki.demo/DemoAccount { // com.alirezaiyan.passki.demo/DemoAccount|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<kotlin/String>) // com.alirezaiyan.passki.demo/DemoAccount.<init>|<init>(kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+
+    final val credentialIds // com.alirezaiyan.passki.demo/DemoAccount.credentialIds|{}credentialIds[0]
+        final fun <get-credentialIds>(): kotlin.collections/List<kotlin/String> // com.alirezaiyan.passki.demo/DemoAccount.credentialIds.<get-credentialIds>|<get-credentialIds>(){}[0]
+    final val userHandle // com.alirezaiyan.passki.demo/DemoAccount.userHandle|{}userHandle[0]
+        final fun <get-userHandle>(): kotlin/String // com.alirezaiyan.passki.demo/DemoAccount.userHandle.<get-userHandle>|<get-userHandle>(){}[0]
+
+    final fun component1(): kotlin/String // com.alirezaiyan.passki.demo/DemoAccount.component1|component1(){}[0]
+    final fun component2(): kotlin.collections/List<kotlin/String> // com.alirezaiyan.passki.demo/DemoAccount.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., kotlin.collections/List<kotlin/String> = ...): com.alirezaiyan.passki.demo/DemoAccount // com.alirezaiyan.passki.demo/DemoAccount.copy|copy(kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.demo/DemoAccount.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.demo/DemoAccount.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.alirezaiyan.passki.demo/DemoAccount.toString|toString(){}[0]
+}
+
+final class com.alirezaiyan.passki.demo/DemoServerConfig { // com.alirezaiyan.passki.demo/DemoServerConfig|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<kotlin/String>) // com.alirezaiyan.passki.demo/DemoServerConfig.<init>|<init>(kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+
+    final val origins // com.alirezaiyan.passki.demo/DemoServerConfig.origins|{}origins[0]
+        final fun <get-origins>(): kotlin.collections/List<kotlin/String> // com.alirezaiyan.passki.demo/DemoServerConfig.origins.<get-origins>|<get-origins>(){}[0]
+    final val rpId // com.alirezaiyan.passki.demo/DemoServerConfig.rpId|{}rpId[0]
+        final fun <get-rpId>(): kotlin/String // com.alirezaiyan.passki.demo/DemoServerConfig.rpId.<get-rpId>|<get-rpId>(){}[0]
+
+    final fun component1(): kotlin/String // com.alirezaiyan.passki.demo/DemoServerConfig.component1|component1(){}[0]
+    final fun component2(): kotlin.collections/List<kotlin/String> // com.alirezaiyan.passki.demo/DemoServerConfig.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., kotlin.collections/List<kotlin/String> = ...): com.alirezaiyan.passki.demo/DemoServerConfig // com.alirezaiyan.passki.demo/DemoServerConfig.copy|copy(kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.demo/DemoServerConfig.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.demo/DemoServerConfig.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.alirezaiyan.passki.demo/DemoServerConfig.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.alirezaiyan.passki.demo/DemoServerConfig> { // com.alirezaiyan.passki.demo/DemoServerConfig.$serializer|null[0]
+        final val descriptor // com.alirezaiyan.passki.demo/DemoServerConfig.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.alirezaiyan.passki.demo/DemoServerConfig.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.alirezaiyan.passki.demo/DemoServerConfig.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.alirezaiyan.passki.demo/DemoServerConfig // com.alirezaiyan.passki.demo/DemoServerConfig.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.alirezaiyan.passki.demo/DemoServerConfig) // com.alirezaiyan.passki.demo/DemoServerConfig.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.alirezaiyan.passki.demo.DemoServerConfig){}[0]
+    }
+
+    final object Companion { // com.alirezaiyan.passki.demo/DemoServerConfig.Companion|null[0]
+        final val $childSerializers // com.alirezaiyan.passki.demo/DemoServerConfig.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<com.alirezaiyan.passki.demo/DemoServerConfig> // com.alirezaiyan.passki.demo/DemoServerConfig.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.alirezaiyan.passki.demo/DemoServerException : kotlin/Exception { // com.alirezaiyan.passki.demo/DemoServerException|null[0]
+    constructor <init>(kotlin/Int?, kotlin/String, kotlin/Throwable? = ...) // com.alirezaiyan.passki.demo/DemoServerException.<init>|<init>(kotlin.Int?;kotlin.String;kotlin.Throwable?){}[0]
+
+    final val status // com.alirezaiyan.passki.demo/DemoServerException.status|{}status[0]
+        final fun <get-status>(): kotlin/Int? // com.alirezaiyan.passki.demo/DemoServerException.status.<get-status>|<get-status>(){}[0]
+}
+
+final class com.alirezaiyan.passki.demo/DemoVerdict { // com.alirezaiyan.passki.demo/DemoVerdict|null[0]
+    constructor <init>(kotlin/Boolean, kotlin/String, kotlin/Long, kotlin/Boolean, kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/String? = ..., kotlin/String, kotlin/String, kotlin/String) // com.alirezaiyan.passki.demo/DemoVerdict.<init>|<init>(kotlin.Boolean;kotlin.String;kotlin.Long;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.String?;kotlin.String;kotlin.String;kotlin.String){}[0]
+
+    final val aaguid // com.alirezaiyan.passki.demo/DemoVerdict.aaguid|{}aaguid[0]
+        final fun <get-aaguid>(): kotlin/String? // com.alirezaiyan.passki.demo/DemoVerdict.aaguid.<get-aaguid>|<get-aaguid>(){}[0]
+    final val backedUp // com.alirezaiyan.passki.demo/DemoVerdict.backedUp|{}backedUp[0]
+        final fun <get-backedUp>(): kotlin/Boolean // com.alirezaiyan.passki.demo/DemoVerdict.backedUp.<get-backedUp>|<get-backedUp>(){}[0]
+    final val backupEligible // com.alirezaiyan.passki.demo/DemoVerdict.backupEligible|{}backupEligible[0]
+        final fun <get-backupEligible>(): kotlin/Boolean // com.alirezaiyan.passki.demo/DemoVerdict.backupEligible.<get-backupEligible>|<get-backupEligible>(){}[0]
+    final val credentialId // com.alirezaiyan.passki.demo/DemoVerdict.credentialId|{}credentialId[0]
+        final fun <get-credentialId>(): kotlin/String // com.alirezaiyan.passki.demo/DemoVerdict.credentialId.<get-credentialId>|<get-credentialId>(){}[0]
+    final val origin // com.alirezaiyan.passki.demo/DemoVerdict.origin|{}origin[0]
+        final fun <get-origin>(): kotlin/String // com.alirezaiyan.passki.demo/DemoVerdict.origin.<get-origin>|<get-origin>(){}[0]
+    final val rpId // com.alirezaiyan.passki.demo/DemoVerdict.rpId|{}rpId[0]
+        final fun <get-rpId>(): kotlin/String // com.alirezaiyan.passki.demo/DemoVerdict.rpId.<get-rpId>|<get-rpId>(){}[0]
+    final val signCount // com.alirezaiyan.passki.demo/DemoVerdict.signCount|{}signCount[0]
+        final fun <get-signCount>(): kotlin/Long // com.alirezaiyan.passki.demo/DemoVerdict.signCount.<get-signCount>|<get-signCount>(){}[0]
+    final val userHandle // com.alirezaiyan.passki.demo/DemoVerdict.userHandle|{}userHandle[0]
+        final fun <get-userHandle>(): kotlin/String // com.alirezaiyan.passki.demo/DemoVerdict.userHandle.<get-userHandle>|<get-userHandle>(){}[0]
+    final val userVerified // com.alirezaiyan.passki.demo/DemoVerdict.userVerified|{}userVerified[0]
+        final fun <get-userVerified>(): kotlin/Boolean // com.alirezaiyan.passki.demo/DemoVerdict.userVerified.<get-userVerified>|<get-userVerified>(){}[0]
+    final val verified // com.alirezaiyan.passki.demo/DemoVerdict.verified|{}verified[0]
+        final fun <get-verified>(): kotlin/Boolean // com.alirezaiyan.passki.demo/DemoVerdict.verified.<get-verified>|<get-verified>(){}[0]
+
+    final fun component1(): kotlin/Boolean // com.alirezaiyan.passki.demo/DemoVerdict.component1|component1(){}[0]
+    final fun component10(): kotlin/String // com.alirezaiyan.passki.demo/DemoVerdict.component10|component10(){}[0]
+    final fun component2(): kotlin/String // com.alirezaiyan.passki.demo/DemoVerdict.component2|component2(){}[0]
+    final fun component3(): kotlin/Long // com.alirezaiyan.passki.demo/DemoVerdict.component3|component3(){}[0]
+    final fun component4(): kotlin/Boolean // com.alirezaiyan.passki.demo/DemoVerdict.component4|component4(){}[0]
+    final fun component5(): kotlin/Boolean // com.alirezaiyan.passki.demo/DemoVerdict.component5|component5(){}[0]
+    final fun component6(): kotlin/Boolean // com.alirezaiyan.passki.demo/DemoVerdict.component6|component6(){}[0]
+    final fun component7(): kotlin/String? // com.alirezaiyan.passki.demo/DemoVerdict.component7|component7(){}[0]
+    final fun component8(): kotlin/String // com.alirezaiyan.passki.demo/DemoVerdict.component8|component8(){}[0]
+    final fun component9(): kotlin/String // com.alirezaiyan.passki.demo/DemoVerdict.component9|component9(){}[0]
+    final fun copy(kotlin/Boolean = ..., kotlin/String = ..., kotlin/Long = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/String? = ..., kotlin/String = ..., kotlin/String = ..., kotlin/String = ...): com.alirezaiyan.passki.demo/DemoVerdict // com.alirezaiyan.passki.demo/DemoVerdict.copy|copy(kotlin.Boolean;kotlin.String;kotlin.Long;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.String?;kotlin.String;kotlin.String;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki.demo/DemoVerdict.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.alirezaiyan.passki.demo/DemoVerdict.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.alirezaiyan.passki.demo/DemoVerdict.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.alirezaiyan.passki.demo/DemoVerdict> { // com.alirezaiyan.passki.demo/DemoVerdict.$serializer|null[0]
+        final val descriptor // com.alirezaiyan.passki.demo/DemoVerdict.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.alirezaiyan.passki.demo/DemoVerdict.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.alirezaiyan.passki.demo/DemoVerdict.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.alirezaiyan.passki.demo/DemoVerdict // com.alirezaiyan.passki.demo/DemoVerdict.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.alirezaiyan.passki.demo/DemoVerdict) // com.alirezaiyan.passki.demo/DemoVerdict.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.alirezaiyan.passki.demo.DemoVerdict){}[0]
+    }
+
+    final object Companion { // com.alirezaiyan.passki.demo/DemoVerdict.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.alirezaiyan.passki.demo/DemoVerdict> // com.alirezaiyan.passki.demo/DemoVerdict.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.alirezaiyan.passki.demo/PasskiDemoServer { // com.alirezaiyan.passki.demo/PasskiDemoServer|null[0]
+    constructor <init>(kotlin/String = ...) // com.alirezaiyan.passki.demo/PasskiDemoServer.<init>|<init>(kotlin.String){}[0]
+
+    final var account // com.alirezaiyan.passki.demo/PasskiDemoServer.account|{}account[0]
+        final fun <get-account>(): com.alirezaiyan.passki.demo/DemoAccount? // com.alirezaiyan.passki.demo/PasskiDemoServer.account.<get-account>|<get-account>(){}[0]
+
+    final suspend fun authenticationOptions(kotlin/String? = ...): kotlin/String // com.alirezaiyan.passki.demo/PasskiDemoServer.authenticationOptions|authenticationOptions(kotlin.String?){}[0]
+    final suspend fun registrationOptions(kotlin/String? = ...): kotlin/String // com.alirezaiyan.passki.demo/PasskiDemoServer.registrationOptions|registrationOptions(kotlin.String?){}[0]
+    final suspend fun serverConfig(): com.alirezaiyan.passki.demo/DemoServerConfig // com.alirezaiyan.passki.demo/PasskiDemoServer.serverConfig|serverConfig(){}[0]
+    final suspend fun verifyAuthentication(kotlin/String): com.alirezaiyan.passki.demo/DemoVerdict // com.alirezaiyan.passki.demo/PasskiDemoServer.verifyAuthentication|verifyAuthentication(kotlin.String){}[0]
+    final suspend fun verifyRegistration(kotlin/String, kotlin/String? = ...): com.alirezaiyan.passki.demo/DemoVerdict // com.alirezaiyan.passki.demo/PasskiDemoServer.verifyRegistration|verifyRegistration(kotlin.String;kotlin.String?){}[0]
+
+    final object Companion { // com.alirezaiyan.passki.demo/PasskiDemoServer.Companion|null[0]
+        final const val RP_ID // com.alirezaiyan.passki.demo/PasskiDemoServer.Companion.RP_ID|{}RP_ID[0]
+            final fun <get-RP_ID>(): kotlin/String // com.alirezaiyan.passki.demo/PasskiDemoServer.Companion.RP_ID.<get-RP_ID>|<get-RP_ID>(){}[0]
+        final const val URL // com.alirezaiyan.passki.demo/PasskiDemoServer.Companion.URL|{}URL[0]
+            final fun <get-URL>(): kotlin/String // com.alirezaiyan.passki.demo/PasskiDemoServer.Companion.URL.<get-URL>|<get-URL>(){}[0]
+    }
+}

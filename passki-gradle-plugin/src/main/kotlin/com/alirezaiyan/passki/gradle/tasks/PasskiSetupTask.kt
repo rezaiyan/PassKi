@@ -1,86 +1,155 @@
 package com.alirezaiyan.passki.gradle.tasks
 
+import com.alirezaiyan.passki.gradle.PasskiConfigException
 import com.alirezaiyan.passki.gradle.WellKnownFiles
+import com.alirezaiyan.passki.gradle.setup.DemoRegistration
 import com.alirezaiyan.passki.gradle.setup.Entitlements
+import com.alirezaiyan.passki.gradle.setup.FileChanges
 import com.alirezaiyan.passki.gradle.setup.ServerConfig
 import com.alirezaiyan.passki.gradle.setup.Xcconfig
+import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.options.Option
 import org.gradle.work.DisableCachingByDefault
 import java.io.File
 
 /**
  * One-shot, idempotent setup driven by `passki { }`:
  *
- * 1. writes `assetlinks.json` / `apple-app-site-association` into `build/passki/well-known`;
+ * 1. writes `assetlinks.json` / `apple-app-site-association` into `build/passki/well-known` (with your own `rpId`),
+ *    or registers the app with the demo relying party (with `useDemoServer()`);
  * 2. merges `webcredentials:<rpId>` (and `?mode=developer` when `apple.developerMode`) into the entitlements file;
  * 3. wires it into the build with `CODE_SIGN_ENTITLEMENTS` in the base `.xcconfig` (never touches project.pbxproj;
  *    prints the Xcode steps when there's no xcconfig);
  * 4. writes `build/passki/server-config.json` and verifier snippets into `build/passki/server-snippets/`;
- * 5. prints the remaining manual steps.
+ * 5. prints a summary: every file created / changed / unchanged (with a diff for your own files), every request
+ *    sent, and the remaining manual steps.
  *
- * Team ID and bundle ID are read from `xcodebuild -showBuildSettings` when not set in the DSL.
+ * `--preview` prints the same summary and writes or sends nothing. Team ID and bundle ID are read from
+ * `xcodebuild -showBuildSettings` when not set in the DSL. Without an Android app module, Android is skipped
+ * (iOS-only mode) and the task says so.
  */
 @DisableCachingByDefault(because = "Edits files in the Xcode project")
 public abstract class PasskiSetupTask : PasskiAppleTask() {
     @get:Input
     public abstract val developerMode: Property<Boolean>
 
+    /** Preview: print what would be written and sent, change nothing. */
+    @get:Input
+    @get:Option(option = "preview", description = "Print what passkiSetup would write and send, without changing anything.")
+    public abstract val preview: Property<Boolean>
+
     /** `build/passki`: well-known/, server-config.json, server-snippets/. Untracked (shared with passkiWellKnown). */
     @get:Internal
     public abstract val outputDir: DirectoryProperty
 
+    /** The build's root directory; summary paths are shown relative to it. */
+    @get:Internal
+    public abstract val rootDirectory: DirectoryProperty
+
+    init {
+        preview.convention(false)
+    }
+
     @TaskAction
     public fun setup() {
         val rp = requireRpId()
+        val isPreview = preview.get()
         val apple = Apple()
         val out = outputDir.get().asFile
+        val changes = FileChanges(isPreview, rootDirectory.get().asFile)
         val steps = mutableListOf<String>()
-        val byPackage = fingerprintsByPackage(resolveVariants())
+        val byPackage = androidFingerprints()
 
-        // 1. Well-known files.
-        val wellKnown = File(out, "well-known").apply { mkdirs() }
-        File(wellKnown, PasskiWellKnownTask.ASSET_LINKS).writeText(WellKnownFiles.assetLinks(byPackage))
-        val aasa = File(wellKnown, PasskiWellKnownTask.AASA)
         val appIds = apple.appIds
         if (apple.discovered && appIds.isNotEmpty()) {
             logger.lifecycle("passki: read ${appIds.joinToString()} from xcodebuild -showBuildSettings (scheme ${apple.schemeName})")
         }
-        val files = if (appIds.isEmpty()) {
-            aasa.delete()
-            logger.lifecycle("passki: no Apple Team ID / bundle ID (DSL or xcodebuild); apple-app-site-association not generated")
-            listOf(PasskiWellKnownTask.ASSET_LINKS)
-        } else {
-            aasa.writeText(WellKnownFiles.aasa(appIds))
-            listOf(PasskiWellKnownTask.ASSET_LINKS, PasskiWellKnownTask.AASA)
+        if (appIds.isEmpty()) {
+            logger.lifecycle("passki: no Apple Team ID / bundle ID (passki { apple { } } or xcodebuild), so iOS is not registered or listed")
         }
-        logger.lifecycle("passki: wrote ${files.joinToString { File(wellKnown, it).path }}")
-        steps += "Upload ${files.joinToString(" and ") { "build/passki/well-known/$it" }} to https://$rp/.well-known/ " +
-            "(HTTPS, HTTP 200, Content-Type: application/json, no redirects)."
+        if (byPackage.isEmpty() && !apple.configured) {
+            throw PasskiConfigException(
+                "passkiSetup has nothing to set up: ${iosOnlyReason()} No Apple app found either: set passki { apple { teamId; bundleId } }.",
+            )
+        }
+
+        // 1. Well-known files: generated for your domain, or the app registered with the demo server.
+        val failed = if (demoMode()) registerWithDemo(byPackage, appIds, changes, steps) else writeWellKnown(rp, out, byPackage, appIds, changes, steps)
 
         // 2 + 3. iOS entitlements and their wiring.
-        if (appIds.isNotEmpty() || apple.project != null || entitlementsFile.isPresent) {
-            setupIos(rp, apple, steps)
+        if (apple.configured) setupIos(rp, apple, changes, steps)
+
+        // 4. Server config + snippets (the demo server is already configured).
+        if (!demoMode()) {
+            val server = ServerConfig.of(rp, byPackage, appIds)
+            changes.write(File(out, "server-config.json"), server.json(), showDiff = false)
+            server.snippets().forEach { (name, text) -> changes.write(File(out, "server-snippets/$name"), text, showDiff = false) }
+            steps += "Configure your WebAuthn server with RP ID $rp and these origins: ${server.origins.joinToString()} " +
+                "(${changes.relative(File(out, "server-config.json"))}; snippets in ${changes.relative(File(out, "server-snippets"))}/)."
         }
 
-        // 4. Server config + snippets.
-        val server = ServerConfig.of(rp, byPackage, appIds)
-        File(out, "server-config.json").writeText(server.json())
-        val snippets = File(out, "server-snippets").apply { mkdirs() }
-        server.snippets().forEach { (name, text) -> File(snippets, name).writeText(text) }
-        logger.lifecycle("passki: wrote ${File(out, "server-config.json").path} and ${server.snippets().size} snippets in ${snippets.path}")
-        steps += "Configure your WebAuthn server with RP ID $rp and these origins: ${server.origins.joinToString()} " +
-            "(build/passki/server-config.json; snippets in build/passki/server-snippets/)."
-
-        // 5. Next steps.
-        steps += "Run ./gradlew passkiCheck to verify everything end to end."
-        logger.lifecycle(steps.mapIndexed { i, step -> "  ${i + 1}. $step" }.joinToString("\n", prefix = "\npasski setup: next steps\n"))
+        // 5. Summary and next steps.
+        steps += when {
+            !isPreview -> "Run ./gradlew passkiCheck to verify everything end to end."
+            changes.hasChanges() -> "Run ./gradlew passkiSetup without --preview to apply this."
+            else -> "Nothing would change: everything is already set up. Run ./gradlew passkiCheck to verify it end to end."
+        }
+        logger.lifecycle("\n" + changes.summary(steps))
+        if (failed.isNotEmpty()) {
+            throw GradleException("passkiSetup: demo registration failed for ${failed.joinToString()}. See the summary above.")
+        }
     }
 
-    private fun setupIos(rp: String, apple: Apple, steps: MutableList<String>) {
+    private fun writeWellKnown(
+        rp: String,
+        out: File,
+        byPackage: Map<String, List<String>>,
+        appIds: List<String>,
+        changes: FileChanges,
+        steps: MutableList<String>,
+    ): List<String> {
+        val wellKnown = File(out, "well-known")
+        val files = buildList {
+            val assetLinks = File(wellKnown, PasskiWellKnownTask.ASSET_LINKS)
+            if (byPackage.isEmpty()) changes.delete(assetLinks) else add(assetLinks.also { changes.write(it, WellKnownFiles.assetLinks(byPackage), showDiff = false) })
+            val aasa = File(wellKnown, PasskiWellKnownTask.AASA)
+            if (appIds.isEmpty()) changes.delete(aasa) else add(aasa.also { changes.write(it, WellKnownFiles.aasa(appIds), showDiff = false) })
+        }
+        if (files.isNotEmpty()) {
+            steps += "Upload ${files.joinToString(" and ") { changes.relative(it) }} to https://$rp/.well-known/ " +
+                "(HTTPS, HTTP 200, Content-Type: application/json, no redirects)."
+        }
+        return emptyList()
+    }
+
+    /** Registers each Android package and Apple app ID with the demo server; returns the labels that failed. */
+    private fun registerWithDemo(
+        byPackage: Map<String, List<String>>,
+        appIds: List<String>,
+        changes: FileChanges,
+        steps: MutableList<String>,
+    ): List<String> {
+        val base = demoServerUrl.get()
+        logger.lifecycle("passki: demo server mode: registering this app with $base for 7 days (public data only, shown below)")
+        val failed = mutableListOf<String>()
+        DemoRegistration.requests(base, byPackage, appIds).forEach { request ->
+            val outcome = if (preview.get()) DemoRegistration.Outcome(true, "not sent (preview)") else DemoRegistration.send(request)
+            changes.sent("POST ${request.url} ${request.body}", outcome.message)
+            if (!outcome.ok) failed += request.label
+        }
+        if (byPackage.isNotEmpty()) {
+            steps += "Android: Google caches asset links, so a new app can take a few minutes before passkeys work; passkiCheck AND-04 shows when Google sees it."
+        }
+        steps += "In the app, use PasskiDemoServer (com.alirezaiyan.passki:passki-demo) for options and verification. Registrations expire after 7 days; re-run passkiSetup to renew."
+        return failed
+    }
+
+    private fun setupIos(rp: String, apple: Apple, changes: FileChanges, steps: MutableList<String>) {
         val entitlements = apple.entitlements
         if (entitlements == null) {
             logger.warn("passki: no entitlements file: set passki { apple { entitlementsFile = file(\"…/App.entitlements\") } }")
@@ -88,18 +157,8 @@ public abstract class PasskiSetupTask : PasskiAppleTask() {
         }
         val before = entitlements.takeIf { it.isFile }?.readText()
         val merged = Entitlements.merge(before, Entitlements.domains(rp, developerMode.get()))
-        when {
-            before == null -> {
-                entitlements.parentFile?.mkdirs()
-                entitlements.writeText(merged)
-                logger.lifecycle("passki: created ${entitlements.path}")
-            }
-            before != merged -> {
-                entitlements.writeText(merged)
-                logger.lifecycle("passki: added webcredentials:$rp to ${entitlements.path}")
-            }
-            else -> logger.lifecycle("passki: ${entitlements.path} already lists webcredentials:$rp")
-        }
+        if (before != null && before == merged) logger.lifecycle("passki: ${entitlements.path} already lists webcredentials:$rp")
+        changes.write(entitlements, merged)
 
         val setting = apple.entitlementsSetting ?: entitlements.absolutePath
         val xcconfig = apple.xcconfigFile
@@ -111,12 +170,8 @@ public abstract class PasskiSetupTask : PasskiAppleTask() {
         } else {
             val text = xcconfig.readText()
             val updated = Xcconfig.set(text, CODE_SIGN_ENTITLEMENTS, setting)
-            if (updated != text) {
-                xcconfig.writeText(updated)
-                logger.lifecycle("passki: set $CODE_SIGN_ENTITLEMENTS = $setting in ${xcconfig.path}")
-            } else {
-                logger.lifecycle("passki: ${xcconfig.path} already sets $CODE_SIGN_ENTITLEMENTS = $setting")
-            }
+            if (updated == text) logger.lifecycle("passki: ${xcconfig.path} already sets $CODE_SIGN_ENTITLEMENTS = $setting")
+            changes.write(xcconfig, updated)
             pbxprojOverride(apple.project)?.let { value ->
                 logger.warn("passki: project.pbxproj sets $CODE_SIGN_ENTITLEMENTS = $value on a target, which overrides the xcconfig")
                 steps += "Remove the target-level Code Signing Entitlements value ($value) in Xcode so the xcconfig value applies."

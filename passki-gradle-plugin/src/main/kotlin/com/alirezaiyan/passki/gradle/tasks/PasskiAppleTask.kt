@@ -1,6 +1,7 @@
 package com.alirezaiyan.passki.gradle.tasks
 
 import com.alirezaiyan.passki.gradle.PasskiConfigException
+import com.alirezaiyan.passki.gradle.RpId
 import com.alirezaiyan.passki.gradle.check.XcodeProbe
 import com.alirezaiyan.passki.gradle.setup.ExecCommandRunner
 import com.alirezaiyan.passki.gradle.setup.Xcode
@@ -26,6 +27,19 @@ public abstract class PasskiAppleTask : PasskiSigningTask() {
     @get:Input
     @get:Optional
     public abstract val rpId: Property<String>
+
+    /** Set by `passki { useDemoServer() }`: the demo relying party's base URL (Gradle property `passki.demo.url` overrides it). */
+    @get:Input
+    @get:Optional
+    public abstract val demoServerUrl: Property<String>
+
+    /** Whether `com.android.application` is applied to this project; false means iOS-only mode. */
+    @get:Input
+    public abstract val androidApp: Property<Boolean>
+
+    /** Whether this is an Android library module (for the iOS-only hint). */
+    @get:Internal
+    public abstract val androidLibrary: Property<Boolean>
 
     @get:Input
     @get:Optional
@@ -67,8 +81,28 @@ public abstract class PasskiAppleTask : PasskiSigningTask() {
         outputs.upToDateWhen { false }
     }
 
-    internal fun requireRpId(): String = rpId.orNull?.takeIf { it.isNotBlank() }
-        ?: throw PasskiConfigException("$name needs passki { rpId = \"example.com\" }")
+    internal fun requireRpId(): String {
+        val value = rpId.orNull
+            ?: throw PasskiConfigException("$name needs passki { rpId = \"example.com\" } (or passki { useDemoServer() } to try the demo server)")
+        return RpId.validate(value)
+    }
+
+    internal fun demoMode(): Boolean = demoServerUrl.isPresent
+
+    /** Package → fingerprints from the Android app, or nothing in iOS-only mode (logged once, with the reason). */
+    internal fun androidFingerprints(): Map<String, List<String>> {
+        if (androidApp.get()) return fingerprintsByPackage(resolveVariants())
+        logger.lifecycle("passki: ${iosOnlyReason()}")
+        return emptyMap()
+    }
+
+    /** Why Android is left out, and where to apply the plugin to include it. */
+    internal fun iosOnlyReason(): String {
+        val module = path.substringBeforeLast(':').let { if (it.isEmpty()) "the root project" else "project $it" }
+        val kind = if (androidLibrary.get()) "is an Android library, not the Android app" else "has no Android app (com.android.application)"
+        return "iOS-only mode: $module $kind, so Android is skipped. " +
+            "If this build has an Android app, apply id(\"com.alirezaiyan.passki\") in that module instead (e.g. :androidApp or :composeApp)."
+    }
 
     /** Apple context resolved at execution time; `xcodebuild` runs at most once, and only when needed. */
     internal inner class Apple {

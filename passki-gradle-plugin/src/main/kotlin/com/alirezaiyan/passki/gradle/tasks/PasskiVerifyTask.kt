@@ -1,6 +1,7 @@
 package com.alirezaiyan.passki.gradle.tasks
 
 import com.alirezaiyan.passki.gradle.PasskiConfigException
+import com.alirezaiyan.passki.gradle.RpId
 import com.alirezaiyan.passki.gradle.WellKnownVerifier
 import com.alirezaiyan.passki.gradle.WellKnownVerifier.Fetched
 import com.alirezaiyan.passki.gradle.WellKnownVerifier.Problem
@@ -25,7 +26,7 @@ import java.time.Duration
 /**
  * Fetches `https://<rpId>/.well-known/assetlinks.json` (and `apple-app-site-association` when Apple
  * is configured), checks them and the optional entitlements file against the build, and fails on
- * any error. Network-dependent: never wired into `check`.
+ * any error. Network-dependent: never wired into `check`. A subset of `passkiCheck`, kept for existing scripts.
  */
 @DisableCachingByDefault(because = "Checks remote state")
 public abstract class PasskiVerifyTask : PasskiSigningTask() {
@@ -53,7 +54,8 @@ public abstract class PasskiVerifyTask : PasskiSigningTask() {
 
     @TaskAction
     public fun verify() {
-        val rp = rpId.orNull ?: throw PasskiConfigException("passkiVerify needs passki { rpId = \"example.com\" }")
+        val rp = RpId.validate(rpId.orNull ?: throw PasskiConfigException("passkiVerify needs passki { rpId = \"example.com\" }"))
+        logger.lifecycle("passki: passkiVerify checks only the hosted files; passkiCheck runs the same checks plus Xcode, server and a report")
         val expected = WellKnownVerifier.Expected(
             rpId = rp,
             fingerprintsByPackage = fingerprintsByPackage(resolveVariants()),

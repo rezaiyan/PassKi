@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.alirezaiyan.passki.compose.PasskeySignInState
 import com.alirezaiyan.passki.compose.rememberPasskeySignIn
+import com.alirezaiyan.passki.demo.PasskiDemoServer
 import com.alirezaiyan.passki.ui.BrandMark
 import com.alirezaiyan.passki.ui.DemoScreen
 import com.alirezaiyan.passki.ui.LabScreen
@@ -45,7 +46,7 @@ private enum class Tab(val label: String, val icon: ImageVector) {
 }
 
 /**
- * The PassKi sample against the live demo relying party ([DEMO_RP_URL]): the server issues every challenge and
+ * The PassKi sample against the live demo relying party ([PasskiDemoServer.URL]): the server issues every challenge and
  * verifies every response. Demo is a real-looking sign-in, Lab runs every flow, Setup shows the doctor checks.
  *
  * @param appOrigin the WebAuthn origin this app produces (Android: `android:apk-key-hash:…`); null means the
@@ -56,7 +57,7 @@ fun App(
     passkeys: Passkeys = remember { Passkeys() },
     autorun: Boolean = false,
     appOrigin: String? = null,
-    rp: DemoRelyingParty = remember { DemoRelyingParty() },
+    rp: PasskiDemoServer = remember { PasskiDemoServer() },
 ) {
     PassKiTheme {
         val scope = rememberCoroutineScope()

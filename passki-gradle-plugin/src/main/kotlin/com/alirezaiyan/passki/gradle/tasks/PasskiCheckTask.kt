@@ -56,7 +56,7 @@ public abstract class PasskiCheckTask : PasskiAppleTask() {
     public fun check() {
         val rp = requireRpId()
         val apple = Apple()
-        val byPackage = fingerprintsByPackage(resolveVariants())
+        val byPackage = androidFingerprints()
         val appIds = apple.appIds
         val firstPackage = byPackage.keys.sorted().firstOrNull()
         val placeholders = buildMap {
@@ -74,11 +74,20 @@ public abstract class PasskiCheckTask : PasskiAppleTask() {
         val results = mutableListOf<CheckResult>()
 
         // Android
-        results += AndroidChecks.wellKnown(f, expected, http.get("$base/.well-known/${PasskiWellKnownTask.ASSET_LINKS}"))
-        val dalUrl = googleDalUrl.get().trimEnd('/') +
-            "/v1/statements:list?source.web.site=https://$rp&relation=delegate_permission/common.get_login_creds"
-        results += AndroidChecks.dal(f, expected, http.get(dalUrl))
-        results += AndroidChecks.playSigning(f, variants.get(), extraFingerprints.get())
+        if (!androidApp.get()) {
+            val reason = iosOnlyReason()
+            listOf(CheckIds.AND_01, CheckIds.AND_02, CheckIds.AND_03, CheckIds.AND_04, CheckIds.AND_05).forEach { results += f.skip(it, reason) }
+        } else {
+            results += AndroidChecks.wellKnown(f, expected, http.get("$base/.well-known/${PasskiWellKnownTask.ASSET_LINKS}"))
+            val dalUrl = googleDalUrl.get().trimEnd('/') +
+                "/v1/statements:list?source.web.site=https://$rp&relation=delegate_permission/common.get_login_creds"
+            results += AndroidChecks.dal(f, expected, http.get(dalUrl))
+            results += if (demoMode()) {
+                f.skip(CheckIds.AND_05, "demo server: release and Play App Signing keys only matter for your own domain")
+            } else {
+                AndroidChecks.playSigning(f, variants.get(), extraFingerprints.get())
+            }
+        }
 
         // iOS
         if (!apple.configured) {

@@ -36,12 +36,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.alirezaiyan.passki.DemoController
-import com.alirezaiyan.passki.DemoRelyingParty
 import com.alirezaiyan.passki.Outcome
 import com.alirezaiyan.passki.Session
 import com.alirezaiyan.passki.compose.PasskeySignInButton
 import com.alirezaiyan.passki.compose.PasskeySignInState
 import com.alirezaiyan.passki.compose.PasskeyUsernameField
+import com.alirezaiyan.passki.demo.PasskiDemoServer
 
 private val DEMO_LABELS = setOf("Sign in", "Sign in (autofill)", "Register")
 
@@ -231,7 +231,7 @@ private fun AccountContent(controller: DemoController, session: Session) {
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(
-                        "SimpleWebAuthn on ${DemoRelyingParty.RP_ID} checked the signature and challenge.",
+                        "SimpleWebAuthn on ${PasskiDemoServer.RP_ID} checked the signature and challenge.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -281,7 +281,7 @@ private fun ServerFooter() {
         Icon(PassKiIcons.Server, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
         Spacer(Modifier.width(8.dp))
         Text(
-            "Demo server ${DemoRelyingParty.RP_ID}. Users expire after 24 h.",
+            "Demo server ${PasskiDemoServer.RP_ID}. Users expire after 24 h.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

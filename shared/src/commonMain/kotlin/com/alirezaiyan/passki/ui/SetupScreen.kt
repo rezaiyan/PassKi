@@ -2,20 +2,20 @@ package com.alirezaiyan.passki.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -36,8 +36,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.alirezaiyan.passki.CheckRow
 import com.alirezaiyan.passki.DemoController
-import com.alirezaiyan.passki.DemoRelyingParty
 import com.alirezaiyan.passki.DoctorStatus
+import com.alirezaiyan.passki.demo.PasskiDemoServer
 
 /**
  * Scrolling layout of the Lab and Setup tabs: a night band with the title (it sits under the status bar, like the
@@ -87,7 +87,7 @@ fun SetupScreen(controller: DemoController) {
 
     ScreenColumn(
         "Setup",
-        "PasskeyDoctor and server checks for ${DemoRelyingParty.RP_ID}. Same IDs as ./gradlew passkiCheck and the web verifier.",
+        "PasskeyDoctor and server checks for ${PasskiDemoServer.RP_ID}. Same IDs as ./gradlew passkiCheck and the web verifier.",
         band = {
             Spacer(Modifier.height(20.dp))
             SummaryCard(checks, running) { controller.run("Setup check") { controller.setupCheck() } }

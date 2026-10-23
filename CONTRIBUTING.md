@@ -44,7 +44,8 @@ Gradle runs with the configuration cache on (`gradle.properties`). Keep new task
 ./gradlew :passki:jvmTest :passki:testAndroidHostTest :passki:iosSimulatorArm64Test \
   :passki-test:jvmTest \
   :passki-compose:jvmTest :passki-compose:testAndroidHostTest :passki-compose:iosSimulatorArm64Test \
-  :passki:checkKotlinAbi :passki-test:checkKotlinAbi :passki-compose:checkKotlinAbi \
+  :passki-demo:jvmTest :passki-demo:iosSimulatorArm64Test \
+  :passki:checkKotlinAbi :passki-test:checkKotlinAbi :passki-compose:checkKotlinAbi :passki-demo:checkKotlinAbi \
   :shared:jvmTest :androidApp:assembleDebug dokkaGenerate
 ./gradlew -p passki-gradle-plugin test
 (cd passki-web && npm ci && npm test)

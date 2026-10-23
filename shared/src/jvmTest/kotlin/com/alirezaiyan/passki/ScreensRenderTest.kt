@@ -15,17 +15,18 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import com.alirezaiyan.passki.compose.rememberPasskeySignIn
+import com.alirezaiyan.passki.demo.DemoVerdict
+import com.alirezaiyan.passki.demo.PasskiDemoServer
 import com.alirezaiyan.passki.ui.DemoScreen
 import com.alirezaiyan.passki.ui.LabScreen
 import com.alirezaiyan.passki.ui.PassKiTheme
 import com.alirezaiyan.passki.ui.SetupScreen
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.respond
-import io.ktor.http.HttpHeaders
-import io.ktor.http.headersOf
+import com.sun.net.httpserver.HttpServer
 import java.io.File
+import java.net.InetAddress
+import java.net.InetSocketAddress
 import javax.imageio.ImageIO
+import kotlin.test.AfterTest
 import kotlin.test.Test
 
 /**
@@ -34,18 +35,22 @@ import kotlin.test.Test
  */
 @OptIn(ExperimentalTestApi::class)
 class ScreensRenderTest {
-    private val rp = DemoRelyingParty(
-        client = HttpClient(
-            MockEngine {
-                respond(
-                    """{"rpId":"passki.alirezaiyan.com","origins":["https://passki.alirezaiyan.com"]}""",
-                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
-                )
-            },
-        ),
-    )
+    // A local stand-in for the demo server: the Setup screen reads its server config.
+    private val server = HttpServer.create(InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0).apply {
+        createContext("/api/demo/server-config") { exchange ->
+            val body = """{"rpId":"passki.alirezaiyan.com","origins":["https://passki.alirezaiyan.com"]}""".toByteArray()
+            exchange.responseHeaders.add("Content-Type", "application/json")
+            exchange.sendResponseHeaders(200, body.size.toLong())
+            exchange.responseBody.use { it.write(body) }
+        }
+        start()
+    }
+    private val rp = PasskiDemoServer("http://127.0.0.1:${server.address.port}")
 
-    private val verdict = ServerVerdict(
+    @AfterTest
+    fun stopServer() = server.stop(0)
+
+    private val verdict = DemoVerdict(
         verified = true,
         credentialId = "Z_51XXZLGZtJJ6o_tOWw0wQk3x1bA9yPq",
         signCount = 3,

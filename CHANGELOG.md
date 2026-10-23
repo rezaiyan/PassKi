@@ -6,6 +6,20 @@ listed here.
 ## 0.1.0-alpha02 (unreleased)
 
 ### Added
+- **`passki-demo`** (new artifact `com.alirezaiyan.passki:passki-demo`): `PasskiDemoServer`, a client for the hosted
+  demo relying party, so you can try passkeys in your own app before you have a domain or a server. It returns the
+  server's full verdict (`DemoVerdict`) for every response. Ktor lives in this artifact only, never in `passki`.
+- **Gradle plugin, try mode:** `passki { useDemoServer() }` sets the RP ID to `passki.alirezaiyan.com`, and
+  `passkiSetup` then registers the app with the demo server for 7 days (Android package and signing fingerprints,
+  iOS `TEAM.bundle`), printing every request it sends and the server's answer.
+- **Gradle plugin, transparency:** `passkiSetup` ends with a summary of every file it created, changed or left
+  unchanged, with a diff for your own files (entitlements, `xcconfig`). `passkiSetup --preview` prints the same summary
+  and writes or sends nothing.
+- **Gradle plugin, iOS-only mode:** `passkiSetup` and `passkiCheck` are registered without `com.android.application`.
+  Android is skipped with the reason, and a plugin applied to the wrong module (such as `shared`) names the module to
+  apply it to instead of silently registering no tasks.
+- **Demo relying party:** self-service Android registration (`/api/demo/android-apps`): a package and its signing
+  keys are listed in the demo `assetlinks.json` and accepted as origins for 7 days. Re-registering is free.
 - **`passki-compose`** (new artifact `com.alirezaiyan.passki:passki-compose`), Compose Multiplatform helpers:
   - `rememberPasskeys()`
   - `rememberPasskeySignIn(requestOptions, passkeys = rememberPasskeys(), mode = Modal)`, which returns a headless
@@ -53,6 +67,12 @@ listed here.
   Its debug build is signed with a committed sample keystore, which is not for release.
 
 ### Changed
+- Gradle plugin: `passki { rpId }` must be a bare domain. `https://example.com/` or `Example.com` fail when a task runs,
+  with the corrected value in the message.
+- Gradle plugin: `passkiSetup` and `passkiCheck` are the two front-door tasks (group `passki`, with
+  `passkiFingerprints`). `passkiWellKnown` and `passkiVerify` moved to the group `passki advanced`; both still work, and
+  `passkiVerify` points to `passkiCheck`.
+- The sample talks to the demo server through `passki-demo` instead of its own copy of the client.
 - `SignInMode` has a new entry, `Autofill`. Exhaustive `when`s need an `else` branch, as the KDoc already advised.
 - The constructors of `PasskeyAssertion`, `PasskeyRegistration` and `PasskeyCapabilities` have new parameters. They
   are `@InternalPasskiApi`, so only code that opted in is affected. Use the same version of `passki`, `passki-test`

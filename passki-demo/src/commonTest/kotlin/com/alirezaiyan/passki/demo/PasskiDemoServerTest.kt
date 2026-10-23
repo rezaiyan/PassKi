@@ -1,4 +1,4 @@
-package com.alirezaiyan.passki
+package com.alirezaiyan.passki.demo
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
@@ -14,7 +14,6 @@ import io.ktor.http.content.TextContent
 import io.ktor.http.headersOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
@@ -23,11 +22,11 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class DemoRelyingPartyTest {
+class PasskiDemoServerTest {
     private val requests = mutableListOf<Pair<HttpRequestData, String>>()
 
     private fun rp(handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData) =
-        DemoRelyingParty(
+        PasskiDemoServer(
             "https://rp.test",
             HttpClient(MockEngine { request ->
                 requests += request to when (val body = request.body) {
@@ -59,7 +58,7 @@ class DemoRelyingPartyTest {
     @Test
     fun verifyRegistration_wrapsResponseAddsOptInCaptureAndRemembersAccount() = runTest {
         val rp = rp { json(verdict("C1")) }
-        val verdict = rp.verifyRegistration("""{"id":"C1","response":{}}""", sharePlatform = "android")
+        val verdict = rp.verifyRegistration("""{"id":"C1","response":{}}""", shareFixtureAs = "android")
         assertTrue(verdict.verified)
         assertEquals(DemoAccount("H1", listOf("C1")), rp.account)
         val body = Json.parseToJsonElement(requests.single().second).jsonObject
@@ -88,7 +87,7 @@ class DemoRelyingPartyTest {
         val rp = rp { json("""{"error":"unknown, expired or already used challenge"}""", HttpStatusCode.BadRequest) }
         val e = assertFailsWith<DemoServerException> { rp.verifyAuthentication("""{"id":"C1"}""") }
         assertEquals(400, e.status)
-        assertEquals("demo RP HTTP 400: unknown, expired or already used challenge", e.message)
+        assertEquals("demo server HTTP 400: unknown, expired or already used challenge", e.message)
     }
 
     @Test
@@ -102,21 +101,6 @@ class DemoRelyingPartyTest {
     @Test
     fun serverConfig_parsesRpIdAndOrigins() = runTest {
         val rp = rp { json("""{"rpId":"passki.alirezaiyan.com","origins":["https://passki.alirezaiyan.com","android:apk-key-hash:x"]}""") }
-        assertEquals(ServerConfig("passki.alirezaiyan.com", listOf("https://passki.alirezaiyan.com", "android:apk-key-hash:x")), rp.serverConfig())
-    }
-
-    @Test
-    fun withAllowCredentials_replacesTheList() {
-        val edited = DemoRelyingParty.withAllowCredentials("""{"challenge":"c","allowCredentials":[]}""", listOf("AA"))
-        val allow = Json.parseToJsonElement(edited).jsonObject["allowCredentials"]!!.jsonArray
-        assertEquals("AA", allow.single().jsonObject["id"]!!.jsonPrimitive.content)
-    }
-
-    @Test
-    fun fixturePlatform_mapsPlatformNames() {
-        assertEquals("android", DemoRelyingParty.fixturePlatform("Android 36"))
-        assertEquals("ios", DemoRelyingParty.fixturePlatform("iOS 26.3"))
-        assertEquals("other", DemoRelyingParty.fixturePlatform("Java 21"))
-        assertEquals("web", DemoRelyingParty.fixturePlatform("Web with Kotlin/Wasm"))
+        assertEquals(DemoServerConfig("passki.alirezaiyan.com", listOf("https://passki.alirezaiyan.com", "android:apk-key-hash:x")), rp.serverConfig())
     }
 }

@@ -102,4 +102,60 @@ internal class SetupFunctionalTest {
 
         assertEquals(listOf("webcredentials:example.com"), WellKnownVerifier.associatedDomains(xcode.entitlements.readText()))
     }
+
+    @Test
+    fun endsWithASummaryOfEveryFile() {
+        val (project, _) = project()
+
+        val result = project.build("passkiSetup", noXcodebuild)
+
+        assertTrue("passki setup summary" in result.output, result.output)
+        assertTrue("created    build/passki/well-known/assetlinks.json" in result.output, result.output)
+        assertTrue("changed    iosApp/iosApp/iosApp.entitlements" in result.output, result.output)
+        assertTrue("+ \t\t<string>webcredentials:example.com</string>" in result.output, result.output)
+        assertTrue("changed    iosApp/Configuration/Config.xcconfig" in result.output, result.output)
+        assertTrue("+ CODE_SIGN_ENTITLEMENTS = iosApp/iosApp.entitlements" in result.output, result.output)
+
+        val second = project.build("passkiSetup", noXcodebuild)
+        assertTrue("unchanged  iosApp/Configuration/Config.xcconfig" in second.output, second.output)
+    }
+
+    @Test
+    fun dryRunShowsTheChangesAndWritesNothing() {
+        val (project, xcode) = project()
+        val xcconfig = xcode.xcconfig.readText()
+        val entitlements = xcode.entitlements.readText()
+
+        val result = project.build("passkiSetup", "--preview", noXcodebuild, "--configuration-cache")
+
+        assertEquals(xcconfig, xcode.xcconfig.readText())
+        assertEquals(entitlements, xcode.entitlements.readText())
+        assertFalse(File(tmp.root, "build/passki").exists())
+        assertTrue("preview: nothing was written or sent" in result.output, result.output)
+        assertTrue("would change  iosApp/Configuration/Config.xcconfig" in result.output, result.output)
+        assertTrue("+ CODE_SIGN_ENTITLEMENTS = iosApp/iosApp.entitlements" in result.output, result.output)
+        assertTrue("would create  build/passki/well-known/apple-app-site-association" in result.output, result.output)
+        assertTrue("without --preview" in result.output, result.output)
+    }
+
+    @Test
+    fun previewAfterSetupSaysNothingWouldChange() {
+        val (project, _) = project()
+        project.build("passkiSetup", noXcodebuild)
+
+        val result = project.build("passkiSetup", "--preview", noXcodebuild)
+
+        assertTrue("Nothing would change: everything is already set up." in result.output, result.output)
+        assertFalse("without --preview" in result.output, result.output)
+    }
+
+    @Test
+    fun rejectsAnRpIdThatIsAUrl() {
+        val project = AndroidTestProject(tmp.root).apply { generateKeystore() }
+        project.writeBuild("passki {\n rpId = \"https://Example.com/\"\n}")
+
+        val result = project.buildAndFail("passkiSetup", noXcodebuild)
+
+        assertTrue("the RP ID is a bare domain: use \"example.com\"" in result.output, result.output)
+    }
 }

@@ -58,16 +58,6 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.uiTooling)
-            implementation(libs.ktor.client.okhttp)
-        }
-        jvmMain.dependencies {
-            implementation(libs.ktor.client.okhttp)
-        }
-        iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
-        }
-        wasmJsMain.dependencies {
-            implementation(libs.ktor.client.js)
         }
         commonMain.dependencies {
             implementation(project(":passki"))
@@ -80,13 +70,12 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-            // Sample only: talks to the demo relying party. The library itself has no HTTP client.
-            implementation(libs.ktor.client.core)
+            // The demo server client (Ktor lives there, never in the passki library).
+            implementation(project(":passki-demo"))
             implementation(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
-            implementation(libs.ktor.client.mock)
             implementation(libs.kotlinx.coroutines.test)
         }
         jvmTest.dependencies {
@@ -96,7 +85,6 @@ kotlin {
         }
         jsMain.dependencies {
             implementation(libs.wrappers.browser)
-            implementation(libs.ktor.client.js)
         }
     }
 }

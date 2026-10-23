@@ -25,10 +25,31 @@ import javax.inject.Inject
  *     server { configUrl = "https://example.com/passki/server-config" } // optional, for passkiCheck
  * }
  * ```
+ *
+ * To try passkeys before you have a domain or a server, call [useDemoServer] instead of setting [rpId].
  */
 public abstract class PasskiExtension @Inject constructor(objects: ObjectFactory) {
-    /** Relying Party ID, e.g. "example.com". Required by passkiVerify. */
+    /** Relying Party ID: the bare domain that serves your `.well-known` files, e.g. "example.com". */
     public abstract val rpId: Property<String>
+
+    /** Set by [useDemoServer]: the demo relying party's base URL. */
+    internal val demoServerUrl: Property<String> = objects.property(String::class.java)
+
+    /**
+     * Uses the hosted PassKi demo relying party (https://passki.alirezaiyan.com) instead of your own domain and
+     * server, for evaluation only. Sets [rpId] to `passki.alirezaiyan.com` and [ServerConfig.configUrl] to its
+     * server config. `passkiSetup` then registers this app with the demo server for 7 days (it prints exactly what
+     * it sends: package names, signing SHA-256 fingerprints and `TEAM.bundle` IDs, all public data) instead of
+     * asking you to upload files. Pair it with `PasskiDemoServer` from `passki-demo` in the app.
+     *
+     * Going to production: replace this call with `rpId = "your.domain"`.
+     */
+    public fun useDemoServer() {
+        rpId.set(DEMO_RP_ID)
+        demoServerUrl.set(DEMO_URL)
+        server.configUrl.set("$DEMO_URL/api/demo/server-config")
+        apple.developerMode.set(true)
+    }
 
     /** Android app identity; package and signing fingerprints are read from the Android build by default. */
     @get:Nested
@@ -50,6 +71,11 @@ public abstract class PasskiExtension @Inject constructor(objects: ObjectFactory
 
     /** Configures [server]. */
     public fun server(action: Action<ServerConfig>): Unit = action.execute(server)
+
+    internal companion object {
+        const val DEMO_RP_ID: String = "passki.alirezaiyan.com"
+        const val DEMO_URL: String = "https://$DEMO_RP_ID"
+    }
 
     /** Android settings for `assetlinks.json`. */
     public abstract class AndroidConfig {

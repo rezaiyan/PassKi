@@ -3,6 +3,9 @@ package com.alirezaiyan.passki
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.alirezaiyan.passki.demo.DemoServerException
+import com.alirezaiyan.passki.demo.DemoVerdict
+import com.alirezaiyan.passki.demo.PasskiDemoServer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -21,7 +24,7 @@ data class Activity(val seq: Int, val label: String, val outcome: Outcome, val t
 }
 
 /** The server-verified sign-in shown on the account screen. */
-data class Session(val verdict: ServerVerdict, val via: String)
+data class Session(val verdict: DemoVerdict, val via: String)
 
 /** One row of the setup checklist: a doctor check or a server check (SRV-01/02). */
 data class CheckRow(val id: String?, val name: String, val status: DoctorStatus, val message: String, val fixHint: String?)
@@ -32,7 +35,7 @@ data class CheckRow(val id: String?, val name: String, val status: DoctorStatus,
  */
 class DemoController(
     val passkeys: Passkeys,
-    val rp: DemoRelyingParty,
+    val rp: PasskiDemoServer,
     private val appOrigin: String?,
     val platform: String,
     private val scope: CoroutineScope,
@@ -96,7 +99,7 @@ class DemoController(
             val registration = result.value
             // Full response, for recording passki-test contract fixtures. Contains no secrets.
             println("PASSKI_FIXTURE ${registration.json}")
-            val share = if (shareFixture) DemoRelyingParty.fixturePlatform(platform) else null
+            val share = if (shareFixture) DemoSupport.fixturePlatform(platform) else null
             val verdict = try {
                 rp.verifyRegistration(registration.json, share)
             } catch (e: DemoServerException) {
@@ -166,7 +169,7 @@ class DemoController(
 
     suspend fun signalUnknown(): String {
         val id = rp.account?.credentialIds?.lastOrNull() ?: return "Signal unknown: register or sign in first"
-        return when (val r = passkeys.signals.unknownCredential(DemoRelyingParty.RP_ID, id)) {
+        return when (val r = passkeys.signals.unknownCredential(PasskiDemoServer.RP_ID, id)) {
             is PasskeyResult.Success -> "Signal unknown ✓ $id"
             is PasskeyResult.Failure -> failureLog("Signal unknown", r.error)
         }
@@ -175,7 +178,7 @@ class DemoController(
     suspend fun signalUserDetails(): String {
         val account = rp.account ?: return "Signal user details: register or sign in first"
         val name = username.ifBlank { "PassKi demo user" }
-        return when (val r = passkeys.signals.currentUserDetails(DemoRelyingParty.RP_ID, account.userHandle, name, name)) {
+        return when (val r = passkeys.signals.currentUserDetails(PasskiDemoServer.RP_ID, account.userHandle, name, name)) {
             is PasskeyResult.Success -> "Signal user details ✓ ${account.userHandle} → $name"
             is PasskeyResult.Failure -> failureLog("Signal user details", r.error)
         }
@@ -188,16 +191,16 @@ class DemoController(
     }
 
     suspend fun setupCheck(): String {
-        val doctor = PasskeyDoctor.run(DemoRelyingParty.RP_ID)
-        val expectedOrigin = appOrigin ?: "https://${DemoRelyingParty.RP_ID}"
+        val doctor = PasskeyDoctor.run(PasskiDemoServer.RP_ID)
+        val expectedOrigin = appOrigin ?: "https://${PasskiDemoServer.RP_ID}"
         val rows = doctor.checks.map { CheckRow(it.id, it.name, it.status, it.message, it.fixHint) }.toMutableList()
         val server = try {
             val config = rp.serverConfig()
-            val rpOk = config.rpId == DemoRelyingParty.RP_ID
+            val rpOk = config.rpId == PasskiDemoServer.RP_ID
             val originOk = expectedOrigin in config.origins
             rows += CheckRow(
                 "SRV-01", "Server RP ID", if (rpOk) DoctorStatus.Pass else DoctorStatus.Fail,
-                if (rpOk) "Server RP ID is ${config.rpId}" else "Server RP ID is ${config.rpId}, the app uses ${DemoRelyingParty.RP_ID}",
+                if (rpOk) "Server RP ID is ${config.rpId}" else "Server RP ID is ${config.rpId}, the app uses ${PasskiDemoServer.RP_ID}",
                 if (rpOk) null else "Use the same RP ID on the server and in the app.",
             )
             rows += CheckRow(
@@ -208,7 +211,7 @@ class DemoController(
             val srv01 = if (rpOk) {
                 "[PASS] SRV-01 server RP ID is ${config.rpId}"
             } else {
-                "[FAIL] SRV-01 server RP ID is ${config.rpId}, app uses ${DemoRelyingParty.RP_ID}"
+                "[FAIL] SRV-01 server RP ID is ${config.rpId}, app uses ${PasskiDemoServer.RP_ID}"
             }
             val srv02 = if (originOk) {
                 "[PASS] SRV-02 server allows this app's origin $expectedOrigin"
@@ -223,7 +226,7 @@ class DemoController(
         }
         checks = rows
         val ids = doctor.checks.mapNotNull { it.id } + listOf("SRV-01", "SRV-02")
-        return "Setup check ($platform)\n$doctor\nServer ($DEMO_RP_URL/api/demo/server-config):\n$server\ncatalog IDs: ${ids.joinToString()}"
+        return "Setup check ($platform)\n$doctor\nServer (${PasskiDemoServer.URL}/api/demo/server-config):\n$server\ncatalog IDs: ${ids.joinToString()}"
     }
 
     /**
@@ -240,11 +243,11 @@ class DemoController(
         }
         // No passkey matches this id, so the device-only request has nothing to offer.
         step("Sign in (device only, unknown credential)") {
-            val options = DemoRelyingParty.withAllowCredentials(rp.authenticationOptions(), listOf("AAAAAAAAAAAAAAAAAAAAAA"))
+            val options = DemoSupport.withAllowCredentials(rp.authenticationOptions(), listOf("AAAAAAAAAAAAAAAAAAAAAA"))
             verifyAssertion("Sign in (device only, unknown credential)", passkeys.signIn(options, SignInMode.ImmediateOnly))
         }
         step("Signal unknown") {
-            when (val r = passkeys.signals.unknownCredential(DemoRelyingParty.RP_ID, "AA")) {
+            when (val r = passkeys.signals.unknownCredential(PasskiDemoServer.RP_ID, "AA")) {
                 is PasskeyResult.Success -> "Signal unknown ✓"
                 is PasskeyResult.Failure -> failureLog("Signal unknown", r.error)
             }

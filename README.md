@@ -39,6 +39,7 @@
 [Platforms](#platforms) ·
 [Install](#install) ·
 [Quick start](#quick-start) ·
+[Try it without a server](#try-it-without-a-server) ·
 [Compose](#compose) ·
 [Autofill](#autofill-sign-in) ·
 [PRF and largeBlob](#prf-and-largeblob) ·
@@ -121,6 +122,9 @@ commonMain.dependencies {
 commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha02") }
 ```
 
+`passki-demo` (the [demo server](#try-it-without-a-server) client) is optional too, for trying PassKi before you
+have a server.
+
 PassKi initialises itself through `androidx.startup`. If your app removes that initializer, call
 `PasskiAndroid.init(application)` in `Application.onCreate()`.
 
@@ -161,6 +165,47 @@ returned `json` on your server with java-webauthn-server, webauthn4j, SimpleWebA
 val caps = passkeys.capabilities()
 if (caps.unifiedPasswordSignIn) { /* offer the combined passkey + password button */ }
 ```
+
+## Try it without a server
+
+Passkeys need a domain that trusts your app and a server that verifies responses. To try PassKi in your own app
+first, use the hosted demo relying party at [passki.alirezaiyan.com](https://passki.alirezaiyan.com). It creates real
+challenges and verifies every response with SimpleWebAuthn. **For evaluation only:** demo users expire after 24 hours.
+
+1. Add the demo client next to `passki`:
+
+   ```kotlin
+   commonMain.dependencies { implementation("com.alirezaiyan.passki:passki-demo:0.1.0-alpha02") }
+   ```
+
+2. Apply the [Gradle plugin](#gradle-plugin) to your Android app module and point it at the demo server:
+
+   ```kotlin
+   passki {
+       useDemoServer() // instead of rpId = "..."
+   }
+   ```
+
+3. Run `./gradlew passkiSetup`. It adds `webcredentials:passki.alirezaiyan.com` to your iOS entitlements and
+   registers your app with the demo server for 7 days. It prints exactly what it sends (package names, signing SHA-256
+   fingerprints, `TEAM.bundle` IDs, all public data) and the server's answer. Add `--preview` to see it first without
+   sending anything.
+
+4. Call PassKi with the demo server's options, and send the result back for verification:
+
+   ```kotlin
+   val demo = PasskiDemoServer()
+   passkeys.register(demo.registrationOptions("alice"))
+       .onSuccess { println(demo.verifyRegistration(it.json)) } // verified by server ✓ signCount 0 …
+   passkeys.signIn(demo.authenticationOptions())
+       .onSuccess { println(demo.verifyAuthentication(it.json)) }
+   ```
+
+`./gradlew passkiCheck` then checks the whole chain against the demo domain. On Android, Google caches asset links, so
+a newly registered app can take a few minutes before passkeys work; check AND-04 shows when Google lists it.
+
+**Going to production:** replace `useDemoServer()` with `rpId = "your.domain"` and `PasskiDemoServer` with your own
+API. The PassKi calls stay the same.
 
 ## Compose
 
@@ -372,14 +417,30 @@ flowchart LR
 
 With the [Gradle plugin](#gradle-plugin) applied to your Android app module:
 
-1. **Generate and wire everything:** `./gradlew :androidApp:passkiSetup`
+1. **Generate and wire everything:** `./gradlew passkiSetup` (add `--preview` to see every change first)
 2. **Upload two files** from `build/passki/well-known/` to `https://<rpId>/.well-known/` (HTTP 200, no redirects).
-3. **Check it end to end:** `./gradlew :androidApp:passkiCheck`
+3. **Check it end to end:** `./gradlew passkiCheck`
 
 `passkiSetup` writes `assetlinks.json` and `apple-app-site-association`, and adds `webcredentials:<rpId>` to your iOS
 entitlements. It wires them into Xcode through `Configuration/Config.xcconfig` (`CODE_SIGN_ENTITLEMENTS`; it never
 edits `project.pbxproj`). It also writes your server's RP ID and origins to `build/passki/server-config.json`, plus
 snippets for SimpleWebAuthn, webauthn4j, java-webauthn-server and py_webauthn. It is safe to re-run.
+
+It ends with a summary of every file it created, changed or left unchanged, with a diff for your own files
+(entitlements, `xcconfig`), then the next steps. `--preview` prints the same summary and writes nothing:
+
+```
+$ ./gradlew passkiSetup --preview
+passki setup summary (preview: nothing was written or sent)
+  would create  androidApp/build/passki/well-known/assetlinks.json
+  would change  iosApp/iosApp/iosApp.entitlements
+      + 		<string>webcredentials:example.com</string>
+  would change  iosApp/Configuration/Config.xcconfig
+      + CODE_SIGN_ENTITLEMENTS = iosApp/iosApp.entitlements
+  ...
+next steps
+  1. Upload androidApp/build/passki/well-known/assetlinks.json and ... to https://example.com/.well-known/ ...
+```
 
 `passkiCheck` prints one line per check (`[PASS] AND-01 ...`, with a `fix:` line under each problem) and writes an
 HTML report. This is the report for the sample app:
@@ -396,7 +457,9 @@ HTML report. This is the report for the sample app:
 
 ### Gradle plugin
 
-Apply it in your Android application module (`com.android.application`):
+Apply it in your Android application module (`com.android.application`). Without one (an iOS-only app), apply it
+anywhere: `passkiSetup` and `passkiCheck` then run in iOS-only mode and say so. Applied to a module that isn't the
+Android app (such as `shared`), they also run in iOS-only mode and name the module to apply it to instead.
 
 ```kotlin
 plugins {
@@ -418,7 +481,7 @@ passki {
 
 ```kotlin
 passki {
-    rpId = "example.com"
+    rpId = "example.com" // a bare domain: checked when a task runs, with the corrected value if it isn't
     android {
         // Fingerprints you can't derive from a local keystore, e.g. Play App Signing (colon-hex SHA-256).
         extraFingerprints.add("AB:CD:...")
@@ -447,26 +510,23 @@ type with `applicationIdSuffix = ".debug"` gets its own `com.example.app.debug` 
 
 | Task | What it does |
 |---|---|
-| `passkiFingerprints` | Prints package, variant, keystore and SHA-256 per variant, plus the `android:apk-key-hash:` origins for your server allow-list |
-| `passkiWellKnown` | Writes `assetlinks.json` and `apple-app-site-association` to `build/passki/well-known/` |
-| `passkiVerify` | Fetches the hosted files from `https://<rpId>` and checks them (and the iOS entitlements file) against the build. Needs network and is not part of `check` |
-| `passkiSetup` | Everything above plus iOS entitlements, their `xcconfig` wiring, `server-config.json` and verifier snippets; prints next steps. `teamId`/`bundleId` default to `xcodebuild -showBuildSettings` |
+| `passkiSetup` | Writes the well-known files, iOS entitlements and their `xcconfig` wiring, `server-config.json` and verifier snippets (with `useDemoServer()`: registers the app with the demo server instead of writing well-known files and server config); ends with a summary and next steps. `--preview` changes nothing. `teamId`/`bundleId` default to `xcodebuild -showBuildSettings` |
 | `passkiCheck` | Runs the catalog checks AND-01..05, IOS-01..06 and SRV-01..03 and writes `build/reports/passki/`. Needs network and is not part of `check` |
+| `passkiFingerprints` | Prints package, variant, keystore and SHA-256 per variant, plus the `android:apk-key-hash:` origins for your server allow-list |
+
+Two more tasks are listed under "passki advanced" in `./gradlew tasks --all` and are kept for existing scripts:
+`passkiWellKnown` (only the well-known files of `passkiSetup`) and `passkiVerify` (only the hosted-file checks of
+`passkiCheck`, without a report).
 
 ```
-$ ./gradlew :androidApp:passkiFingerprints
+$ ./gradlew passkiFingerprints
 passki signing fingerprints:
   package                | variant | keystore                         | SHA-256
   com.alirezaiyan.passki | debug   | .../androidApp/sample-debug.keystore | 59:E5:92:32:...:57:88:E2:06:C0
   com.alirezaiyan.passki | release | -                                | (no signing config)
 Android WebAuthn origins (server allow-list):
   android:apk-key-hash:WeWSMk5s5vpf4vCKORgTLaUd3l35vRHwXOgjV4jiBsA
-
-$ ./gradlew :androidApp:passkiVerify
-passki: well-known files OK for passki.alirezaiyan.com
 ```
-
-`passkiVerify` fails the build with a fix hint per problem.
 
 > [!WARNING]
 > Keystore passwords are read from your signing configs but are not tracked task inputs (up-to-date checks use the
