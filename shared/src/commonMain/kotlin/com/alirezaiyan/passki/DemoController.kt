@@ -29,6 +29,14 @@ data class Session(val verdict: DemoVerdict, val via: String)
 /** One row of the setup checklist: a doctor check or a server check (SRV-01/02). */
 data class CheckRow(val id: String?, val name: String, val status: DoctorStatus, val message: String, val fixHint: String?)
 
+/** The launch banner's line: how many setup checks fail and which; null before the check ran or when none fail. */
+fun setupProblems(checks: List<CheckRow>?): String? {
+    val failing = checks.orEmpty().filter { it.status == DoctorStatus.Fail }
+    if (failing.isEmpty()) return null
+    val noun = if (failing.size == 1) "problem" else "problems"
+    return "Setup: ${failing.size} $noun (${failing.joinToString { it.id ?: it.name }})"
+}
+
 /**
  * State and flows of the sample, shared by every screen. Each flow runs as a "step": its log entry is printed as a
  * `PASSKI_DEMO` line (device tests and the README rely on these) and recorded as an [Activity].
@@ -188,6 +196,18 @@ class DemoController(
         val caps = passkeys.capabilities()
         capabilities = caps
         return "Capabilities ✓\n$caps"
+    }
+
+    /** The Setup check at launch: logged like any step, but it doesn't mark a step as running, so no button waits on it. */
+    suspend fun launchSetupCheck() {
+        val entry = try {
+            setupCheck()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            "Setup check ✗ [${e::class.simpleName}] ${e.message}"
+        }
+        show("Setup check", entry)
     }
 
     suspend fun setupCheck(): String {

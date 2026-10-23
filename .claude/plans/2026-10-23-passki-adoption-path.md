@@ -102,10 +102,16 @@ Activity → AND-06, iOS association → IOS-02, RP ID → CFG-01; autofill-with
 `FakePasskeys` and the sample's failure log follow. Tests green on JVM, Android host, iOS simulator.
 
 ### Phase 4: sample clones and runs
-- [ ] iOS: `Config.xcconfig` gets `#include? "Local.xcconfig"` (gitignored) and `PRODUCT_BUNDLE_IDENTIFIER = com.alirezaiyan.passki.PassKi.$(TEAM_ID)`, so the only per-developer value is `TEAM_ID`. Commit `Local.xcconfig.example`. The owner's Team ID moves to the owner's own `Local.xcconfig`. Check: `passkiSetup` still resolves Team/bundle via `xcodebuild -showBuildSettings`, and the demo AASA keeps the owner's existing entry.
-- [ ] The sample's `passki { }` block uses `useDemoServer()`, so `./gradlew passkiSetup` registers the cloner's iOS app with the demo RP. The web registration page stays for people without Gradle.
-- [ ] Remove KMP template leftovers: `Greeting.kt`, `GreetingUtil.kt`, `Platform*.kt` (if unused after removal), `SharedLogic*Test.kt`, `SharedCommonTest.kt`.
-- [ ] Sample start: if the doctor finds failures on launch (debug), show a banner "Setup has N problems" that opens the Setup tab, with the check IDs. No auto-fix, no hiding.
+- [x] iOS: `Config.xcconfig` gets `#include? "Local.xcconfig"` (gitignored) and `PRODUCT_BUNDLE_IDENTIFIER = com.alirezaiyan.passki.PassKi.$(TEAM_ID)`, so the only per-developer value is `TEAM_ID`. Commit `Local.xcconfig.example`. The owner's Team ID moves to the owner's own `Local.xcconfig`. Check: `passkiSetup` still resolves Team/bundle via `xcodebuild -showBuildSettings`, and the demo AASA keeps the owner's existing entry.
+- [x] The sample's `passki { }` block uses `useDemoServer()`, so `./gradlew passkiSetup` registers the cloner's iOS app with the demo RP. The web registration page stays for people without Gradle.
+- [x] Remove KMP template leftovers: `Greeting.kt`, `GreetingUtil.kt`, `Platform*.kt` (if unused after removal), `SharedLogic*Test.kt`, `SharedCommonTest.kt`.
+- [x] Sample start: if the doctor finds failures on launch (debug), show a banner "Setup has N problems" that opens the Setup tab, with the check IDs. No auto-fix, no hiding.
+
+Phase 4 status (2026-10-23): the pbxproj had `DEVELOPMENT_TEAM = VFCFJC7Y5J` hardcoded on the target (it overrode
+`TEAM_ID`), now `"$(TEAM_ID)"`. `Config.xcconfig` keeps the bundle ID default (the maintainer's permanent AASA entry) and
+`#include? "Local.xcconfig"`; the example sets `PRODUCT_BUNDLE_IDENTIFIER = com.alirezaiyan.passki.PassKi.$(TEAM_ID)`.
+Checked with xcodebuild: maintainer → VFCFJC7Y5J.com.alirezaiyan.passki.PassKi, cloner → suffixed bundle, no Local →
+builds for the simulator without a team. Platform* stays (used for the platform name).
 
 ### Phase 5: docs that follow the paths
 - [ ] README top: "Get started" with the three paths (A/B/C), each ≤ 5 steps, before any feature sections.

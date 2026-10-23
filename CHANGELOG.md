@@ -71,6 +71,12 @@ listed here.
   Its debug build is signed with a committed sample keystore, which is not for release.
 
 ### Changed
+- Sample, iOS: the only per-developer value is `TEAM_ID`, in the gitignored `iosApp/Configuration/Local.xcconfig`
+  (copy `Local.xcconfig.example`). The Xcode project reads `DEVELOPMENT_TEAM` from it, and the bundle ID gets the Team
+  ID as a suffix. The sample's plugin block uses `useDemoServer()`, so `passkiSetup` registers your iOS app with the demo
+  server.
+- Sample: runs the Setup check at launch and shows a banner with the failing check IDs; removed the KMP template
+  leftovers (`Greeting`, placeholder tests).
 - `PasskeyError.Misconfigured` and `InvalidOptions` include `checkId` in `equals`, `hashCode` and `toString` (omitted
   from `toString` when null). The existing constructors are kept; new ones take the ID.
 - Gradle plugin: `passki { rpId }` must be a bare domain. `https://example.com/` or `Example.com` fail when a task runs,

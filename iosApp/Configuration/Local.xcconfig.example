@@ -1,0 +1,6 @@
+// Copy to Local.xcconfig (gitignored) and set your Apple Developer Team ID (developer.apple.com > Membership).
+TEAM_ID=ABCDE12345
+
+// Bundle IDs are unique across teams, so the sample gets your Team ID as a suffix. ./gradlew passkiSetup reads both
+// values from Xcode and registers TEAM_ID.bundle with the demo server, so you never edit a tracked file.
+PRODUCT_BUNDLE_IDENTIFIER=com.alirezaiyan.passki.PassKi.$(TEAM_ID)

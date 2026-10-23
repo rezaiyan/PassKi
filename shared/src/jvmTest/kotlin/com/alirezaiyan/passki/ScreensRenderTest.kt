@@ -13,6 +13,7 @@ import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import com.alirezaiyan.passki.compose.rememberPasskeySignIn
 import com.alirezaiyan.passki.demo.DemoVerdict
@@ -113,5 +114,15 @@ class ScreensRenderTest {
         waitUntil(timeoutMillis = 10_000) { controller.checks != null }
         onNodeWithText("SRV-01").assertExists()
         save("setup")
+    }
+
+    @Test
+    fun setupBannerNamesTheFailingChecks() = runDesktopComposeUiTest(412, 120) {
+        var opened = false
+        setContent { PassKiTheme { SetupBanner("Setup: 1 problem (AND-03)") { opened = true } } }
+        onNodeWithText("Setup: 1 problem (AND-03)").assertExists()
+        onNodeWithText("Open Setup").performClick()
+        check(opened) { "tapping the banner opens the Setup tab" }
+        save("setup-banner")
     }
 }

@@ -19,3 +19,6 @@ captures
 node_modules/
 build/
 kotlin-js-store/
+
+# Per-developer iOS signing (see iosApp/Configuration/Local.xcconfig.example)
+iosApp/Configuration/Local.xcconfig

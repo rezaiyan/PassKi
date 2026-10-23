@@ -65,11 +65,10 @@ android {
 }
 
 passki {
-    rpId = "passki.alirezaiyan.com"
-    server { configUrl = "https://passki.alirezaiyan.com/api/demo/server-config" }
+    // The hosted demo relying party: passkiSetup registers this app with it (Team ID and bundle ID are read from
+    // Xcode, i.e. from iosApp/Configuration/Local.xcconfig).
+    useDemoServer()
     apple {
-        teamId = "VFCFJC7Y5J"
-        bundleId = "com.alirezaiyan.passki.PassKi"
         entitlementsFile = rootProject.file("iosApp/iosApp/iosApp.entitlements")
     }
 }

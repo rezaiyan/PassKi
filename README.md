@@ -664,14 +664,26 @@ call against the demo relying party, and the server verifies every response. It 
   > [!CAUTION]
   > That key is public. Never use it for a release or for your own app.
 
-- **iOS:** register your Team ID on the demo page (see above), then set `TEAM_ID` and `PRODUCT_BUNDLE_IDENTIFIER` in
-  `iosApp/Configuration/Config.xcconfig`. The entitlements are wired through that file.
+- **iOS, one value:** your Apple Developer Team ID, in a file git ignores:
+
+  ```sh
+  cp iosApp/Configuration/Local.xcconfig.example iosApp/Configuration/Local.xcconfig  # then set TEAM_ID
+  ./gradlew passkiSetup   # registers TEAM_ID.com.alirezaiyan.passki.PassKi.TEAM_ID with the demo server
+  ```
+
+  The bundle ID gets your Team ID as a suffix, because bundle IDs are unique across teams. `passkiSetup` reads both
+  values from Xcode (the sample uses `passki { useDemoServer() }`), prints what it sends, and lists the app in the demo
+  `apple-app-site-association` for 7 days. No tracked file changes. Without `Local.xcconfig` the app still builds for
+  the simulator, but iOS can't associate it with the demo domain, so passkey calls fail with `Misconfigured` (IOS-02).
+- **Setup problems show up at launch:** the app runs the Setup check when it starts. If a check fails, a banner names
+  the failing check IDs (for example `Setup: 1 problem (IOS-02)`) and opens the Setup tab with the fix.
 - **Unattended smoke run:** start the app with an autorun flag. It runs the UI-free steps first (capabilities, Setup
   check, server options, device-only sign-in with an unknown credential, signals, upgrade), then the interactive ones,
   and logs `PASSKI_DEMO` lines.
   - Android: `adb shell am start -n com.alirezaiyan.passki/.MainActivity --ez passkiAutorun true`, then read
     `adb logcat -s System.out`.
-  - iOS: `xcrun simctl launch --console <device> com.alirezaiyan.passki.PassKi -passkiAutorun`.
+  - iOS: `xcrun simctl launch --console <device> <your bundle ID> -passkiAutorun`
+    (`com.alirezaiyan.passki.PassKi.<TEAM_ID>` with the example `Local.xcconfig`).
 
 ## Good to know
 
