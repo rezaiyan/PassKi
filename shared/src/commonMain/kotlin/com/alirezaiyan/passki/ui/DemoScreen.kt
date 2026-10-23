@@ -265,7 +265,7 @@ private fun AccountContent(controller: DemoController, session: Session) {
             ActionRow(title, description, controller.latest(label), controller.running == label) { controller.run(label, action) }
         }
     }
-    TextButton(onClick = { controller.session = null }, modifier = Modifier.padding(top = 8.dp)) {
+    TextButton(onClick = { controller.signOut() }, modifier = Modifier.padding(top = 8.dp)) {
         Icon(PassKiIcons.Logout, null, modifier = Modifier.size(18.dp))
         Text("Sign out", modifier = Modifier.padding(start = 8.dp))
     }

@@ -4,7 +4,29 @@ What was tested on real platforms, and what wasn't. Both runs used the sample ap
 checked every response. One registration and one sign-in response from each run are saved as test data
 (fixtures) in `passki-test`, and the tests check their signatures against the saved public key.
 
-## Android 16 emulator (API 36, Google Password Manager)
+## Android 16 emulator (API 36, Google Password Manager), 2026-10-23
+
+Run on `main` after the Kotlin 2.2 build and the `passki-demo` client, driven step by step on the emulator. Every
+result came from the demo server.
+
+| Flow | Result |
+|---|---|
+| Launch | Setup check passed, no banner |
+| Create an account (sheet, screen lock PIN) | `Register ✓`, user verified, `prfEnabled=true` |
+| PRF, twice | 32 bytes, the same first 8 bytes both times |
+| Sign out, then sign in with the sheet | `Sign in ✓` |
+| Autofill: tap the passkey suggestion above the keyboard | `Sign in (autofill) ✓` |
+| Close the sheet without choosing | No error, nothing logged, the button works again |
+| Device only, then passkey or password | `Sign in (device only) ✓`, `Sign in or password (passkey) ✓` |
+| Rename the user, then forget the passkey | `Signal user details ✓`, `Signal unknown ✓`; the forgotten passkey also left the keyboard suggestions |
+| Device only, after forgetting | `✗ [NoCredentials]`, as expected |
+| `upgrade()` | `✗ [NotSupported]` (status 17), as expected: Google Password Manager declined |
+| Autofill inside a `Dialog` | `Sign in (autofill in dialog) ✓` |
+
+This run found one sample problem, now fixed: after sign-out the username stayed in the field, and Gboard then showed
+it as a word suggestion instead of the passkeys. Sign-out now clears the field.
+
+## Android 16 emulator (API 36, Google Password Manager), earlier run
 
 - Create a passkey.
 - Sign in: the normal sheet (`PasskeySignInButton`), device-only sign-in, and passkey-or-password.

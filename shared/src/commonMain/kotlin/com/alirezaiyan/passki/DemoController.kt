@@ -66,6 +66,12 @@ class DemoController(
     /** The most recent activity for [label], for status next to the button that started it. */
     fun latest(label: String): Activity? = activities.firstOrNull { it.label == label }
 
+    /** Signs out of the demo. Also empties the username field, so Android's keyboard offers passkeys again. */
+    fun signOut() {
+        session = null
+        username = ""
+    }
+
     fun clearActivity() {
         activities = emptyList()
     }

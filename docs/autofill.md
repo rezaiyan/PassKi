@@ -31,6 +31,9 @@ flowchart LR
   - On Android, the suggestion doesn't come back while the field stays focused. Cancel and call again, for example
     when the field is tapped. `PasskeyUsernameField` does this on every tap.
   - On iOS, PassKi offers the passkeys again by itself, about 500 ms after a dismissal.
+- **Text already in the field (Android):** with Gboard on Android 16, the passkey suggestions showed while the
+  username field was empty. Once the field had text, Gboard showed that text as a word suggestion instead. If your
+  sign-out leaves the last username in the field, clear it.
 - **Old suggestions on Android:** a suggestion that has been showing for more than about a minute can fail in Google
   Password Manager with "Flow has timed out". The next call offers a fresh one.
 - **Errors:**
