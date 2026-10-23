@@ -61,6 +61,144 @@ const CALLS: [string, string][] = [
   ["capabilities()", "What this device supports, before you show a button"],
 ];
 
+const ROLES: { who: string; what: string; passki?: boolean }[] = [
+  {
+    who: "Your server",
+    what: "Creates the options for each sign-up or sign-in, checks the signed response and stores the public key.",
+  },
+  {
+    who: "PassKi",
+    what: "Hands the options to the phone, returns the signed response as JSON, and tells you what to fix when setup is wrong.",
+    passki: true,
+  },
+  {
+    who: "The phone",
+    what: "Shows the passkey sheet, asks for a face, fingerprint or screen lock, and saves the passkey in the user's password manager.",
+  },
+  {
+    who: "Your domain",
+    what: "Lists the apps allowed to use its passkeys in two .well-known files. PassKi's Gradle plugin writes and checks them.",
+  },
+];
+
+type Doc = { title: string; href: string; about: string };
+const DOC_GROUPS: { name: string; dot: string; docs: Doc[] }[] = [
+  {
+    name: "Standards",
+    dot: "",
+    docs: [
+      {
+        title: "Web Authentication, Level 3",
+        href: "https://www.w3.org/TR/webauthn-3/",
+        about: "W3C spec behind every passkey: options, responses, extensions",
+      },
+      {
+        title: "Passkeys",
+        href: "https://fidoalliance.org/passkeys/",
+        about: "FIDO Alliance: what passkeys are and how they sync",
+      },
+      {
+        title: "passkeys.dev",
+        href: "https://passkeys.dev/",
+        about: "FIDO and W3C community guides, device support, UX patterns",
+      },
+      {
+        title: "Passkeys for developers",
+        href: "https://developers.google.com/identity/passkeys",
+        about: "Google: server-side registration and sign-in",
+      },
+    ],
+  },
+  {
+    name: "Android",
+    dot: "android",
+    docs: [
+      {
+        title: "About passkeys",
+        href: "https://developer.android.com/identity/passkeys",
+        about: "Overview of passkeys on Android",
+      },
+      {
+        title: "Credential Manager",
+        href: "https://developer.android.com/identity/credential-manager",
+        about: "The Jetpack API PassKi calls on Android",
+      },
+      {
+        title: "Prerequisites",
+        href: "https://developer.android.com/identity/credential-manager/prerequisites",
+        about: "Dependencies and the Digital Asset Links your domain needs",
+      },
+      {
+        title: "Create passkeys",
+        href: "https://developer.android.com/identity/passkeys/create-passkeys",
+        about: "Registration flow",
+      },
+      {
+        title: "Sign in with passkeys",
+        href: "https://developer.android.com/identity/passkeys/sign-in-with-passkeys",
+        about: "Sign-in, autofill and passkey-or-password",
+      },
+      {
+        title: "Signal API",
+        href: "https://developer.android.com/identity/credential-manager/signal-api-rp",
+        about: "Keep password managers in sync with your server",
+      },
+      {
+        title: "Digital Asset Links",
+        href: "https://developers.google.com/digital-asset-links/v1/getting-started",
+        about: "The assetlinks.json format",
+      },
+      {
+        title: "Troubleshooting",
+        href: "https://developer.android.com/identity/sign-in/credential-manager-troubleshooting-guide",
+        about: "Common Credential Manager errors",
+      },
+    ],
+  },
+  {
+    name: "Apple",
+    dot: "ios",
+    docs: [
+      {
+        title: "Passkeys overview",
+        href: "https://developer.apple.com/passkeys/",
+        about: "Passkeys on Apple platforms",
+      },
+      {
+        title: "Supporting passkeys",
+        href: "https://developer.apple.com/documentation/authenticationservices/supporting-passkeys",
+        about: "Registration and sign-in with AuthenticationServices",
+      },
+      {
+        title: "Connecting to a service with passkeys",
+        href: "https://developer.apple.com/documentation/authenticationservices/connecting-to-a-service-with-passkeys",
+        about: "Apple's sample app",
+      },
+      {
+        title: "Public-private key authentication",
+        href: "https://developer.apple.com/documentation/authenticationservices/public-private-key-authentication",
+        about: "The AuthenticationServices API family",
+      },
+      {
+        title: "ASAuthorizationPlatformPublicKeyCredentialProvider",
+        href: "https://developer.apple.com/documentation/authenticationservices/asauthorizationplatformpublickeycredentialprovider",
+        about: "The class PassKi calls on iOS",
+      },
+      {
+        title: "Supporting associated domains",
+        href: "https://developer.apple.com/documentation/xcode/supporting-associated-domains",
+        about:
+          "The apple-app-site-association file and the webcredentials entitlement",
+      },
+      {
+        title: "ASCredentialUpdater",
+        href: "https://developer.apple.com/documentation/authenticationservices/ascredentialupdater",
+        about: "Signals on iOS 26",
+      },
+    ],
+  },
+];
+
 type Cell = string | false;
 const MATRIX: [string, Cell, Cell][] = [
   ["Register and sign in", "9+", "16+"],
@@ -137,6 +275,54 @@ export default function Home() {
             <b>Apache 2.0</b>
             <span>Open source, no backend lock-in</span>
           </div>
+        </div>
+      </section>
+
+      <section className="container band explain-band" id="passkeys">
+        <div className="band-copy">
+          <h2>What is a passkey?</h2>
+          <p>
+            A passkey replaces a password with a key pair. The private key stays
+            in the user&apos;s password manager, such as Google Password Manager
+            or iCloud Keychain. Your server keeps only the public key.
+          </p>
+          <ul className="ticks">
+            <li>
+              <CheckIcon size={14} />
+              <span>
+                <b>Nothing to remember.</b> Users unlock it with their face,
+                fingerprint or screen lock.
+              </span>
+            </li>
+            <li>
+              <CheckIcon size={14} />
+              <span>
+                <b>Nothing to phish.</b> A passkey works only on the domain it
+                was made for, so a fake site can&apos;t use it.
+              </span>
+            </li>
+            <li>
+              <CheckIcon size={14} />
+              <span>
+                <b>Nothing to leak.</b> A stolen public key can&apos;t sign
+                anyone in.
+              </span>
+            </li>
+          </ul>
+        </div>
+        <div className="panel roles">
+          <div className="panel-head">
+            <h3>What PassKi does</h3>
+            <span className="muted small">Who does what in a sign-in</span>
+          </div>
+          <ol>
+            {ROLES.map(({ who, what, passki }) => (
+              <li key={who} className={passki ? "is-passki" : undefined}>
+                <b>{who}</b>
+                <span>{what}</span>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
@@ -350,6 +536,36 @@ export default function Home() {
             </p>
             <span className="go">Generate files</span>
           </Link>
+        </div>
+      </section>
+
+      <section className="container band-stack" id="docs">
+        <div className="section-head">
+          <h2>Official passkey docs</h2>
+          <p>
+            The specs and platform guides PassKi is built on. Read them for the
+            details behind an API or a setup check.
+          </p>
+        </div>
+        <div className="docs-grid">
+          {DOC_GROUPS.map(({ name, dot, docs }) => (
+            <div key={name} className="panel docs-group">
+              <h3>
+                <span className={`platform-dot ${dot}`} />
+                {name}
+              </h3>
+              <ul className="doc-list">
+                {docs.map(({ title, href, about }) => (
+                  <li key={href}>
+                    <a href={href}>
+                      <b>{title}</b>
+                      <span>{about}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </section>
 
