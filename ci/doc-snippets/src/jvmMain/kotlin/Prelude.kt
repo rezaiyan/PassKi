@@ -19,6 +19,19 @@ fun log(vararg values: Any?) = println(values.joinToString(" "))
 
 fun showError(message: String) = println(message)
 
+fun showMessage(message: String) = println(message)
+
+// Your server's endpoints, as server tests call them.
+interface MyServer {
+    suspend fun registrationOptions(user: String): String
+    suspend fun finishRegistration(user: String, responseJson: String)
+    suspend fun authenticationOptions(): String
+    suspend fun finishSignIn(responseJson: String)
+}
+
+lateinit var server: MyServer
+val user: String = "alice"
+
 object BuildConfig {
     const val DEBUG: Boolean = true
 }

@@ -60,7 +60,7 @@ def code_blocks():
 
 
 def is_gradle(body):
-    return re.search(r"^\s*(plugins \{|passki \{|\w+Main\.dependencies|\w+Test\.dependencies)", body, re.M) is not None
+    return re.search(r"^\s*(plugins \{|passki \{|dependencies \{|\w+Main\.dependencies|\w+Test\.dependencies)", body, re.M) is not None
 
 
 def dedent(body):

@@ -456,8 +456,10 @@ dependencies {
 ```
 
 ```kotlin
+import kotlin.test.Test
+
 @Test
-fun registerThenSignIn() = runBlocking {
+fun registerThenSignIn(): Unit = runBlocking {
     val device = FakePasskeys(origin = "https://example.com") // must be one of your server's allowed origins
     val created = device.register(server.registrationOptions(user)).getOrThrow()
     server.finishRegistration(user, created.json)

@@ -18,6 +18,8 @@ kotlin {
                 implementation("com.alirezaiyan.passki:passki-compose:$passkiVersion")
                 implementation("com.alirezaiyan.passki:passki-demo:$passkiVersion")
                 implementation("com.alirezaiyan.passki:passki-test:$passkiVersion")
+                implementation(kotlin("test-junit")) // kotlin.test.Test for the server-test example
+
                 implementation("org.jetbrains.compose.runtime:runtime:1.10.3")
                 implementation("org.jetbrains.compose.material3:material3:1.10.0-alpha05")
             }
