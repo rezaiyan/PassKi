@@ -11,6 +11,10 @@ listed here.
   failed with `UnsupportedClassVersionError`. CI and the release workflow now fail if a published library class is
   newer than Java 11.
 
+### Changed
+- Releases upload only what Maven Central reads: each artifact, its `.asc` signature and md5/sha1 checksums (656 files
+  instead of 1,640). No checksums of signatures and no sha256/sha512 any more (`com.vanniktech.maven.publish` 0.37.0).
+
 ## 0.1.0-alpha02 (2026-10-24)
 
 ### Added
