@@ -41,7 +41,10 @@ kotlin {
 
     iosArm64()
     iosSimulatorArm64()
-    jvm()
+    jvm {
+        // Without this the bytecode follows the JDK running the build (21 on CI), locking out apps on JDK 11-20.
+        compilerOptions { jvmTarget = JvmTarget.JVM_11 }
+    }
     js { browser() }
 
     @OptIn(ExperimentalWasmDsl::class)

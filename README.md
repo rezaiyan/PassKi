@@ -9,7 +9,7 @@
   <img alt="Kotlin Multiplatform" src="https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?logo=kotlin&logoColor=white">
   <img alt="Android 9+" src="https://img.shields.io/badge/Android-9%2B-3DDC84?logo=android&logoColor=white">
   <img alt="iOS 16+" src="https://img.shields.io/badge/iOS-16%2B-000000?logo=apple&logoColor=white">
-  <img alt="Version" src="https://img.shields.io/badge/version-0.1.0--alpha02-orange">
+  <img alt="Version" src="https://img.shields.io/badge/version-0.1.0--alpha03-orange">
   <img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-blue">
 </p>
 
@@ -109,24 +109,20 @@ and `passkiCheck` against the demo server.
 The demo server at [passki.alirezaiyan.com](https://passki.alirezaiyan.com) creates real challenges and checks every
 response. Use it to try PassKi, not in production: it deletes its users after 24 hours.
 
-1. **Until this version is on Maven Central:** build PassKi into your local Maven repository once, using the commands
-   in [Install](#install). Then add `mavenLocal()` to your `repositories`, and to `pluginManagement { repositories }`
-   for the Gradle plugin.
-
-2. Add `passki` and the demo server client:
+1. Add `passki` and the demo server client:
 
    ```kotlin
    commonMain.dependencies {
-       implementation("com.alirezaiyan.passki:passki:0.1.0-alpha02")
-       implementation("com.alirezaiyan.passki:passki-demo:0.1.0-alpha02")
+       implementation("com.alirezaiyan.passki:passki:0.1.0-alpha03")
+       implementation("com.alirezaiyan.passki:passki-demo:0.1.0-alpha03")
    }
    ```
 
-3. In your Android app module, apply the Gradle plugin and point it at the demo server:
+2. In your Android app module, apply the Gradle plugin and point it at the demo server:
 
    ```kotlin
    plugins {
-       id("com.alirezaiyan.passki") version "0.1.0-alpha02"
+       id("com.alirezaiyan.passki") version "0.1.0-alpha03"
    }
 
    passki {
@@ -137,14 +133,14 @@ response. Use it to try PassKi, not in production: it deletes its users after 24
    The plugin also sets up your iOS app. It finds the Xcode project in `iosApp/`, where the KMP template puts it. If
    yours is somewhere else, set `passki { apple { xcodeProject = ... } }`; see [all options](docs/setup.md#all-options).
 
-4. Run `./gradlew passkiSetup`. It does two things:
+3. Run `./gradlew passkiSetup`. It does two things:
    - It adds the demo domain to your iOS app's associated domains.
    - It registers your app with the demo server for 7 days.
 
    It prints exactly what it sends: package names, signing key fingerprints and Apple app IDs. These are all public.
    Run it with `--preview` first to see the output without sending anything.
 
-5. Create a passkey, then sign in with it. The demo server provides the options and checks the result:
+4. Create a passkey, then sign in with it. The demo server provides the options and checks the result:
 
    ```kotlin
    val passkeys = Passkeys()
@@ -155,7 +151,7 @@ response. Use it to try PassKi, not in production: it deletes its users after 24
        .onSuccess { println(demo.verifyAuthentication(it.json)) }
    ```
 
-6. Optional: run `./gradlew passkiCheck` to check the whole setup.
+5. Optional: run `./gradlew passkiCheck` to check the whole setup.
 
 On Android, Google caches which apps a domain trusts. A newly registered app can take a few minutes to work. Check
 AND-04 in `passkiCheck` passes once Google has picked it up.
@@ -220,25 +216,19 @@ sequenceDiagram
 
 ## Install
 
-> [!IMPORTANT]
-> Version `0.1.0-alpha02` is not on Maven Central yet. Until it is, build it into your local Maven repository:
->
-> ```sh
-> git clone https://github.com/rezaiyan/PassKi && cd PassKi
-> ./gradlew :passki:publishToMavenLocal :passki-compose:publishToMavenLocal :passki-test:publishToMavenLocal :passki-demo:publishToMavenLocal
-> ./gradlew -p passki-gradle-plugin publishToMavenLocal
-> ```
->
-> Then add `mavenLocal()` to your `repositories`, and to `pluginManagement { repositories }` for the Gradle plugin.
+PassKi is on Maven Central:
 
 ```kotlin
 commonMain.dependencies {
-    implementation("com.alirezaiyan.passki:passki:0.1.0-alpha02")
-    implementation("com.alirezaiyan.passki:passki-compose:0.1.0-alpha02") // optional: Compose Multiplatform UI
-    implementation("com.alirezaiyan.passki:passki-demo:0.1.0-alpha02")    // optional: demo server client (path B)
+    implementation("com.alirezaiyan.passki:passki:0.1.0-alpha03")
+    implementation("com.alirezaiyan.passki:passki-compose:0.1.0-alpha03") // optional: Compose Multiplatform UI
+    implementation("com.alirezaiyan.passki:passki-demo:0.1.0-alpha03")    // optional: demo server client (path B)
 }
-commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha02") }
+commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha03") }
 ```
+
+The Gradle plugin is on Maven Central too, not the Gradle Plugin Portal, so `pluginManagement { repositories }` in
+`settings.gradle.kts` needs `mavenCentral()`. The Kotlin Multiplatform template already has it.
 
 **Requirements**
 
@@ -251,7 +241,7 @@ PassKi is built with Kotlin 2.2 and depends on `kotlin-stdlib` 2.2, so it doesn'
 the same reason, its dependencies stay at versions built with Kotlin 2.2: kotlinx-serialization 1.9, Ktor 3.3 (in
 `passki-demo`) and Compose Multiplatform 1.10 (in `passki-compose`).
 
-CI builds two apps against every change, using PassKi from Maven Local the way [Install](#install) describes: a
+CI builds two apps against every change, using PassKi built from that change through Maven Local: a
 Kotlin 2.2.21 app (iOS simulator and JVM tests), and an AGP 9.1.1 Android app on its built-in Kotlin 2.2.10 with
 `compileSdk` 35. If an upgrade would lock out apps on those toolchains, the build fails. Also tested with Kotlin 2.4.20.
 See [`ci/consumers`](ci/consumers/README.md).

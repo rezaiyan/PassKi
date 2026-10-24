@@ -149,6 +149,8 @@ jobs:
         run: |
           ./gradlew :passki:publishToMavenLocal :passki-compose:publishToMavenLocal :passki-test:publishToMavenLocal :passki-demo:publishToMavenLocal
           ./gradlew -p passki-gradle-plugin publishToMavenLocal
+      - name: Published classes load on Java 11 (libraries) and Java 17 (Gradle plugin)
+        run: python3 ci/check-jvm-bytecode.py
       - name: Docs examples compile and configure (README and docs/)
         run: python3 ci/doc-snippets.py
       - name: Consumer app, Kotlin 2.2.21 (iOS simulator and JVM tests)

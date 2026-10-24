@@ -3,9 +3,20 @@
 All notable changes to PassKi. Versions before 1.0 are alphas: the API may still change, but every change is
 listed here.
 
-## 0.1.0-alpha02 (unreleased)
+## 0.1.0-alpha03 (unreleased)
+
+### Fixed
+- The JVM artifacts (`passki-jvm`, `passki-compose-jvm`, `passki-test-jvm`, `passki-demo-jvm`) are Java 11 bytecode,
+  like the Android ones. In 0.1.0-alpha02 they were Java 21 (class file 65), so desktop apps and JVM tests on JDK 11-20
+  failed with `UnsupportedClassVersionError`. CI and the release workflow now fail if a published library class is
+  newer than Java 11.
+
+## 0.1.0-alpha02 (2026-10-24)
 
 ### Added
+- **On Maven Central:** `passki`, `passki-compose`, `passki-test`, `passki-demo` and the Gradle plugin
+  (`com.alirezaiyan.passki`) resolve from `mavenCentral()`; no `mavenLocal()` build needed. Releases are signed and
+  published by `.github/workflows/release.yml` from a `v<version>` tag.
 - **Errors name their setup check:** `PasskeyError.checkId` and `docsUrl`. `Misconfigured` errors carry the catalog ID
   that covers them (`AND-03` asset links, `DEV-01` credential provider, `AND-06` initialisation, `IOS-02` association),
   and `InvalidOptions` for a missing or malformed RP ID carries `CFG-01`. The same ID `PasskeyDoctor`, `passkiCheck`
@@ -94,7 +105,7 @@ listed here.
   (such as iOS test binaries) find the Swift runtime the Signal API bridge needs.
 - README: starts with three paths (run the sample, try it in your app, ship it). Reference sections moved verbatim to
   `docs/` (platforms, compose, autofill, extensions, setup, verified-on); Install states the Kotlin and compileSdk
-  requirements and how to use the libraries before they are on Maven Central.
+  requirements.
 - Sample, iOS: the only per-developer value is `TEAM_ID`, in the gitignored `iosApp/Configuration/Local.xcconfig`
   (copy `Local.xcconfig.example`). The Xcode project reads `DEVELOPMENT_TEAM` from it, and the bundle ID gets the Team
   ID as a suffix. The sample's plugin block uses `useDemoServer()`, so `passkiSetup` registers your iOS app with the demo

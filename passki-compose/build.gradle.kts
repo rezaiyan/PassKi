@@ -44,7 +44,10 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
-    jvm()
+    jvm {
+        // Without this the bytecode follows the JDK running the build (21 on CI), locking out apps on JDK 11-20.
+        compilerOptions { jvmTarget = JvmTarget.JVM_11 }
+    }
 
     // Browser tests load the Skiko runtime that Compose UI pulls in, which needs a webpack-bundled executable
     // (CMP-4906). It only affects test bundling: the published klib is the same.

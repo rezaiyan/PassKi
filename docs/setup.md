@@ -77,7 +77,7 @@ Apply it in your Android app module (the one with `com.android.application`):
 ```kotlin
 plugins {
     id("com.android.application")
-    id("com.alirezaiyan.passki") version "0.1.0-alpha02"
+    id("com.alirezaiyan.passki") version "0.1.0-alpha03"
 }
 
 passki {

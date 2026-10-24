@@ -81,6 +81,9 @@ jobs:
           ./gradlew :passki:publishToMavenLocal :passki-compose:publishToMavenLocal :passki-test:publishToMavenLocal :passki-demo:publishToMavenLocal
           ./gradlew -p passki-gradle-plugin publishToMavenLocal
 
+      - name: Published classes load on Java 11 (libraries) and Java 17 (Gradle plugin)
+        run: python3 ci/check-jvm-bytecode.py
+
       - name: Every file is signed with the published key
         run: |
           version=$(sed -n 's/^VERSION_NAME=//p' gradle.properties)
