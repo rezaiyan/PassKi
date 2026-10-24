@@ -35,8 +35,12 @@ internal class ServerConfig(val rpId: String, val origins: List<String>, val app
                 |""".trimMargin(),
             "webauthn4j.kt" to """
                 |// $header
-                |// com.webauthn4j:webauthn4j-core
+                |// com.webauthn4j:webauthn4j-core (written against $WEBAUTHN4J_VERSION)
+                |import com.webauthn4j.WebAuthnManager
+                |import com.webauthn4j.data.AuthenticationData
+                |import com.webauthn4j.data.RegistrationData
                 |import com.webauthn4j.data.client.Origin
+                |import com.webauthn4j.data.client.challenge.Challenge
                 |import com.webauthn4j.server.ServerProperty
                 |
                 |val rpId = "$rpId"
@@ -44,8 +48,16 @@ internal class ServerConfig(val rpId: String, val origins: List<String>, val app
                 |${origins.joinToString(",\n") { "    Origin.create(\"$it\")" }},
                 |)
                 |
-                |fun serverProperty(challenge: com.webauthn4j.data.client.challenge.Challenge) =
-                |    ServerProperty(origins, rpId, challenge)
+                |fun serverProperty(challenge: Challenge): ServerProperty =
+                |    ServerProperty.builder().origins(origins).rpId(rpId).challenge(challenge).build()
+                |
+                |// Malformed JSON such as {"id":"x"} makes webauthn4j throw NullPointerException, not only
+                |// DataConversionException. Catch RuntimeException so a bad request gets a 400, not a 500.
+                |fun parseRegistration(manager: WebAuthnManager, json: String): RegistrationData? =
+                |    try { manager.parseRegistrationResponseJSON(json) } catch (e: RuntimeException) { null }
+                |
+                |fun parseAuthentication(manager: WebAuthnManager, json: String): AuthenticationData? =
+                |    try { manager.parseAuthenticationResponseJSON(json) } catch (e: RuntimeException) { null }
                 |""".trimMargin(),
             "java-webauthn-server.kt" to """
                 |// $header
@@ -82,6 +94,9 @@ internal class ServerConfig(val rpId: String, val origins: List<String>, val app
     }
 
     companion object {
+        /** webauthn4j release the generated snippet compiles against without deprecation warnings. */
+        const val WEBAUTHN4J_VERSION = "0.30.0.RELEASE"
+
         fun of(rpId: String, fingerprintsByPackage: Map<String, List<String>>, appleAppIds: List<String>): ServerConfig {
             val android = fingerprintsByPackage.values.flatten().distinct().sorted().map(Fingerprints::androidOrigin)
             return ServerConfig(rpId, listOf("https://$rpId") + android, appleAppIds.distinct().sorted())

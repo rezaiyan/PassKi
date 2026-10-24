@@ -4,6 +4,7 @@ import com.alirezaiyan.passki.gradle.Fingerprints
 import groovy.json.JsonSlurper
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 internal class ServerConfigTest {
@@ -31,5 +32,14 @@ internal class ServerConfigTest {
             assertTrue("example.com" in text, name)
             config.origins.forEach { assertTrue(it in text, "$name lacks $it") }
         }
+    }
+
+    @Test
+    fun webauthn4jSnippetUsesBuilderAndGuardsParsing() {
+        val text = config.snippets().getValue("webauthn4j.kt")
+        assertTrue("ServerProperty.builder()" in text)
+        assertFalse("ServerProperty(origins" in text, "deprecated constructor")
+        assertTrue("catch (e: RuntimeException)" in text)
+        assertTrue(ServerConfig.WEBAUTHN4J_VERSION in text)
     }
 }

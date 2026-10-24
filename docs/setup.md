@@ -129,8 +129,14 @@ How the plugin finds your Android app's identity:
 | `passkiCheck` | Runs the checks AND-01 to AND-05, IOS-01 to IOS-06 and SRV-01 to SRV-03, and writes `build/reports/passki/`. Needs network. Not part of `check` |
 | `passkiFingerprints` | Prints the package, variant, keystore and SHA-256 fingerprint of each build variant, and the `android:apk-key-hash:` origins your server must allow |
 
-Two older tasks are kept for existing scripts. They appear under "passki advanced" in `./gradlew tasks --all`:
-`passkiWellKnown` (only the well-known files) and `passkiVerify` (only the hosted-file checks, without a report).
+Under "passki advanced" in `./gradlew tasks --all`:
+
+- `passkiOrigin --sha256=<fingerprint> [--package=<applicationId>]` prints the `android:apk-key-hash:` origin and the
+  `assetlinks.json` statement for one raw SHA-256, such as the Play App Signing key from Play Console. It works in any
+  project, with or without an Android app, and `--package` defaults to `passki.android.packageName` or the app's
+  `applicationId`.
+- Two older tasks kept for existing scripts: `passkiWellKnown` (only the well-known files) and `passkiVerify` (only the
+  hosted-file checks, without a report).
 
 ```
 $ ./gradlew passkiFingerprints
@@ -230,14 +236,61 @@ download.
 
 ## Server setup by hand
 
-If you don't use the Gradle plugin:
+If you don't use the Gradle plugin, you need the same four pieces it would generate. The short checklist is in the
+[README](../README.md#d-ship-it-without-the-plugin); the details are here. Templates for both files are in
+[`docs/setup/well-known/`](setup/well-known/README.md).
 
-- **Android:** serve `https://<your domain>/.well-known/assetlinks.json` with the relation
-  `delegate_permission/common.get_login_creds` and your signing SHA-256 fingerprint. Allow the origin
-  `android:apk-key-hash:<base64url-sha256>` in your server's verifier.
-- **iOS:** add the associated domain `webcredentials:<your domain>` to your app's entitlements, and serve
-  `/.well-known/apple-app-site-association`.
-- Templates: [`docs/setup/well-known/`](setup/well-known/README.md).
+### Android: `assetlinks.json` and the origin
+
+Serve `https://<your domain>/.well-known/assetlinks.json` with HTTP 200, no redirect and
+`Content-Type: application/json`. It needs one statement per package, with the relation
+`delegate_permission/common.get_login_creds` and the SHA-256 fingerprint of **every key that signs a build users
+run**:
+
+| Key | Where to find its SHA-256 |
+|---|---|
+| Debug | `keytool -list -v -keystore ~/.android/debug.keystore -storepass android` |
+| Upload | `keytool -list -v -keystore <upload.jks>` |
+| Play App Signing | Play Console → your app → Test and release → App integrity → App signing. It is in no local keystore |
+
+Your server must also allow one origin per key. Android reports `android:apk-key-hash:` followed by the base64url
+(no padding) SHA-256 bytes:
+
+```bash
+printf '%s' "AB:CD:...:EF" | tr -d ':' | xxd -r -p | base64 | tr '+/' '-_' | tr -d '='
+```
+
+```bash
+python3 -c "import base64,sys;print(base64.urlsafe_b64encode(bytes.fromhex(sys.argv[1].replace(':',''))).decode().rstrip('='))" "AB:CD:...:EF"
+```
+
+Or apply the plugin anywhere in your build (it changes nothing until you run a task) and run
+`./gradlew passkiOrigin --sha256=AB:CD:...:EF --package=com.example.app`. It prints the origin and the
+`assetlinks.json` statement for that key.
+
+### iOS: `apple-app-site-association` and the entitlement
+
+- Serve `https://<your domain>/.well-known/apple-app-site-association` (no file extension, no redirect) with
+  `{"webcredentials": {"apps": ["<TeamID>.<bundleId>"]}}`.
+- Apple's CDN caches the file, so a change can take hours to reach devices. While developing, use
+  `webcredentials:<your domain>?mode=developer` on a device with Developer Mode on to skip the CDN.
+- Add `webcredentials:<your domain>` to `com.apple.developer.associated-domains` in your app's entitlements.
+- **Turn on Associated Domains for the App ID in the Apple Developer portal, then regenerate your App Store (and
+  ad hoc) provisioning profiles.** Debug builds with automatic signing keep working without this, so it often first
+  shows up as a release-signing failure in CI: the profile doesn't include the
+  `com.apple.developer.associated-domains` entitlement.
+
+### Server
+
+- RP ID: your domain, for example `example.com`.
+- Allowed origins: `https://<your domain>` plus one `android:apk-key-hash:` origin per Android signing key above.
+- With the plugin applied, `passkiSetup` writes ready-made verifier code for four server libraries to
+  `build/passki/server-snippets/`. For webauthn4j, catch `RuntimeException` around
+  `parseRegistrationResponseJSON` / `parseAuthenticationResponseJSON`: malformed JSON such as `{"id":"x"}` throws
+  `NullPointerException`, not only `DataConversionException`, and should be a 400, not a 500.
+
+Check the hosted files with the [web verifier](https://passki.alirezaiyan.com), or with `passkiCheck` if you apply the
+plugin.
 
 ---
 

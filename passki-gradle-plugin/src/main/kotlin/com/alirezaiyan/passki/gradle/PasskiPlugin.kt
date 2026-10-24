@@ -3,6 +3,7 @@ package com.alirezaiyan.passki.gradle
 import com.alirezaiyan.passki.gradle.tasks.PasskiAppleTask
 import com.alirezaiyan.passki.gradle.tasks.PasskiCheckTask
 import com.alirezaiyan.passki.gradle.tasks.PasskiFingerprintsTask
+import com.alirezaiyan.passki.gradle.tasks.PasskiOriginTask
 import com.alirezaiyan.passki.gradle.tasks.PasskiSetupTask
 import com.alirezaiyan.passki.gradle.tasks.PasskiSigningTask
 import com.alirezaiyan.passki.gradle.tasks.PasskiVerifyTask
@@ -17,7 +18,8 @@ import org.gradle.api.provider.Provider
 /**
  * Gradle plugin `com.alirezaiyan.passki`.
  *
- * Registers the [PasskiExtension] (`passki { }`) and the two front-door tasks, `passkiSetup` and `passkiCheck`.
+ * Registers the [PasskiExtension] (`passki { }`), the two front-door tasks, `passkiSetup` and `passkiCheck`, and the
+ * advanced `passkiOrigin`.
  * When `com.android.application` is applied they include the Android app (fed from the finalized Android DSL), and
  * `passkiFingerprints` plus the advanced `passkiWellKnown` / `passkiVerify` are registered too. Without it the
  * tasks run in iOS-only mode and say so.
@@ -60,6 +62,11 @@ public class PasskiPlugin : Plugin<Project> {
                 task.appleCdnUrl.set(providers.gradleProperty("passki.check.appleCdnUrl").orElse("https://app-site-association.cdn-apple.com"))
                 task.warningsAsErrors.set(providers.gradleProperty("passki.check.warningsAsErrors").map { it.toBoolean() }.orElse(false))
                 task.reportDir.set(project.layout.buildDirectory.dir("reports/passki"))
+            }
+            project.tasks.register("passkiOrigin", PasskiOriginTask::class.java) { task ->
+                task.group = ADVANCED_GROUP
+                task.description = "Prints the apk-key-hash origin and assetlinks.json statement for a raw SHA-256 (--sha256, --package), e.g. the Play App Signing key."
+                task.packageName.convention(extension.android.packageName.orElse(applicationId))
             }
         }
 

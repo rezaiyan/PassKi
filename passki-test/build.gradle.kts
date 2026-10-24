@@ -63,7 +63,8 @@ kotlin {
         }
         commonMain.dependencies {
             api(project(":passki"))
-            implementation(libs.kotlinx.coroutines.core)
+            // FakePasskeys is all suspend; JVM server tests need runBlocking without adding coroutines themselves.
+            api(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.cryptography.core)
             implementation(libs.cryptography.provider.optimal)

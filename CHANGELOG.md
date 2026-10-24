@@ -3,7 +3,26 @@
 All notable changes to PassKi. Versions before 1.0 are alphas: the API may still change, but every change is
 listed here.
 
-## 0.1.0-alpha03 (unreleased)
+## 0.1.0-alpha04 (unreleased)
+
+### Added
+- **`passkiOrigin` task:** `./gradlew passkiOrigin --sha256=<fingerprint> [--package=<applicationId>]` prints the
+  `android:apk-key-hash:` origin and the `assetlinks.json` statement for a raw SHA-256, such as the Play App Signing
+  key, which is in no local keystore. Works in any project, with or without an Android app.
+- **Docs:** README sections on building a "Sign in with a passkey" button (what `Modal` shows on a device with no
+  passkey, and when to use `ImmediateOnly`), testing your server with `FakePasskeys`, and "D. Ship it without the
+  plugin". `docs/setup.md` covers by-hand setup in full: every signing key, the origin formula, the App Store
+  provisioning profile step and Apple's CDN cache.
+
+### Changed
+- **`passki-test` exposes `kotlinx-coroutines-core` as `api`.** `FakePasskeys` is all `suspend`; JVM server tests can
+  call `runBlocking` without adding coroutines themselves.
+- **webauthn4j server snippet** uses `ServerProperty.builder()` instead of the constructor deprecated in
+  webauthn4j 0.30.0, names the webauthn4j version it targets, and adds `parseRegistration` / `parseAuthentication`
+  helpers that catch `RuntimeException`. webauthn4j throws `NullPointerException` (not `DataConversionException`) on
+  malformed JSON such as `{"id":"x"}`, which unguarded servers answer with a 500.
+
+## 0.1.0-alpha03 (2026-10-24)
 
 ### Fixed
 - The JVM artifacts (`passki-jvm`, `passki-compose-jvm`, `passki-test-jvm`, `passki-demo-jvm`) are Java 11 bytecode,

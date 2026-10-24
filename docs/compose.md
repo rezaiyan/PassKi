@@ -21,6 +21,10 @@ Button(enabled = !state.isRunning, onClick = {
 state.lastError?.let { Text(it.message) } // Cancelled is never stored
 ```
 
+`ImmediateOnly` here keeps a device with no passkey from showing the "another device" sheet or a QR code. Use it when
+passkeys are optional in your app, and turn `PasskeyError.NoCredentials` into an in-app message. Why, and when to keep
+`Modal`: [A "Sign in with a passkey" button](../README.md#a-sign-in-with-a-passkey-button).
+
 - If `signIn()` is called while a sign-in is already running, it waits for that one instead of opening a second
   sheet. Double taps are safe.
 - If `requestOptions` throws, you get `PasskeyError.Unknown`, with the exception as its `cause`.

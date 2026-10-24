@@ -1,5 +1,6 @@
 package com.alirezaiyan.passki.gradle.functional
 
+import com.alirezaiyan.passki.gradle.Fingerprints
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
@@ -54,6 +55,39 @@ internal class IosOnlyFunctionalTest {
 
         assertTrue("passkiSetup" in result.output && "passkiCheck" in result.output, result.output)
         assertFalse("passkiFingerprints" in result.output, result.output)
+    }
+
+    @Test
+    fun originPrintsApkKeyHashAndAssetLinksForARawFingerprint() {
+        write("passki { rpId = \"example.com\" }")
+        val playSigning = List(32) { "ab" }.joinToString("") // plain lowercase hex, as some tools print it
+
+        val result = build("passkiOrigin", "--sha256=$playSigning", "--package=com.example.app", "--configuration-cache")
+
+        val canonical = List(32) { "AB" }.joinToString(":")
+        assertTrue("  ${Fingerprints.androidOrigin(canonical)}" in result.output, result.output)
+        assertTrue("delegate_permission/common.get_login_creds" in result.output, result.output)
+        assertTrue("\"package_name\": \"com.example.app\"" in result.output, result.output)
+        assertTrue("\"$canonical\"" in result.output, result.output)
+    }
+
+    @Test
+    fun originWithoutPackagePrintsOnlyTheOrigin() {
+        write("passki { rpId = \"example.com\" }")
+
+        val result = build("passkiOrigin", "--sha256=${List(32) { "AB" }.joinToString(":")}")
+
+        assertTrue("android:apk-key-hash:" in result.output, result.output)
+        assertTrue("Add --package=<applicationId>" in result.output, result.output)
+        assertFalse("package_name" in result.output, result.output)
+    }
+
+    @Test
+    fun originFailsClearlyOnMissingOrBadFingerprint() {
+        write("passki { rpId = \"example.com\" }")
+
+        assertTrue("./gradlew passkiOrigin --sha256=" in runner("passkiOrigin").buildAndFail().output)
+        assertTrue("--sha256: Not a SHA-256 fingerprint: abc" in runner("passkiOrigin", "--sha256=abc").buildAndFail().output)
     }
 
     @Test

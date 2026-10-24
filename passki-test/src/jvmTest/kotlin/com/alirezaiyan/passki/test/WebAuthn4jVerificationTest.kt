@@ -10,11 +10,14 @@ import com.webauthn4j.data.RegistrationParameters
 import com.webauthn4j.data.client.Origin
 import com.webauthn4j.data.client.challenge.DefaultChallenge
 import com.webauthn4j.server.ServerProperty
+import com.webauthn4j.util.exception.WebAuthnException
 import kotlinx.coroutines.test.runTest
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class WebAuthn4jVerificationTest {
     private val origin = "https://passki.example"
@@ -111,6 +114,16 @@ class WebAuthn4jVerificationTest {
     fun conditionalRegisterOnAuthenticatorUsesConditionalFlags() = runTest {
         val json = FakeAuthenticator(origin).register(TestOptions.creation(rpId), conditional = true)
         assertEquals(0x58.toByte(), manager.parseRegistrationResponseJSON(json).attestationObject!!.authenticatorData.flags)
+    }
+
+    // The webauthn4j server snippet catches RuntimeException around parsing because of this.
+    @Test
+    fun malformedResponsesThrowOutsideWebAuthnExceptionHierarchy() {
+        listOf("{\"id\":\"x\"}", "{}").forEach { json ->
+            val registration = assertFailsWith<RuntimeException> { manager.parseRegistrationResponseJSON(json) }
+            val assertion = assertFailsWith<RuntimeException> { manager.parseAuthenticationResponseJSON(json) }
+            assertTrue(listOf(registration, assertion).any { it !is WebAuthnException }, json)
+        }
     }
 
     @Test

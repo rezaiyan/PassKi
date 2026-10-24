@@ -76,6 +76,7 @@ Pick a path:
 | [A. Run the sample](#a-run-the-sample) | Does PassKi work? | Android: nothing. iOS: your Apple Team ID |
 | [B. Try it in your app](#b-try-it-in-your-app) | Does it work in my app? | Nothing more: the demo server stands in for your domain and server |
 | [C. Ship it](#c-ship-it) | How do I use my own domain and server? | Your domain and a WebAuthn server |
+| [D. Ship it without the plugin](#d-ship-it-without-the-plugin) | I already have my own signing and well-known setup | The same, set up by hand |
 
 Paths B and C use the same Gradle tasks. Every task prints what it changes and what it sends. Add `--preview` to see
 that before anything happens.
@@ -168,6 +169,22 @@ AND-04 in `passkiCheck` passes once Google has picked it up.
 
 Moving from path B: replace `useDemoServer()` with `rpId = "your.domain"`, and `PasskiDemoServer` with calls to your
 own server. The PassKi calls stay the same.
+
+### D. Ship it without the plugin
+
+For an app that already has its own domain, server, signing and well-known files. Details for each step are in
+[Server setup by hand](docs/setup.md#server-setup-by-hand).
+
+1. [Install](#install) PassKi and call your server as in [Usage](#usage).
+2. **Android:** serve `/.well-known/assetlinks.json` with `delegate_permission/common.get_login_creds` for your
+   package and the SHA-256 of each signing key: debug, upload and **Play App Signing** (from Play Console).
+3. **iOS:** serve `/.well-known/apple-app-site-association` with `webcredentials.apps: ["<TeamID>.<bundleId>"]`.
+   Apple's CDN caches it, so changes take a while to reach devices.
+4. **iOS:** add `webcredentials:<your domain>` to the app's associated domains, turn on Associated Domains for the App
+   ID, and **regenerate the App Store provisioning profile**. Debug builds work without the new profile; release
+   signing in CI fails.
+5. **Server:** RP ID `<your domain>`; allowed origins `https://<your domain>` plus one `android:apk-key-hash:<base64url
+   SHA-256>` per Android signing key. [How to compute it](docs/setup.md#android-assetlinksjson-and-the-origin).
 
 ## Words used here
 
@@ -304,7 +321,7 @@ no check ID.
 | Call | What it does |
 |---|---|
 | `register(options)` | Creates a passkey |
-| `signIn(options, mode)` | Signs in. `mode` is `Modal` (the default), `ImmediateOnly` (only passkeys already on this device; fails fast with `NoCredentials` if there are none) or `Autofill` |
+| `signIn(options, mode)` | Signs in. `mode` is `Modal` (the default), `ImmediateOnly` (only passkeys already on this device; fails fast with `NoCredentials` if there are none; [which one to use](#a-sign-in-with-a-passkey-button)) or `Autofill` |
 | `signInOrPassword(options)` | Shows one sheet with both passkeys and saved passwords |
 | `upgrade(options)` | Adds a passkey without any UI after a password sign-in, if the platform allows it ([details](#good-to-know)) |
 | `signals.unknownCredential(rpId, credentialId)` | Tells the credential provider that a passkey was deleted on your server. Also `acceptedCredentials` and `currentUserDetails` |
@@ -314,6 +331,31 @@ no check ID.
 val caps = passkeys.capabilities()
 if (caps.unifiedPasswordSignIn) { /* offer the combined passkey + password button */ }
 ```
+
+### A "Sign in with a passkey" button
+
+With the default `SignInMode.Modal`, a device with no passkey for your domain doesn't fail. It offers a passkey from
+somewhere else: Android opens a "Sign in another way" sheet, and iOS shows a QR code to scan with another device. That
+is correct when passkeys are how users sign in. When passkeys are an extra option users add later, first-time users
+read it as a bug.
+
+For an optional passkey button, ask only for passkeys already on this device and handle `NoCredentials` in your app:
+
+```kotlin
+val mode = if (passkeys.capabilities().immediateSignIn) SignInMode.ImmediateOnly else SignInMode.Modal
+passkeys.signIn(api.authenticationOptions(), mode)
+    .onSuccess { api.finishSignIn(it.json) }
+    .onFailure { error ->
+        when (error) {
+            PasskeyError.NoCredentials -> showMessage("No passkey on this device yet. Sign in another way, then add one in Settings.")
+            PasskeyError.Cancelled -> Unit
+            else -> showError(error.message)
+        }
+    }
+```
+
+`ImmediateOnly` returns `NoCredentials` quickly, without showing a sheet. Keep `Modal` when users may have their
+passkey on another device, such as a phone they use to sign in on a tablet.
 
 ## Platforms
 
@@ -399,6 +441,30 @@ passkeys.conditionalCreate = false                          // simulate a device
   `autofillSupported` (when on, `SignInMode.Autofill` completes at once, as if the user picked the suggestion).
 - `passkeys.authenticator.prfSupported` / `largeBlobSupported` switch the extensions off.
 - `TestOptions.creation(rpId)` and `TestOptions.request(rpId)` build server-style options JSON.
+
+### Test your server
+
+`FakePasskeys` also runs on a JVM server, so your server tests can do a real register and sign-in round trip against
+your own endpoints and verifier (webauthn4j accepts its responses):
+
+```kotlin
+dependencies {
+    testImplementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha03")
+    // Up to 0.1.0-alpha03 only; later versions bring coroutines with them.
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
+}
+```
+
+```kotlin
+@Test
+fun registerThenSignIn() = runBlocking {
+    val device = FakePasskeys(origin = "https://example.com") // must be one of your server's allowed origins
+    val created = device.register(server.registrationOptions(user)).getOrThrow()
+    server.finishRegistration(user, created.json)
+    val assertion = device.signIn(server.authenticationOptions()).getOrThrow()
+    server.finishSignIn(assertion.json)
+}
+```
 
 ## Setup
 
