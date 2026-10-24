@@ -77,7 +77,7 @@ p code, li code { background: #f1f5f9; padding: 0.1em 0.4em; border-radius: 4px;
       <h1 class="plan-title">PassKi: Passkey Library for Kotlin Multiplatform</h1>
       <div class="plan-meta">
         <span>📁 PassKi</span>
-        <span title="/Users/ali/projects/deblock/PassKi">/Users/ali/projects/deblock/PassKi</span>
+        <span>PassKi</span>
       </div>
     </div>
     <h1>PassKi: Passkey Library for Kotlin Multiplatform</h1>
@@ -96,7 +96,7 @@ p code, li code { background: #f1f5f9; padding: 0.1em 0.4em; border-radius: 4px;
 <li>a working answer for Compose/Wasm conditional UI</li>
 <li>desktop packaging tooling for macOS entitlements</li>
 <li>minimal, JSON-first design with no server opinion</li>
-<li>an internal need, e.g. Deblock-grade fintech requirements: attestation, PRF, audit-friendly errors</li>
+<li>an internal need, e.g. fintech-grade requirements: attestation, PRF, audit-friendly errors</li>
 </ul>
 <h3>Platform feasibility matrix</h3>
 <p>| Platform | Native API | Synced passkeys | Feasible? | Difficulty |</p>
@@ -323,13 +323,13 @@ sealed class PasskeyError : Exception() {
 </ul>
 </div></div>
 <div class="section-card"><h2 style="border-left-color:#3b82f6">Open Questions</h2><div class="section-content">
-<p>1. <strong>Why build vs. use/contribute to <code>passkeys-kmp</code> or <code>webauthn-kotlin-multiplatform</code>?</strong> Is this for Deblock internal use (control, audit, security review) or a public OSS product? This decides scope.</p>
+<p>1. <strong>Why build vs. use/contribute to <code>passkeys-kmp</code> or <code>webauthn-kotlin-multiplatform</code>?</strong> Is this for internal use (control, audit, security review) or a public OSS product? This decides scope.</p>
 <p>2. Which server verifier will the first consumer use? That affects origin/allow-list docs and fixtures.</p>
 <p>3. Minimum OS versions: iOS 16 vs 17? Android minSdk 28? JDK 17 (JNA) vs 22 (FFM) for desktop?</p>
 <p>4. Should the server-side module be in scope at all?</p>
 <p>5. Is browser handoff acceptable to the target RP? It requires hosting a page.</p>
 <p>6. Is the Compose Multiplatform helper required, or plain Kotlin only?</p>
-<p>7. License and publishing coordinates (<code>com.deblock.passki</code>? personal?).</p>
+<p>7. License and publishing coordinates (<code>com.alirezaiyan.passki</code>?).</p>
 </div></div>
 <div class="section-card"><h2 style="border-left-color:#3b82f6">Risks</h2><div class="section-content">
 <ul>

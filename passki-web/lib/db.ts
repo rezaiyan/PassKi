@@ -161,10 +161,24 @@ export function rateLimit(
   return true;
 }
 
+/**
+ * Salt for IP hashes. The dev fallback is public, and an IPv4 hash with a known salt is trivially reversed,
+ * so production refuses to run without a real one (checked at startup in instrumentation.ts).
+ */
+export function ipSalt(): string {
+  const salt = process.env.PASSKI_IP_SALT;
+  if (salt && salt !== "change-me") return salt;
+  if (process.env.NODE_ENV === "production")
+    throw new Error(
+      "PASSKI_IP_SALT must be set to a random secret in production (e.g. `openssl rand -hex 32`)",
+    );
+  return "passki";
+}
+
 /** Client IPs are stored only as salted hashes. */
 export function ipKey(ip: string): string {
   return createHash("sha256")
-    .update((process.env.PASSKI_IP_SALT || "passki") + "|" + ip)
+    .update(ipSalt() + "|" + ip)
     .digest("base64url")
     .slice(0, 22);
 }

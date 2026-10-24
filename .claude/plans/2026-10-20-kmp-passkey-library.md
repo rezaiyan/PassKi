@@ -17,7 +17,7 @@ Ship a Kotlin Multiplatform library that lets an app register and sign in with p
 - a working answer for Compose/Wasm conditional UI
 - desktop packaging tooling for macOS entitlements
 - minimal, JSON-first design with no server opinion
-- an internal need, e.g. Deblock-grade fintech requirements: attestation, PRF, audit-friendly errors
+- an internal need, e.g. fintech-grade requirements: attestation, PRF, audit-friendly errors
 
 ### Platform feasibility matrix
 
@@ -304,7 +304,7 @@ sealed class PasskeyError : Exception() {
 4. Should the server-side module be in scope at all?
 5. Is browser handoff acceptable to the target RP? It requires hosting a page.
 6. Is the Compose Multiplatform helper required, or plain Kotlin only?
-7. License and publishing coordinates (`com.deblock.passki`? personal?).
+7. License and publishing coordinates (`com.alirezaiyan.passki`?).
 
 ## Risks
 - **Competition:** two KMP libs already exist. Without a clear angle, effort is duplicated. Mitigation: settle Open Q #1 in Phase 0.

@@ -163,7 +163,7 @@ Run Gradle through `ctx_execute`; the Bash hook blocks `./gradlew`.
     - blur + refocus → re-armed → success again; closing the list (X) → 1001, the core keeps waiting; opening it again and picking → success
     - starting the request on appear instead of on focus showed the same "Passwords" bar (no inline item) and failed once at launch with `Unknown: Unable to verify webcredentials association … try again in a few seconds`, so focus-start stays
     - `PasskeySignInButton` → `Sign in ✓`
-  - Screenshots: `/private/tmp/claude-501/-Users-ali-projects-deblock-PassKi/485ddd86-db4f-406f-a03a-cc5a90be42f4/scratchpad/`.
+  - Screenshots: the session scratchpad directory.
 
 **Task 5: PRF + largeBlob typed extensions**
 - **Files:** `commonMain/.../PasskeyExtensions.kt` (public), `internal/ExtensionsJson.kt`, `apple/AppleRequests.kt` (map inputs/outputs), the result classes (new properties), tests, ABI dumps.

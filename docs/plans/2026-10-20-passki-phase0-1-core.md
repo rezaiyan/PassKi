@@ -189,7 +189,7 @@ git commit -m "docs: add competitor DX benchmark"
 - [x] **Step 1: Init git** (the project is not a repo yet). **Ask the user before running.**
 
 ```bash
-cd /Users/ali/projects/deblock/PassKi && git init -b main
+cd PassKi && git init -b main
 ```
 
 - [x] **Step 2: Create `.gitignore`** (skip any lines already present if the file exists)

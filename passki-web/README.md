@@ -35,7 +35,7 @@ The SQLite database is created at `PASSKI_DB_PATH` (default `./data/passki.db`, 
 | `PASSKI_APPLE_APP_IDS` | `VFCFJC7Y5J.com.alirezaiyan.passki.PassKi` | Permanent entries in the demo AASA |
 | `PASSKI_EXTRA_ORIGINS` | (none) | Extra accepted origins, e.g. for a local browser demo |
 | `PASSKI_DB_PATH` | `./data/passki.db` | SQLite file (`/app/data/passki.db` in Docker) |
-| `PASSKI_IP_SALT` | `passki` | Salt for hashed client IPs (rate limits); set a random value in production |
+| `PASSKI_IP_SALT` | `passki` outside production | Salt for hashed client IPs (rate limits). **Required in production**: the server refuses to start without it, or with `change-me`. Generate with `openssl rand -hex 32` |
 | `PASSKI_IOS_PER_IP_PER_DAY` | `5` | Self-service iOS registrations per IP per day |
 | `PASSKI_IOS_MAX_ACTIVE` | `500` | Global cap of active self-service entries |
 | `PASSKI_ANDROID_PER_IP_PER_DAY` | `5` | New Android self-service registrations per client IP per day |
