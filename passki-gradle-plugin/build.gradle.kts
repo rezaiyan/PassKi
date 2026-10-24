@@ -9,8 +9,10 @@ plugins {
     alias(libs.plugins.vanniktechPublish)
 }
 
-group = "com.alirezaiyan.passki"
-version = "0.1.0-alpha02"
+// Same GROUP / VERSION_NAME as the libraries: single source in the root gradle.properties.
+val rootProperties = Properties().apply { rootDir.resolve("../gradle.properties").inputStream().use { load(it) } }
+group = rootProperties.getProperty("GROUP")
+version = rootProperties.getProperty("VERSION_NAME")
 
 kotlin {
     jvmToolchain(17)

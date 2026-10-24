@@ -1,0 +1,114 @@
+name: Release
+
+# Publishes the libraries (passki, passki-compose, passki-test, passki-demo) and the Gradle plugin to Maven Central.
+#
+# - Push a tag v<VERSION_NAME> (e.g. v0.1.0-alpha02): builds, signs, checks the signatures, then uploads two deployments
+#   (libraries, Gradle plugin) to the Central Portal. They wait there until you press Publish on
+#   https://central.sonatype.com/publishing/deployments.
+# - "Run workflow" by hand: a dry run. Same build, signing and signature check, but nothing leaves the runner.
+#
+# Runs on macOS: only a Mac can build the iOS klibs, and Central needs every target in one release.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=false
+  # Read by com.vanniktech.maven.publish as Gradle properties.
+  ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+  ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+  ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+  ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+  # Public half of SIGNING_KEY, as published on keys.openpgp.org. Central checks signatures against it.
+  SIGNING_KEY_ID: F6A6884708D12D47
+
+jobs:
+  publish:
+    name: Publish to Maven Central
+    runs-on: macos-26
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: |
+            17
+            21
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Kotlin/Native toolchain cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+
+      - name: Tag matches VERSION_NAME
+        if: github.ref_type == 'tag'
+        run: |
+          version=$(sed -n 's/^VERSION_NAME=//p' gradle.properties)
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match VERSION_NAME=$version in gradle.properties (expected v$version)"
+            exit 1
+          fi
+
+      - name: Signing secrets present
+        run: |
+          missing=""
+          for name in ORG_GRADLE_PROJECT_signingInMemoryKey ORG_GRADLE_PROJECT_signingInMemoryKeyPassword; do
+            [ -n "${!name}" ] || missing="$missing $name"
+          done
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            for name in ORG_GRADLE_PROJECT_mavenCentralUsername ORG_GRADLE_PROJECT_mavenCentralPassword; do
+              [ -n "${!name}" ] || missing="$missing $name"
+            done
+          fi
+          if [ -n "$missing" ]; then
+            echo "::error::Empty secrets:$missing (see the env block of this workflow for the secret names)"
+            exit 1
+          fi
+
+      # Signed artifacts land in Maven Local first, so the next step can check them before anything is uploaded.
+      - name: Build and sign into Maven Local
+        run: |
+          ./gradlew :passki:publishToMavenLocal :passki-compose:publishToMavenLocal :passki-test:publishToMavenLocal :passki-demo:publishToMavenLocal
+          ./gradlew -p passki-gradle-plugin publishToMavenLocal
+
+      - name: Every file is signed with the published key
+        run: |
+          version=$(sed -n 's/^VERSION_NAME=//p' gradle.properties)
+          gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$SIGNING_KEY_ID"
+          root="$HOME/.m2/repository/com/alirezaiyan/passki"
+          checked=0; failed=0
+          while IFS= read -r file; do
+            if gpg --batch --verify "$file.asc" "$file" 2>/dev/null; then
+              checked=$((checked + 1))
+            else
+              echo "::error::Missing or bad signature: ${file#"$root"/}"
+              failed=$((failed + 1))
+            fi
+          done < <(find "$root" -path "*/$version/*" -type f ! -name '*.asc' ! -name '*.md5' ! -name '*.sha*')
+          echo "$checked files signed by $SIGNING_KEY_ID, $failed failed"
+          [ "$checked" -gt 0 ] && [ "$failed" -eq 0 ]
+
+      # --no-configuration-cache: the Central upload task does not support the configuration cache.
+      - name: Upload to the Central Portal
+        if: github.ref_type == 'tag'
+        run: |
+          ./gradlew --no-configuration-cache :passki:publishToMavenCentral :passki-compose:publishToMavenCentral :passki-test:publishToMavenCentral :passki-demo:publishToMavenCentral
+          ./gradlew --no-configuration-cache -p passki-gradle-plugin publishToMavenCentral
+
+      - name: Next step
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            echo "Uploaded. Press Publish on both deployments: https://central.sonatype.com/publishing/deployments" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Dry run passed: everything builds and is signed with $SIGNING_KEY_ID. Nothing was uploaded." >> "$GITHUB_STEP_SUMMARY"
+          fi
