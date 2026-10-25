@@ -46,6 +46,7 @@ jobs:
           :passki-compose:jvmTest :passki-compose:testAndroidHostTest
           :passki-demo:jvmTest :passki-demo:wasmJsBrowserTest
           :shared:jvmTest :androidApp:assembleDebug
+          :webApp:jsBrowserDistribution :webApp:wasmJsBrowserDistribution :webApp:jsBrowserTest
           dokkaGenerate
       - name: Gradle plugin tests (unit and TestKit)
         run: ./gradlew -p passki-gradle-plugin test

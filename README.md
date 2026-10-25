@@ -88,6 +88,8 @@ You need a device that can hold a passkey:
 - **Android 9+:** a phone, or an emulator with a Google Play system image. Sign in to a Google account and set a
   screen lock.
 - **iOS 16+:** an iPhone, or a simulator with **Features → Face ID → Enrolled**.
+- **Browser:** a current Chrome, Edge, Safari or Firefox, with a passkey provider (the browser's password manager, a
+  phone, or a security key).
 
 Then:
 
@@ -98,6 +100,8 @@ Then:
    `TEAM_ID` to your Apple Developer Team ID. Git ignores this file.
 4. **iOS:** run `./gradlew passkiSetup`. It registers your build of the sample with the demo server. Then run `iosApp`
    from Xcode.
+5. **Browser:** run `./gradlew :webApp:wasmJsBrowserDevelopmentRun` (or `:webApp:jsBrowserDevelopmentRun`) and open
+   http://localhost:8080. There is nothing to set up.
 
 When the app starts, it checks its setup. If something is wrong, a banner names the problem, and tapping it opens the
 fix. More in [Sample app](#sample-app).
@@ -502,7 +506,8 @@ All plugin options and tasks, `PasskeyDoctor`, the web dashboard and setting up 
 
 ## Sample app
 
-`androidApp`, `iosApp` and `shared/` make up the Compose Multiplatform sample shown at the top. It runs every PassKi
+`androidApp`, `iosApp` and `shared/` make up the Compose Multiplatform sample shown at the top (`webApp` is the
+browser version, see below). It runs every PassKi
 call against the demo server, and the server checks every response. It has three tabs:
 
 <table>
@@ -541,6 +546,14 @@ call against the demo server, and the server checks every response. It has three
   `Local.xcconfig`, the app still builds for the simulator, but passkey calls fail with `Misconfigured` (IOS-02) because
   iOS can't link the app to the demo domain. Don't pick a team in Xcode's **Signing & Capabilities** tab: Xcode would
   write it into `project.pbxproj`, and CI rejects that.
+- **Browser: a page of its own, nothing to set up.** `webApp` runs PassKi's browser implementation on Kotlin/Wasm or
+  Kotlin/JS. It can't use the demo server: browsers only accept an RP ID that matches the page, and the demo server's
+  RP ID is its own domain. So the page is its own relying party (`webApp/.../LocalRelyingParty.kt`): it creates options
+  for the page's domain (`localhost` while developing) and reads the challenge, origin and flags back from each
+  response. It doesn't verify signatures, so it's a demo only; your server verifies in a real app. The page creates
+  passkeys (with PRF), shows `excludeCredentials` failing with `AlreadyRegistered`, signs in, derives a PRF key, and
+  sends signals, and shows each response JSON. Autofill isn't shown, because Compose for Web draws on a canvas and
+  passkey autofill needs an HTML input.
 - **Setup problems show at launch.** The app runs the setup check when it starts. If a check fails, a banner names it
   (for example `Setup: 1 problem (IOS-02)`), and tapping the banner opens the Setup tab with the fix.
 - **Automatic test run.** Start the app with the autorun flag. It first runs the steps that need no taps

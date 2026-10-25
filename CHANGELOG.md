@@ -13,6 +13,9 @@ listed here.
   optional in a browser, where it defaults to the page's domain; a mismatch fails with `Misconfigured`. Cancelling the
   calling coroutine aborts the browser request. `signInOrPassword()` returns `NotSupported` in browsers. See
   [docs/platforms.md](docs/platforms.md).
+- **Browser sample:** `webApp` (`./gradlew :webApp:wasmJsBrowserDevelopmentRun`) creates passkeys, signs in,
+  derives a PRF key and sends signals in the browser. A relying party inside the page issues the options for the
+  page's own domain, so it runs on `localhost` with nothing to set up.
 - **`passkiOrigin` task:** `./gradlew passkiOrigin --sha256=<fingerprint> [--package=<applicationId>]` prints the
   `android:apk-key-hash:` origin and the `assetlinks.json` statement for a raw SHA-256, such as the Play App Signing
   key, which is in no local keystore. Works in any project, with or without an Android app.
