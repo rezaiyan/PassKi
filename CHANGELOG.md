@@ -6,6 +6,11 @@ listed here.
 ## 0.1.0-alpha04 (unreleased)
 
 ### Added
+- **Passkeys in the browser** (js and wasmJs). `Passkeys()` uses `navigator.credentials`: register, sign in,
+  autofill (conditional mediation), upgrade (conditional create), signals, PRF and largeBlob, each where the browser
+  supports it, as `capabilities()` reports. The browser checks the RP ID against the page, so options may leave it out.
+  Browser errors map to the usual `PasskeyError`s, such as `NotAllowedError` → `Cancelled` and `InvalidStateError` →
+  `AlreadyRegistered`. `signInOrPassword` is `NotSupported`: browsers have no combined sheet.
 - **`passkiOrigin` task:** `./gradlew passkiOrigin --sha256=<fingerprint> [--package=<applicationId>]` prints the
   `android:apk-key-hash:` origin and the `assetlinks.json` statement for a raw SHA-256, such as the Play App Signing
   key, which is in no local keystore. Works in any project, with or without an Android app.

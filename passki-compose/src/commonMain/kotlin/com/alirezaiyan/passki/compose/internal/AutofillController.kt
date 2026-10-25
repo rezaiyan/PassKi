@@ -6,6 +6,7 @@ import com.alirezaiyan.passki.PasskeyResult
 import com.alirezaiyan.passki.Passkeys
 import com.alirezaiyan.passki.SignInMode
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -22,6 +23,12 @@ import kotlin.time.TimeSource
 internal typealias AutofillSignIn = suspend (passkeys: Passkeys, optionsJson: String) -> PasskeyResult<PasskeyAssertion>
 
 internal val PlainAutofillSignIn: AutofillSignIn = { passkeys, options -> passkeys.signIn(options, SignInMode.Autofill) }
+
+/**
+ * For a field the platform can't attach passkey suggestions to: the controller makes no request at all. Compose for
+ * Web draws on a canvas, so there is no `<input autocomplete="webauthn">` for the browser's suggestions.
+ */
+internal val NoAutofillSignIn: AutofillSignIn = { _, _ -> awaitCancellation() }
 
 /**
  * Decides when a username field offers passkeys through [SignInMode.Autofill]. Pure logic, no UI.
@@ -82,9 +89,9 @@ internal class AutofillController(
         }
     }
 
-    /** Runs until cancelled. Returns at once if the platform has no autofill. */
+    /** Runs until cancelled. Returns at once if the platform or the field has no autofill. */
     suspend fun run() {
-        if (stopped || !passkeys.capabilities().autofill) return
+        if (stopped || autofill === NoAutofillSignIn || !passkeys.capabilities().autofill) return
         arm.collectLatest { state ->
             if (state.focused && !stopped) offer()
         }

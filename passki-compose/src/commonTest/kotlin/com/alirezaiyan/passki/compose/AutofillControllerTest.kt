@@ -6,6 +6,9 @@ import com.alirezaiyan.passki.PasskeyResult
 import com.alirezaiyan.passki.Passkeys
 import com.alirezaiyan.passki.SignInMode
 import com.alirezaiyan.passki.compose.internal.AutofillController
+import com.alirezaiyan.passki.compose.internal.AutofillSignIn
+import com.alirezaiyan.passki.compose.internal.NoAutofillSignIn
+import com.alirezaiyan.passki.compose.internal.PlainAutofillSignIn
 import com.alirezaiyan.passki.getOrThrow
 import com.alirezaiyan.passki.test.FakePasskeys
 import com.alirezaiyan.passki.test.TestOptions
@@ -63,6 +66,7 @@ class AutofillControllerTest {
     private fun TestScope.controller(
         passkeys: Passkeys,
         recorder: Recorder,
+        autofill: AutofillSignIn = PlainAutofillSignIn,
         requestOptions: suspend () -> String = { TestOptions.request(rpId) },
     ) = AutofillController(
         passkeys = passkeys,
@@ -73,6 +77,7 @@ class AutofillControllerTest {
         },
         onError = { recorder.errors += it },
         timeSource = testTimeSource,
+        autofill = autofill,
     )
 
     private suspend fun assertion(): PasskeyAssertion {
@@ -92,6 +97,22 @@ class AutofillControllerTest {
         controller.onTap()
         runCurrent()
 
+        assertEquals(0, passkeys.calls.size)
+        job.cancel()
+    }
+
+    @Test
+    fun fieldWithoutAutofillNeverFetchesOptionsOrSignsIn() = runTest {
+        val passkeys = GatedPasskeys()
+        var fetches = 0
+        val controller = controller(passkeys, Recorder(), requestOptions = { fetches++; TestOptions.request(rpId) }, autofill = NoAutofillSignIn)
+        val job = launch { controller.run() }
+
+        controller.onFocusChanged(true)
+        advanceTimeBy(2_000)
+        runCurrent()
+
+        assertEquals(0, fetches)
         assertEquals(0, passkeys.calls.size)
         job.cancel()
     }

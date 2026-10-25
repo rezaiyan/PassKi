@@ -51,7 +51,8 @@ request). It stops offering them when it loses focus or leaves the screen, and i
   iOS 26.3). iOS shows a **Passwords** item above the keyboard, not the account name. Tapping it, then Face ID, opens
   a list that includes your passkeys. In the simulator, turn off the hardware keyboard (I/O > Keyboard, or ⌘K) to see
   that bar.
-- **JVM desktop and browser:** a plain text field. It makes no passkey request.
+- **JVM desktop and browser:** a plain text field. It makes no passkey request: Compose for Web draws on a canvas, so
+  the browser has no `<input>` to show suggestions under. Use the sign-in button there.
 
 `onError` reports two kinds of problems:
 

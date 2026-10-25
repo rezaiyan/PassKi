@@ -7,7 +7,8 @@ What each OS supports, and how Android and iOS behave differently. The short ver
 |---|---|
 | **Android 9+** (Credential Manager) | register, sign in, passkey-or-password, upgrade, signals, autofill (Android 15+), PRF and largeBlob (if the credential provider supports them) |
 | **iOS 16+** (AuthenticationServices) | register, sign in, passkey-or-password, autofill, upgrade (iOS 18+), signals (iOS 26+), PRF (iOS 18+), largeBlob (iOS 17+) |
-| **JVM desktop, browser** (js / wasmJs) | Compiles. Every call returns `PasskeyError.NotSupported` for now. Native macOS, tvOS, watchOS, Linux and Windows targets are not published yet |
+| **Browser** (js / wasmJs, `navigator.credentials`) | register, sign in, autofill, upgrade, signals, PRF and largeBlob, each where the browser has it. The page must be HTTPS or `http://localhost`. No passkey-or-password sheet |
+| **JVM desktop** | Compiles. Every call returns `PasskeyError.NotSupported` for now. Native macOS, tvOS, watchOS, Linux and Windows targets are not published yet |
 
 Call `passkeys.capabilities()` to find out what the current device supports, so your UI can adapt before it shows a
 button.
@@ -16,22 +17,22 @@ button.
 
 `capabilities()` returns a `PasskeyCapabilities` with one flag per feature:
 
-| Flag | Feature | Android | iOS | Notes |
-|---|---|---|---|---|
-| `isSupported` | Passkeys at all | 9+ (API 28) | 16+ | When false, every call fails with `NotSupported` |
-| `immediateSignIn` | `SignInMode.ImmediateOnly` | 9+ | 16+ | |
-| `unifiedPasswordSignIn` | `signInOrPassword` | 9+ | 16+ | |
-| `conditionalCreate` | `upgrade` | 9+ | 18+ | On Android, the credential provider can still decline |
-| `signals` | `signals` | 9+ | 26+ | On Android, the credential provider can still decline |
-| `autofill` | `SignInMode.Autofill` | 15+ (API 35) | 16+ | Needs a focused username field |
+| Flag | Feature | Android | iOS | Browser | Notes |
+|---|---|---|---|---|---|
+| `isSupported` | Passkeys at all | 9+ (API 28) | 16+ | WebAuthn on an HTTPS or `http://localhost` page | When false, every call fails with `NotSupported` |
+| `immediateSignIn` | `SignInMode.ImmediateOnly` | 9+ | 16+ | Browsers with `mediation: "immediate"` | |
+| `unifiedPasswordSignIn` | `signInOrPassword` | 9+ | 16+ | No | |
+| `conditionalCreate` | `upgrade` | 9+ | 18+ | When `getClientCapabilities()` reports it | On Android, the credential provider can still decline |
+| `signals` | `signals` | 9+ | 26+ | When `PublicKeyCredential` has the three signal methods | On Android, the credential provider can still decline |
+| `autofill` | `SignInMode.Autofill` | 15+ (API 35) | 16+ | Conditional mediation | Needs a focused username field. In a browser, an HTML `<input autocomplete="username webauthn">`; `PasskeyUsernameField` can't offer it there |
 
 Extensions (PRF and largeBlob) have no flag. As in browsers, a platform that can't handle an extension ignores it,
 and its output is `null`.
 
-| Extension | Android | iOS |
-|---|---|---|
-| PRF | Passed to the credential provider. Google Password Manager supports it. | 18+ |
-| largeBlob | Passed to the credential provider | 17+ |
+| Extension | Android | iOS | Browser |
+|---|---|---|---|
+| PRF | Passed to the credential provider. Google Password Manager supports it. | Passed to the browser |
+| largeBlob | Passed to the credential provider | 17+ | Passed to the browser |
 
 ## Good to know
 

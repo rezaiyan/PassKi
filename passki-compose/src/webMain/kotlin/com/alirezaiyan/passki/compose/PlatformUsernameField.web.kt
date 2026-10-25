@@ -3,7 +3,7 @@ package com.alirezaiyan.passki.compose
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.alirezaiyan.passki.compose.internal.AutofillSignIn
-import com.alirezaiyan.passki.compose.internal.PlainAutofillSignIn
+import com.alirezaiyan.passki.compose.internal.NoAutofillSignIn
 
 @Composable
 internal actual fun PlatformUsernameField(
@@ -19,4 +19,4 @@ internal actual fun PlatformUsernameField(
 }
 
 @Composable
-internal actual fun rememberAutofillSignIn(): AutofillSignIn = PlainAutofillSignIn
+internal actual fun rememberAutofillSignIn(): AutofillSignIn = NoAutofillSignIn
