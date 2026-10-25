@@ -3,7 +3,7 @@
 All notable changes to PassKi. Versions before 1.0 are alphas: the API may still change, but every change is
 listed here.
 
-## 0.1.0-alpha04 (unreleased)
+## 0.1.0-alpha04 (2026-10-25)
 
 ### Added
 - **Passkeys in the browser** (js and wasmJs). `Passkeys()` uses `navigator.credentials`: register, sign in,

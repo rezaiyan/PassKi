@@ -114,8 +114,8 @@ response. Use it to try PassKi, not in production: it deletes its users after 24
 
    ```kotlin
    commonMain.dependencies {
-       implementation("com.alirezaiyan.passki:passki:0.1.0-alpha03")
-       implementation("com.alirezaiyan.passki:passki-demo:0.1.0-alpha03")
+       implementation("com.alirezaiyan.passki:passki:0.1.0-alpha04")
+       implementation("com.alirezaiyan.passki:passki-demo:0.1.0-alpha04")
    }
    ```
 
@@ -123,7 +123,7 @@ response. Use it to try PassKi, not in production: it deletes its users after 24
 
    ```kotlin
    plugins {
-       id("com.alirezaiyan.passki") version "0.1.0-alpha03"
+       id("com.alirezaiyan.passki") version "0.1.0-alpha04"
    }
 
    passki {
@@ -237,11 +237,11 @@ PassKi is on Maven Central:
 
 ```kotlin
 commonMain.dependencies {
-    implementation("com.alirezaiyan.passki:passki:0.1.0-alpha03")
-    implementation("com.alirezaiyan.passki:passki-compose:0.1.0-alpha03") // optional: Compose Multiplatform UI
-    implementation("com.alirezaiyan.passki:passki-demo:0.1.0-alpha03")    // optional: demo server client (path B)
+    implementation("com.alirezaiyan.passki:passki:0.1.0-alpha04")
+    implementation("com.alirezaiyan.passki:passki-compose:0.1.0-alpha04") // optional: Compose Multiplatform UI
+    implementation("com.alirezaiyan.passki:passki-demo:0.1.0-alpha04")    // optional: demo server client (path B)
 }
-commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha03") }
+commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha04") }
 ```
 
 The Gradle plugin is on Maven Central too, not the Gradle Plugin Portal, so `pluginManagement { repositories }` in
@@ -450,7 +450,7 @@ your own endpoints and verifier (webauthn4j accepts its responses):
 
 ```kotlin
 dependencies {
-    testImplementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha03")
+    testImplementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha04")
     // Up to 0.1.0-alpha03 only; later versions bring coroutines with them.
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 }
