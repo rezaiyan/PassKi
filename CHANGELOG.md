@@ -6,6 +6,13 @@ listed here.
 ## 0.1.0-alpha04 (unreleased)
 
 ### Added
+- **Browser support (js and wasmJs).** `Passkeys()` in a browser now calls WebAuthn (`navigator.credentials`) instead
+  of returning `NotSupported`: register, sign in (modal, autofill through conditional mediation, and immediate where the
+  browser accepts it), `upgrade()` through conditional create, the Signal API, and the PRF and largeBlob extensions.
+  `capabilities()` reads `PublicKeyCredential.getClientCapabilities()`, with fallbacks for older browsers. The RP ID is
+  optional in a browser, where it defaults to the page's domain; a mismatch fails with `Misconfigured`. Cancelling the
+  calling coroutine aborts the browser request. `signInOrPassword()` returns `NotSupported` in browsers. See
+  [docs/platforms.md](docs/platforms.md).
 - **`passkiOrigin` task:** `./gradlew passkiOrigin --sha256=<fingerprint> [--package=<applicationId>]` prints the
   `android:apk-key-hash:` origin and the `assetlinks.json` statement for a raw SHA-256, such as the Play App Signing
   key, which is in no local keystore. Works in any project, with or without an Android app.

@@ -41,7 +41,7 @@ jobs:
       - name: Library tests
         run: >
           ./gradlew
-          :passki:jvmTest :passki:testAndroidHostTest
+          :passki:jvmTest :passki:testAndroidHostTest :passki:jsBrowserTest :passki:wasmJsBrowserTest
           :passki-test:jvmTest
           :passki-compose:jvmTest :passki-compose:testAndroidHostTest
           :passki-demo:jvmTest :passki-demo:wasmJsBrowserTest

@@ -363,7 +363,8 @@ passkey on another device, such as a phone they use to sign in on a tablet.
 |---|---|
 | **Android 9+** (Credential Manager) | register, sign in, passkey-or-password, upgrade, signals, autofill (Android 15+), PRF and largeBlob (if the credential provider supports them) |
 | **iOS 16+** (AuthenticationServices) | register, sign in, passkey-or-password, autofill, upgrade (iOS 18+), signals (iOS 26+), PRF (iOS 18+), largeBlob (iOS 17+) |
-| **JVM desktop, browser** (js / wasmJs) | Compiles. Every call returns `PasskeyError.NotSupported` for now. Native macOS, tvOS, watchOS, Linux and Windows targets are not published yet |
+| **Browser** (js / wasmJs, WebAuthn) | register, sign in, upgrade, signals, autofill, PRF and largeBlob, each where the browser supports it; immediate sign-in where the browser accepts `mediation: "immediate"`. No passkey-or-password |
+| **JVM desktop** | Compiles. Every call returns `PasskeyError.NotSupported` for now. Native macOS, tvOS, watchOS, Linux and Windows targets are not published yet |
 
 Call `passkeys.capabilities()` to find out what the current device supports, so your UI can adapt before it shows a
 button. Details per OS version: [docs/platforms.md](docs/platforms.md).

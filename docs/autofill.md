@@ -1,8 +1,9 @@
 # Autofill sign-in
 
 `SignInMode.Autofill` offers the person's passkeys as suggestions in the keyboard of a focused username field.
-WebAuthn calls this "conditional mediation". It needs Android 15 (API 35) or newer, or iOS 16 or newer; check
-`capabilities().autofill`.
+WebAuthn calls this "conditional mediation". It needs Android 15 (API 35) or newer, iOS 16 or newer, or a browser
+with conditional mediation; check `capabilities().autofill`. In a browser, the suggestions appear in an HTML
+`<input autocomplete="username webauthn">` on the page, which Compose for Web (drawn on a canvas) doesn't have.
 
 `PasskeyUsernameField` from `passki-compose` does all of this for you. To use autofill with your own text field:
 

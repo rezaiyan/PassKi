@@ -6,7 +6,8 @@ package com.alirezaiyan.passki
  * Every `optionsJson` parameter is the WebAuthn options JSON produced by your server,
  * optionally wrapped in `{"publicKey": ...}`. It must name the RP ID (`rp.id` in creation options, `rpId` in
  * request options) as a bare domain such as `example.com`: browsers derive it from the page's origin, but apps have
- * no origin, so a missing or malformed RP ID fails with [PasskeyError.InvalidOptions].
+ * no origin, so a missing or malformed RP ID fails with [PasskeyError.InvalidOptions]. In a browser (js / wasmJs) the
+ * RP ID may be left out and defaults to the page's domain.
  * Every returned `json` is ready to POST to your server's verifier.
  *
  * Implementing this interface is supported (e.g. for fakes; prefer passki-test's FakePasskeys).
@@ -81,7 +82,8 @@ public enum class SignInMode {
 
     /**
      * Offers passkeys as suggestions in the keyboard / QuickType bar of the focused username field
-     * (WebAuthn "conditional mediation"). Requires [PasskeyCapabilities.autofill]: Android 15 (API 35)+, iOS 16+.
+     * (WebAuthn "conditional mediation"). Requires [PasskeyCapabilities.autofill]: Android 15 (API 35)+, iOS 16+, or
+     * a browser with conditional mediation, where the field is an HTML `<input autocomplete="username webauthn">`.
      *
      * [Passkeys.signIn] suspends until the user picks a passkey suggestion. Dismissing the suggestion or the
      * sheet does not complete the call; it keeps waiting. Cancel the calling coroutine to withdraw the offer,
