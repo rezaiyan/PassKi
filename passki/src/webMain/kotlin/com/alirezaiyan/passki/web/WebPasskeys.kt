@@ -41,13 +41,15 @@ internal data class ClientCapabilities(
  * host.
  */
 internal class WebPasskeys(private val browser: WebAuthnBridge = BrowserWebAuthn) : Passkeys {
+    /** Set once the browser rejected mediation "immediate" although it reported support. */
+    private var immediateRejected = false
 
     override suspend fun capabilities(): PasskeyCapabilities {
         val client = clientCapabilities()
         val supported = client.supported
         return PasskeyCapabilities(
             isSupported = supported,
-            immediateSignIn = supported && client.immediateGet,
+            immediateSignIn = supported && client.immediateGet && !immediateRejected,
             unifiedPasswordSignIn = false,
             conditionalCreate = supported && client.conditionalCreate,
             signals = supported && client.signalUnknownCredential && client.signalAllAcceptedCredentials &&
@@ -70,11 +72,18 @@ internal class WebPasskeys(private val browser: WebAuthnBridge = BrowserWebAuthn
             val mediation = when (mode) {
                 SignInMode.Modal -> null
                 SignInMode.ImmediateOnly ->
-                    if (client.immediateGet) "immediate" else throw notSupported("This browser has no immediate sign-in (mediation \"immediate\").")
+                    if (client.immediateGet && !immediateRejected) "immediate" else throw notSupported(NO_IMMEDIATE)
                 SignInMode.Autofill ->
                     if (client.conditionalGet) "conditional" else throw notSupported("This browser has no passkey autofill (conditional mediation).")
             }
-            parseAssertion(browser.call("get", options.json, mediation))
+            val response = try {
+                browser.call("get", options.json, mediation)
+            } catch (e: WebAuthnException) {
+                if (mediation != "immediate" || !e.isUnknownMediation()) throw e
+                immediateRejected = true
+                throw notSupported("$NO_IMMEDIATE ${e.message.orEmpty()}")
+            }
+            parseAssertion(response)
         }
 
     override suspend fun signInOrPassword(optionsJson: String): PasskeyResult<SignInCredential> =
@@ -129,7 +138,18 @@ internal class WebPasskeys(private val browser: WebAuthnBridge = BrowserWebAuthn
     }
 
     private fun notSupported(message: String) = PasskeyException(PasskeyError.NotSupported(message))
+
+    private companion object {
+        const val NO_IMMEDIATE = "This browser has no immediate sign-in (mediation \"immediate\")."
+    }
 }
+
+/**
+ * The browser doesn't know the `mediation` value: a TypeError while reading `CredentialRequestOptions.mediation`, e.g.
+ * Chromium's "The provided value 'immediate' is not a valid enum value of type CredentialMediationRequirement".
+ */
+internal fun WebAuthnException.isUnknownMediation(): Boolean =
+    name == "TypeError" && message.orEmpty().contains("mediation", ignoreCase = true)
 
 /** Maps a rejected WebAuthn call; [conditionalCreate] and [immediate] change what `NotAllowedError` means. */
 internal fun Throwable.toPasskeyError(conditionalCreate: Boolean = false, immediate: Boolean = false): PasskeyError {

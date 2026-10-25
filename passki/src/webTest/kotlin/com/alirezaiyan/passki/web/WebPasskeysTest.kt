@@ -170,6 +170,55 @@ class WebPasskeysTest {
     }
 
     @Test
+    fun immediateOnlyThatTheBrowserRejectsAsAnUnknownMediationIsNotSupportedFromThenOn() = runTest {
+        // Chromium can report immediateGet and still reject the enum value.
+        val browser = FakeBrowser(answers = mapOf("get" to failing("TypeError", UNKNOWN_IMMEDIATE)))
+        val passkeys = WebPasskeys(browser)
+
+        val first = passkeys.signIn(REQUEST, SignInMode.ImmediateOnly)
+
+        val error = assertIs<PasskeyError.NotSupported>(assertIs<PasskeyResult.Failure>(first).error)
+        assertTrue("CredentialMediationRequirement" in error.message, error.message)
+        assertFalse(passkeys.capabilities().immediateSignIn)
+        val second = passkeys.signIn(REQUEST, SignInMode.ImmediateOnly)
+        assertIs<PasskeyError.NotSupported>(assertIs<PasskeyResult.Failure>(second).error)
+        assertEquals(1, browser.calls.size, "The second attempt never reaches the browser.")
+    }
+
+    @Test
+    fun immediateOnlyWithOptionsTheBrowserRejectsIsStillInvalidOptions() = runTest {
+        val browser = FakeBrowser(
+            answers = mapOf(
+                "get" to failing("TypeError", "Failed to read the 'challenge' property from 'PublicKeyCredentialRequestOptions': Required member is undefined."),
+            ),
+        )
+        val passkeys = WebPasskeys(browser)
+
+        val result = passkeys.signIn(REQUEST, SignInMode.ImmediateOnly)
+
+        assertIs<PasskeyError.InvalidOptions>(assertIs<PasskeyResult.Failure>(result).error)
+        assertTrue(passkeys.capabilities().immediateSignIn)
+    }
+
+    @Test
+    fun modalSignInIsUnaffectedByAnImmediateRejection() = runTest {
+        var immediateFails = true
+        val browser = FakeBrowser(
+            answers = mapOf(
+                "get" to { if (immediateFails) throw WebAuthnException("TypeError", UNKNOWN_IMMEDIATE) else ASSERTION },
+            ),
+        )
+        val passkeys = WebPasskeys(browser)
+
+        passkeys.signIn(REQUEST, SignInMode.ImmediateOnly)
+        immediateFails = false
+        val result = passkeys.signIn(REQUEST, SignInMode.Modal)
+
+        assertIs<PasskeyResult.Success<*>>(result)
+        assertNull(browser.calls.last().mediation)
+    }
+
+    @Test
     fun upgradeIsAConditionalCreateAndADeclineIsNotSupported() = runTest {
         val browser = FakeBrowser(answers = mapOf("create" to failing("NotAllowedError")))
 
@@ -252,6 +301,10 @@ class WebPasskeysTest {
                 """"challenge":"AAECAw","pubKeyCredParams":[{"type":"public-key","alg":-7}]}"""
 
         const val REQUEST = """{"challenge":"AAECAw","rpId":"localhost"}"""
+
+        const val UNKNOWN_IMMEDIATE =
+            "Failed to read the 'mediation' property from 'CredentialRequestOptions': The provided value 'immediate' " +
+                "is not a valid enum value of type CredentialMediationRequirement."
 
         val REGISTRATION: String = WebAuthnResponses.registration(
             credentialId = byteArrayOf(1, 2, 3),

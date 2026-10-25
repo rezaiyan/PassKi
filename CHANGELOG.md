@@ -3,6 +3,17 @@
 All notable changes to PassKi. Versions before 1.0 are alphas: the API may still change, but every change is
 listed here.
 
+## 0.1.0-alpha05 (unreleased)
+
+### Fixed
+- **Immediate sign-in in Chromium browsers that only claim it** (js and wasmJs). Some Chromium builds report
+  `immediateGet` from `getClientCapabilities()` yet reject `mediation: "immediate"` as an unknown enum value, so
+  `SignInMode.ImmediateOnly` failed with `InvalidOptions`. `capabilities().immediateSignIn` now asks the browser
+  itself: once per page, a `navigator.credentials.get` with `mediation: "immediate"` and an already-aborted signal,
+  which the browser rejects before any UI or authenticator (a `TypeError` means it doesn't know the value). If a sign-in
+  still meets that `TypeError`, `ImmediateOnly` fails with `NotSupported`, so callers can fall back to `Modal`, and
+  `immediateSignIn` is false from then on. Other `TypeError`s are still `InvalidOptions`.
+
 ## 0.1.0-alpha04 (2026-10-25)
 
 ### Added

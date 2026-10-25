@@ -115,16 +115,30 @@ internal const val WEBAUTHN_JS: String =
     }
     return JSON.stringify(out);
   }
+  // Some Chromium builds report immediateGet but reject mediation 'immediate' as an unknown enum value (a TypeError).
+  // Ask with a signal that is already aborted: the options are converted first, so an unknown mediation is a
+  // TypeError, and a known one reaches the abort check, which rejects before any UI or authenticator. Asked once.
+  function acceptsImmediate() {
+    if (!g.__passkiImmediate) {
+      g.__passkiImmediate = Promise.resolve().then(function () {
+        var controller = new AbortController();
+        controller.abort();
+        return g.navigator.credentials.get({ mediation: 'immediate', signal: controller.signal, publicKey: { challenge: new Uint8Array(16) } });
+      }).then(function () { return true; }, function (e) { return !(e && e.name === 'TypeError'); });
+    }
+    return g.__passkiImmediate;
+  }
   function capabilities() {
     var caps = { webauthn: !!(P && g.navigator && g.navigator.credentials), secureContext: !!g.isSecureContext };
     if (!P) return Promise.resolve(JSON.stringify(caps));
     var client = typeof P.getClientCapabilities === 'function' ? P.getClientCapabilities().catch(function () { return {}; }) : Promise.resolve({});
     var conditional = typeof P.isConditionalMediationAvailable === 'function' ? P.isConditionalMediationAvailable().catch(function () { return false; }) : Promise.resolve(false);
-    return Promise.all([client, conditional]).then(function (r) {
+    var immediate = client.then(function (c) { return !!(c && c.immediateGet) && caps.webauthn && acceptsImmediate(); });
+    return Promise.all([client, conditional, immediate]).then(function (r) {
       var c = r[0] || {};
       caps.conditionalGet = !!(c.conditionalGet || r[1]);
       caps.conditionalCreate = !!c.conditionalCreate;
-      caps.immediateGet = !!c.immediateGet;
+      caps.immediateGet = !!r[2];
       ['signalUnknownCredential', 'signalAllAcceptedCredentials', 'signalCurrentUserDetails'].forEach(function (m) { caps[m] = typeof P[m] === 'function'; });
       return JSON.stringify(caps);
     });
