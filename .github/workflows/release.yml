@@ -3,8 +3,9 @@ name: Release
 # Publishes the libraries (passki, passki-compose, passki-test, passki-demo) and the Gradle plugin to Maven Central.
 #
 # - Push a tag v<VERSION_NAME> (e.g. v0.1.0-alpha02): builds, signs, checks the signatures, then uploads two deployments
-#   (libraries, Gradle plugin) to the Central Portal. They wait there until you press Publish on
-#   https://central.sonatype.com/publishing/deployments.
+#   (libraries, Gradle plugin) to the Central Portal and releases each one as soon as Central has validated it. There
+#   is no manual Publish step: pushing the tag is the release, and a Maven Central release can't be taken back.
+#   Libraries go first; if the plugin then fails validation, the libraries are already out and the fix is a new version.
 # - "Run workflow" by hand: a dry run. Same build, signing and signature check, but nothing leaves the runner.
 #
 # Runs on macOS: only a Mac can build the iOS klibs, and Central needs every target in one release.
@@ -102,16 +103,16 @@ jobs:
           [ "$checked" -gt 0 ] && [ "$failed" -eq 0 ]
 
       # --no-configuration-cache: the Central upload task does not support the configuration cache.
-      - name: Upload to the Central Portal
+      - name: Upload to the Central Portal and release
         if: github.ref_type == 'tag'
         run: |
-          ./gradlew --no-configuration-cache :passki:publishToMavenCentral :passki-compose:publishToMavenCentral :passki-test:publishToMavenCentral :passki-demo:publishToMavenCentral
-          ./gradlew --no-configuration-cache -p passki-gradle-plugin publishToMavenCentral
+          ./gradlew --no-configuration-cache :passki:publishAndReleaseToMavenCentral :passki-compose:publishAndReleaseToMavenCentral :passki-test:publishAndReleaseToMavenCentral :passki-demo:publishAndReleaseToMavenCentral
+          ./gradlew --no-configuration-cache -p passki-gradle-plugin publishAndReleaseToMavenCentral
 
       - name: Next step
         run: |
           if [ "$GITHUB_REF_TYPE" = tag ]; then
-            echo "Uploaded. Press Publish on both deployments: https://central.sonatype.com/publishing/deployments" >> "$GITHUB_STEP_SUMMARY"
+            echo "Released to Maven Central. It can take a while to show on repo1.maven.org; deployments: https://central.sonatype.com/publishing/deployments" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Dry run passed: everything builds and is signed with $SIGNING_KEY_ID. Nothing was uploaded." >> "$GITHUB_STEP_SUMMARY"
           fi
