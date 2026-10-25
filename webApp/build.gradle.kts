@@ -21,6 +21,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":shared"))
+            implementation(project(":passki-demo"))
 
             implementation(libs.compose.ui)
         }

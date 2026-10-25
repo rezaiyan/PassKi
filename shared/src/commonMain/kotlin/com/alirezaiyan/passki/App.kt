@@ -63,7 +63,8 @@ private enum class Tab(val label: String, val icon: ImageVector) {
  * verifies every response. Demo is a real-looking sign-in, Lab runs every flow, Setup shows the doctor checks.
  *
  * @param appOrigin the WebAuthn origin this app produces (Android: `android:apk-key-hash:…`); null means the
- *   HTTPS origin of the RP ID (iOS, web).
+ *   HTTPS origin of [appRpId] (iOS, web).
+ * @param appRpId the domain this app can use passkeys for: its associated domain, or the page's host on the web.
  */
 @Composable
 fun App(
@@ -71,10 +72,11 @@ fun App(
     autorun: Boolean = false,
     appOrigin: String? = null,
     rp: PasskiDemoServer = remember { PasskiDemoServer() },
+    appRpId: String = PasskiDemoServer.RP_ID,
 ) {
     PassKiTheme {
         val scope = rememberCoroutineScope()
-        val controller = remember { DemoController(passkeys, rp, appOrigin, getPlatform().name, scope) }
+        val controller = remember { DemoController(passkeys, rp, appOrigin, getPlatform().name, scope, appRpId) }
         val signIn = rememberPasskeySignIn(requestOptions = { rp.authenticationOptions() }, passkeys = passkeys)
         var tab by remember { mutableStateOf(Tab.Demo) }
 
