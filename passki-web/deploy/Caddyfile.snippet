@@ -1,6 +1,15 @@
-# NOT APPLIED. Proposed Caddy site block (needs DNS A record passki.alirezaiyan.com -> VPS first).
+# The passki.alirezaiyan.com block in /etc/caddy/Caddyfile on the VPS (applied 2026-10-25).
 passki.alirezaiyan.com {
 	encode zstd gzip
+	# PassKi web sample (Kotlin/Wasm), rsynced by `ali passki-app`. Same origin as the demo RP, so its passkeys
+	# use RP ID passki.alirezaiyan.com.
+	redir /app /app/ 308
+	handle_path /app/* {
+		root * /var/www/passki-app
+		file_server
+	}
 	# Caddy sets X-Forwarded-For to the real client IP (used for rate limits); keep trusted_proxies unset.
-	reverse_proxy 127.0.0.1:3100
+	handle {
+		reverse_proxy 127.0.0.1:3100
+	}
 }

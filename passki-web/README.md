@@ -78,6 +78,9 @@ Live at https://passki.alirezaiyan.com.
 
 - **Container:** `passki-passki-web-1`, defined in `/var/www/passki-deploy/docker-compose.yml` on the VPS (compose project `passki`).
 - **Env:** `/var/www/passki-deploy/.env.production` (mode 600, not in git); see `.env.example` for the variables.
-- **Caddy:** the `passki.alirezaiyan.com` block in `/etc/caddy/Caddyfile` reverse-proxies to the container.
+- **Caddy:** the `passki.alirezaiyan.com` block in `/etc/caddy/Caddyfile` reverse-proxies to the container and
+  serves the web sample from `/var/www/passki-app` at `/app/` (see `deploy/Caddyfile.snippet`).
 - **Deploy:** run `ali passki` from the MacBook. It does a `git push`, a `git pull` on the VPS, then `docker compose -p passki up -d --build`.
+- **Web sample:** run `ali passki-app`. It builds `:webApp:wasmJsBrowserDistribution` locally and rsyncs it to
+  `/var/www/passki-app` (source maps stay local).
 - **Smoke test:** `https://passki.alirezaiyan.com/.well-known/assetlinks.json` and `/.well-known/apple-app-site-association` return 200 `application/json` with no redirect, then run `/verify?rpId=passki.alirezaiyan.com`.
