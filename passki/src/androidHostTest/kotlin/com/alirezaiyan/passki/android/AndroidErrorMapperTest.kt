@@ -149,8 +149,49 @@ class AndroidErrorMapperTest {
         val error = CreatePublicKeyCredentialDomException(DataError(), "RP ID cannot be validated.").toPasskeyError()
         val misconfigured = assertIs<PasskeyError.Misconfigured>(error)
         assertEquals("RP ID cannot be validated.", misconfigured.message)
-        assertEquals(ASSET_LINKS_HINT, misconfigured.fixHint)
+        assertTrue(misconfigured.fixHint.startsWith(ASSET_LINKS_HINT), misconfigured.fixHint)
+        assertTrue("couldn't read this app's signing certificate" in misconfigured.fixHint, misconfigured.fixHint)
         assertEquals("AND-03", misconfigured.checkId)
+    }
+
+    @Test
+    fun assetLinksHintNamesTheAppsFingerprintAndOrigin() {
+        val fingerprint = List(32) { "FB" }.joinToString(":")
+        val error = GetPublicKeyCredentialDomException(SecurityError(), "rp mismatch")
+            .toPasskeyError(context = AndroidErrorContext(rpId = "example.com", packageName = "com.example", signingFingerprints = listOf(fingerprint)))
+        val hint = assertIs<PasskeyError.Misconfigured>(error).fixHint
+        assertTrue("This app is signed with SHA-256 $fingerprint" in hint, hint)
+        assertTrue("android:apk-key-hash:" + "-_v7".repeat(10) + "-_s" in hint, hint)
+        assertFalse("couldn't read" in hint, hint)
+    }
+
+    @Test
+    fun assetLinksHintListsEverySigner() {
+        val a = List(32) { "0A" }.joinToString(":")
+        val b = List(32) { "0B" }.joinToString(":")
+        val error = CreatePublicKeyCredentialDomException(DataError(), "RP ID cannot be validated.")
+            .toPasskeyError(context = AndroidErrorContext(rpId = "example.com", signingFingerprints = listOf(a, b)))
+        val hint = assertIs<PasskeyError.Misconfigured>(error).fixHint
+        assertTrue(a in hint && b in hint, hint)
+        assertTrue(androidOrigin(a) in hint && androidOrigin(b) in hint, hint)
+    }
+
+    @Test
+    fun signalSecurityHintCarriesTheSameEvidence() {
+        val fingerprint = List(32) { "FB" }.joinToString(":")
+        val error = SignalCredentialSecurityException("not allowed")
+            .toPasskeyError(context = AndroidErrorContext(rpId = "example.com", signingFingerprints = listOf(fingerprint)))
+        assertTrue(androidOrigin(fingerprint) in assertIs<PasskeyError.Misconfigured>(error).fixHint)
+    }
+
+    @Test
+    fun emulatorNoteOnlyOnEmulators() {
+        val onEmulator = GetPublicKeyCredentialDomException(SecurityError(), "rp mismatch")
+            .toPasskeyError(context = AndroidErrorContext(rpId = "example.com", isEmulator = true))
+        val onPhone = GetPublicKeyCredentialDomException(SecurityError(), "rp mismatch")
+            .toPasskeyError(context = AndroidErrorContext(rpId = "example.com", isEmulator = false))
+        assertTrue(assertIs<PasskeyError.Misconfigured>(onEmulator).fixHint.endsWith(EMULATOR_NOTE))
+        assertFalse("emulator" in assertIs<PasskeyError.Misconfigured>(onPhone).fixHint)
     }
 
     @Test

@@ -1,10 +1,23 @@
 package com.alirezaiyan.passki.web
 
+import com.alirezaiyan.passki.PassKi
 import com.alirezaiyan.passki.PasskeyError
 import com.alirezaiyan.passki.PasskeyResult
+import com.alirezaiyan.passki.PasskiLogHandler
+import com.alirezaiyan.passki.PasskiLogLevel
 import com.alirezaiyan.passki.SignInMode
+import com.alirezaiyan.passki.SignalOutcome
 import com.alirezaiyan.passki.internal.WebAuthnResponses
+import com.alirezaiyan.passki.internal.LoggingPasskeys
+import com.alirezaiyan.passki.internal.ModalGate
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.test.assertFailsWith
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -15,6 +28,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class WebPasskeysTest {
     /** Answers each op from [answers]; a missing op fails like a browser without that API. */
     private class FakeBrowser(
@@ -22,6 +36,8 @@ class WebPasskeysTest {
         private val answers: Map<String, () -> String> = emptyMap(),
     ) : WebAuthnBridge {
         val calls = mutableListOf<Call>()
+
+        override fun pageHost(): String = PAGE_HOST
 
         override suspend fun call(op: String, json: String, mediation: String?): String {
             if (op == "capabilities") return capabilities
@@ -33,8 +49,19 @@ class WebPasskeysTest {
 
     private data class Call(val op: String, val json: String, val mediation: String?)
 
-    private fun failing(name: String, message: String = "browser said no"): () -> String =
-        { throw WebAuthnException(name, message) }
+    /** Keeps every create / get pending until [answer] completes, like a browser showing its sheet. */
+    private class SheetBrowser : WebAuthnBridge {
+        val calls = mutableListOf<Call>()
+
+        override fun pageHost(): String = PAGE_HOST
+        val answer = CompletableDeferred<String>()
+
+        override suspend fun call(op: String, json: String, mediation: String?): String {
+            if (op == "capabilities") return ALL_CAPABILITIES
+            calls += Call(op, json, mediation)
+            return answer.await()
+        }
+    }
 
     @Test
     fun registerSendsNormalizedOptionsAndParsesTheResponse() = runTest {
@@ -45,6 +72,7 @@ class WebPasskeysTest {
         val registration = assertIs<PasskeyResult.Success<*>>(result).value as com.alirezaiyan.passki.PasskeyRegistration
         assertEquals("AQID", registration.credentialId)
         assertEquals(listOf("internal"), registration.transports)
+        assertEquals("localhost", registration.rpId)
         val call = browser.calls.single()
         assertEquals("create", call.op)
         assertNull(call.mediation)
@@ -58,7 +86,18 @@ class WebPasskeysTest {
 
         val result = WebPasskeys(browser).register(CREATION.replace(""""id":"localhost",""", ""))
 
-        assertIs<PasskeyResult.Success<*>>(result)
+        val registration = assertIs<PasskeyResult.Success<*>>(result).value as com.alirezaiyan.passki.PasskeyRegistration
+        assertEquals(PAGE_HOST, registration.rpId)
+    }
+
+    @Test
+    fun signInWithoutRpIdReportsThePagesHost() = runTest {
+        val browser = FakeBrowser(answers = mapOf("get" to { ASSERTION }))
+
+        val result = WebPasskeys(browser).signIn("""{"challenge":"AAECAw"}""")
+
+        val assertion = assertIs<PasskeyResult.Success<*>>(result).value as com.alirezaiyan.passki.PasskeyAssertion
+        assertEquals(PAGE_HOST, assertion.rpId)
     }
 
     @Test
@@ -99,6 +138,7 @@ class WebPasskeysTest {
         val assertion = assertIs<PasskeyResult.Success<*>>(result).value as com.alirezaiyan.passki.PasskeyAssertion
         assertEquals("AQID", assertion.credentialId)
         assertEquals("BAUG", assertion.userHandle)
+        assertEquals("localhost", assertion.rpId)
         assertNull(browser.calls.single().mediation)
     }
 
@@ -280,16 +320,93 @@ class WebPasskeysTest {
 
         val result = WebPasskeys(browser).signals.unknownCredential("localhost", "AQID")
 
-        assertIs<PasskeyResult.Success<*>>(result)
+        assertEquals(SignalOutcome.Applied, assertIs<PasskeyResult.Success<SignalOutcome>>(result).value)
         assertEquals(Call("signalUnknownCredential", """{"rpId":"localhost","credentialId":"AQID"}""", null), browser.calls.single())
     }
 
     @Test
-    fun missingSignalApiIsNotSupported() = runTest {
+    fun missingSignalApiIsSkipped() = runTest {
         val result = WebPasskeys(FakeBrowser()).signals.currentUserDetails("localhost", "BAUG", "alice", "Alice")
 
-        assertIs<PasskeyError.NotSupported>(assertIs<PasskeyResult.Failure>(result).error)
+        val skipped = assertIs<SignalOutcome.Skipped>(assertIs<PasskeyResult.Success<SignalOutcome>>(result).value)
+        assertEquals("no signalCurrentUserDetails", skipped.reason)
     }
+
+    @Test
+    fun aSecondModalRequestFailsWithInterruptedWhileTheFirstIsShowing() = runTest(timeout = 1.seconds) {
+        val browser = SheetBrowser()
+        val passkeys = WebPasskeys(browser, ModalGate())
+        val first = async { passkeys.register(CREATION) }
+        runCurrent()
+        for (second in listOf(
+            passkeys.register(CREATION),
+            passkeys.upgrade(CREATION),
+            passkeys.signIn(REQUEST, SignInMode.Modal),
+            passkeys.signIn(REQUEST, SignInMode.ImmediateOnly),
+        )) {
+            assertEquals(PasskeyError.Interrupted, assertIs<PasskeyResult.Failure>(second).error)
+        }
+        assertEquals(1, browser.calls.size, "refused requests never reach the browser")
+
+        browser.answer.complete(REGISTRATION)
+        assertIs<PasskeyResult.Success<*>>(first.await())
+    }
+
+    @Test
+    fun autofillWaitsForAModalRequestToFinish() = runTest(timeout = 1.seconds) {
+        val browser = SheetBrowser()
+        val passkeys = WebPasskeys(browser, ModalGate())
+        val modal = async { passkeys.register(CREATION) }
+        runCurrent()
+
+        val autofill = async { passkeys.signIn(REQUEST, SignInMode.Autofill) }
+        runCurrent()
+        assertEquals(listOf("create"), browser.calls.map { it.op }, "autofill hasn't started yet")
+
+        browser.answer.complete(REGISTRATION)
+        modal.await()
+        runCurrent()
+        assertEquals(Call("get", browser.calls.last().json, "conditional"), browser.calls.last())
+        autofill.cancel()
+    }
+
+    @Test
+    fun cancellingAModalRequestLetsTheNextOneRun() = runTest(timeout = 1.seconds) {
+        val browser = SheetBrowser()
+        val passkeys = WebPasskeys(browser, ModalGate())
+        val first = async { passkeys.register(CREATION) }
+        runCurrent()
+
+        first.cancel()
+        assertFailsWith<CancellationException> { first.await() }
+
+        val next = async { passkeys.signIn(REQUEST, SignInMode.Modal) }
+        runCurrent()
+        assertEquals(2, browser.calls.size, "the next request reached the browser")
+        next.cancel()
+    }
+
+    @Test
+    fun theDebugLogShowsHowABrowserErrorWasMapped() = runTest {
+        val lines = mutableListOf<Pair<PasskiLogLevel, String>>()
+        PassKi.logLevel = PasskiLogLevel.Debug
+        PassKi.logHandler = PasskiLogHandler { level, _, message, _ -> lines += level to message }
+        try {
+            val browser = FakeBrowser(answers = mapOf("get" to failing("NotAllowedError")))
+            LoggingPasskeys(WebPasskeys(browser)).signIn(REQUEST)
+        } finally {
+            PassKi.logLevel = PasskiLogLevel.Error
+            PassKi.logHandler = PasskiLogHandler.Platform
+        }
+
+        assertEquals(3, lines.size, lines.toString())
+        assertEquals(PasskiLogLevel.Debug to "signIn started: mode=Modal, rpId=localhost, options=<${REQUEST.length} chars>", lines[0])
+        assertTrue(lines[1].second.startsWith("platform error WebAuthnException: ") && lines[1].second.endsWith(" -> Cancelled"), lines[1].second)
+        assertEquals(PasskiLogLevel.Info to "signIn failed: Cancelled: The user cancelled the passkey request.", lines[2])
+    }
+
+    private fun failing(name: String, message: String = "browser said no"): () -> String =
+        { throw WebAuthnException(name, message) }
 
     private companion object {
         const val ALL_CAPABILITIES =
@@ -301,6 +418,8 @@ class WebPasskeysTest {
                 """"challenge":"AAECAw","pubKeyCredParams":[{"type":"public-key","alg":-7}]}"""
 
         const val REQUEST = """{"challenge":"AAECAw","rpId":"localhost"}"""
+
+        const val PAGE_HOST = "app.example.com"
 
         const val UNKNOWN_IMMEDIATE =
             "Failed to read the 'mediation' property from 'CredentialRequestOptions': The provided value 'immediate' " +

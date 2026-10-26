@@ -14,8 +14,8 @@ sealed interface com.alirezaiyan.passki.test/FakeSignal { // com.alirezaiyan.pas
             final fun <get-credentialIds>(): kotlin.collections/List<kotlin/String> // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.credentialIds.<get-credentialIds>|<get-credentialIds>(){}[0]
         final val rpId // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.rpId|{}rpId[0]
             final fun <get-rpId>(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.rpId.<get-rpId>|<get-rpId>(){}[0]
-        final val userId // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.userId|{}userId[0]
-            final fun <get-userId>(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.userId.<get-userId>|<get-userId>(){}[0]
+        final val userHandle // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.userHandle|{}userHandle[0]
+            final fun <get-userHandle>(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.userHandle.<get-userHandle>|<get-userHandle>(){}[0]
 
         final fun component1(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.component1|component1(){}[0]
         final fun component2(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.AcceptedCredentials.component2|component2(){}[0]
@@ -35,8 +35,8 @@ sealed interface com.alirezaiyan.passki.test/FakeSignal { // com.alirezaiyan.pas
             final fun <get-name>(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.name.<get-name>|<get-name>(){}[0]
         final val rpId // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.rpId|{}rpId[0]
             final fun <get-rpId>(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.rpId.<get-rpId>|<get-rpId>(){}[0]
-        final val userId // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.userId|{}userId[0]
-            final fun <get-userId>(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.userId.<get-userId>|<get-userId>(){}[0]
+        final val userHandle // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.userHandle|{}userHandle[0]
+            final fun <get-userHandle>(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.userHandle.<get-userHandle>|<get-userHandle>(){}[0]
 
         final fun component1(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.component1|component1(){}[0]
         final fun component2(): kotlin/String // com.alirezaiyan.passki.test/FakeSignal.CurrentUserDetails.component2|component2(){}[0]

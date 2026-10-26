@@ -10,12 +10,16 @@ import com.alirezaiyan.passki.PasskeySignals
 import com.alirezaiyan.passki.Passkeys
 import com.alirezaiyan.passki.SignInCredential
 import com.alirezaiyan.passki.SignInMode
+import com.alirezaiyan.passki.SignalOutcome
+import com.alirezaiyan.passki.internal.ModalGate
 import com.alirezaiyan.passki.internal.PasskiJson
 import com.alirezaiyan.passki.internal.SignalRequests
 import com.alirezaiyan.passki.internal.WebAuthnOptions
+import com.alirezaiyan.passki.internal.exclusive
 import com.alirezaiyan.passki.internal.parseAssertion
 import com.alirezaiyan.passki.internal.parseRegistration
 import com.alirezaiyan.passki.internal.passkeyCatching
+import com.alirezaiyan.passki.internal.toSignalOutcome
 import kotlinx.serialization.Serializable
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -40,7 +44,10 @@ internal data class ClientCapabilities(
  * against the page's origin itself, so unlike the apps an options JSON without one is fine: it defaults to the page's
  * host.
  */
-internal class WebPasskeys(private val browser: WebAuthnBridge = BrowserWebAuthn) : Passkeys {
+internal class WebPasskeys(
+    private val browser: WebAuthnBridge = BrowserWebAuthn,
+    private val gate: ModalGate = ModalGate.shared,
+) : Passkeys {
     /** Set once the browser rejected mediation "immediate" although it reported support. */
     private var immediateRejected = false
 
@@ -68,7 +75,8 @@ internal class WebPasskeys(private val browser: WebAuthnBridge = BrowserWebAuthn
         passkeyCatching({ it.toPasskeyError(immediate = mode == SignInMode.ImmediateOnly) }) {
             val client = requireSupported()
             val options = WebAuthnOptions.parseRequest(optionsJson)
-            options.model.rpId?.let { WebAuthnOptions.requireRpId(it, "rpId") }
+            // Without an RP ID the browser uses the page's host, so the result reports that one.
+            val rpId = options.model.rpId?.let { WebAuthnOptions.requireRpId(it, "rpId") } ?: browser.pageHost()
             val mediation = when (mode) {
                 SignInMode.Modal -> null
                 SignInMode.ImmediateOnly ->
@@ -77,13 +85,18 @@ internal class WebPasskeys(private val browser: WebAuthnBridge = BrowserWebAuthn
                     if (client.conditionalGet) "conditional" else throw notSupported("This browser has no passkey autofill (conditional mediation).")
             }
             val response = try {
-                browser.call("get", options.json, mediation)
+                if (mediation == "conditional") {
+                    gate.awaitIdle() // autofill waits out a modal request instead of competing with it
+                    browser.call("get", options.json, mediation)
+                } else {
+                    gate.exclusive { browser.call("get", options.json, mediation) }
+                }
             } catch (e: WebAuthnException) {
                 if (mediation != "immediate" || !e.isUnknownMediation()) throw e
                 immediateRejected = true
                 throw notSupported("$NO_IMMEDIATE ${e.message.orEmpty()}")
             }
-            parseAssertion(response)
+            parseAssertion(response, rpId)
         }
 
     override suspend fun signInOrPassword(optionsJson: String): PasskeyResult<SignInCredential> =
@@ -94,14 +107,23 @@ internal class WebPasskeys(private val browser: WebAuthnBridge = BrowserWebAuthn
         )
 
     override val signals: PasskeySignals = object : PasskeySignals {
-        override suspend fun unknownCredential(rpId: String, credentialId: String): PasskeyResult<Unit> =
+        override suspend fun unknownCredential(rpId: String, credentialId: String): PasskeyResult<SignalOutcome> =
             signal("signalUnknownCredential") { SignalRequests.unknownCredential(rpId, credentialId) }
 
-        override suspend fun acceptedCredentials(rpId: String, userId: String, credentialIds: List<String>): PasskeyResult<Unit> =
-            signal("signalAllAcceptedCredentials") { SignalRequests.acceptedCredentials(rpId, userId, credentialIds) }
+        override suspend fun acceptedCredentials(
+            rpId: String,
+            userHandle: String,
+            credentialIds: List<String>,
+        ): PasskeyResult<SignalOutcome> =
+            signal("signalAllAcceptedCredentials") { SignalRequests.acceptedCredentials(rpId, userHandle, credentialIds) }
 
-        override suspend fun currentUserDetails(rpId: String, userId: String, name: String, displayName: String): PasskeyResult<Unit> =
-            signal("signalCurrentUserDetails") { SignalRequests.currentUserDetails(rpId, userId, name, displayName) }
+        override suspend fun currentUserDetails(
+            rpId: String,
+            userHandle: String,
+            name: String,
+            displayName: String,
+        ): PasskeyResult<SignalOutcome> =
+            signal("signalCurrentUserDetails") { SignalRequests.currentUserDetails(rpId, userHandle, name, displayName) }
     }
 
     private suspend fun create(optionsJson: String, conditional: Boolean): PasskeyResult<PasskeyRegistration> =
@@ -111,16 +133,17 @@ internal class WebPasskeys(private val browser: WebAuthnBridge = BrowserWebAuthn
                 throw notSupported("This browser has no conditional create (passkey upgrade after a password sign-in).")
             }
             val options = WebAuthnOptions.parseCreation(optionsJson)
-            options.model.rp.id?.let { WebAuthnOptions.requireRpId(it, "rp.id") }
-            parseRegistration(browser.call("create", options.json, if (conditional) "conditional" else null))
+            val rpId = options.model.rp.id?.let { WebAuthnOptions.requireRpId(it, "rp.id") } ?: browser.pageHost()
+            val mediation = if (conditional) "conditional" else null
+            parseRegistration(gate.exclusive { browser.call("create", options.json, mediation) }, rpId)
         }
 
-    private suspend fun signal(op: String, body: () -> String): PasskeyResult<Unit> =
+    private suspend fun signal(op: String, body: () -> String): PasskeyResult<SignalOutcome> =
         passkeyCatching({ it.toPasskeyError() }) {
             requireSupported()
             browser.call(op, body(), null)
             Unit
-        }
+        }.toSignalOutcome()
 
     private suspend fun clientCapabilities(): ClientCapabilities = try {
         PasskiJson.decodeFromString(ClientCapabilities.serializer(), browser.call("capabilities", "{}", null))

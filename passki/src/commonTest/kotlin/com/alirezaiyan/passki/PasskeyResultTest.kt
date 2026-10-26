@@ -3,6 +3,8 @@ package com.alirezaiyan.passki
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -73,8 +75,50 @@ class PasskeyResultTest {
 
     @Test
     fun registrationToStringOmitsJsonBody() {
-        val r = PasskeyRegistration("{\"secret\":1}", "id", emptyList(), null)
-        assertEquals("PasskeyRegistration(credentialId=id, json=<12 chars>)", r.toString())
-        assertEquals("PasskeyAssertion(credentialId=id, json=<2 chars>)", PasskeyAssertion("{}", "id", null).toString())
+        val r = PasskeyRegistration("{\"secret\":1}", "id", emptyList(), null, rpId = "example.com")
+        assertEquals("PasskeyRegistration(credentialId=id, rpId=example.com, json=<12 chars>)", r.toString())
+        assertEquals(
+            "PasskeyAssertion(credentialId=id, rpId=example.com, json=<2 chars>)",
+            PasskeyAssertion("{}", "id", null, rpId = "example.com").toString(),
+        )
+    }
+
+    private val success: PasskeyResult<Int> = PasskeyResult.Success(1)
+    private val failure: PasskeyResult<Int> = PasskeyResult.Failure(PasskeyError.NoCredentials)
+
+    @Test
+    fun foldRunsExactlyOneLambda() {
+        assertEquals("ok 1", success.fold(onSuccess = { "ok $it" }, onFailure = { error("must not run") }))
+        assertEquals("err NoCredentials", failure.fold(onSuccess = { error("must not run") }, onFailure = { "err $it" }))
+    }
+
+    @Test
+    fun mapErrorTransformsOnlyFailures() {
+        assertEquals(success, success.mapError { error("must not run") })
+        assertEquals(PasskeyResult.Failure(PasskeyError.Cancelled), failure.mapError { PasskeyError.Cancelled })
+    }
+
+    @Test
+    fun recoverTurnsAFailureIntoASuccess() {
+        assertEquals(PasskeyResult.Success(0), failure.recover { 0 })
+        assertEquals(success, success.recover { error("must not run") })
+    }
+
+    @Test
+    fun errorAccessors() {
+        assertNull(success.errorOrNull())
+        assertTrue(success.isSuccess)
+        assertFalse(success.isFailure)
+        assertEquals(PasskeyError.NoCredentials, failure.errorOrNull())
+        assertTrue(failure.isFailure)
+        assertFalse(failure.isSuccess)
+    }
+
+    @Test
+    fun toResultWrapsTheErrorInAPasskeyException() {
+        assertEquals(Result.success(1), success.toResult())
+        val exception = failure.toResult().exceptionOrNull()
+        assertIs<PasskeyException>(exception)
+        assertEquals(PasskeyError.NoCredentials, exception.error)
     }
 }

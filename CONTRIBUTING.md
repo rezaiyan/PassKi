@@ -80,6 +80,11 @@ with the commands in [`ci/consumers/README.md`](ci/consumers/README.md).
   - New public declarations need KDoc: Dokka should report no undocumented declarations.
   - Constructors of result types are `@InternalPasskiApi`, so fields can be added later.
   - New enum entries and sealed subtypes are allowed in minor releases.
+- **Logging:** every public operation logs through `PasskiLog` (`internal/PasskiLog.kt`), never `println` or a
+  platform logger directly. A log line must not contain a challenge, user handle, options or response JSON, a
+  password, PRF output or large-blob data: show credential IDs with `PasskiLog.shortId` and JSON with
+  `PasskiLog.lengthOf`. `PasskiLogRedactionTest` (passki-test) checks a full debug trace; extend it when you add a log
+  line that prints new data.
 - **Platform behaviour** (sheets, autofill, signals, PRF) can only be checked on a device or emulator. Record what you
   verified in the pull request: OS version and credential provider. The sample's autorun flag (see the README) runs
   the UI-free steps unattended.

@@ -12,6 +12,9 @@ internal interface WebAuthnBridge {
      * and the Signal API methods of `PublicKeyCredential` by name (their JSON argument in, `{}` out).
      */
     suspend fun call(op: String, json: String, mediation: String?): String
+
+    /** The page's host (`location.hostname`): the RP ID browsers use when the options name none. */
+    fun pageHost(): String
 }
 
 /** A rejected WebAuthn promise: the DOMException [name] (e.g. `NotAllowedError`) and its message. */
@@ -20,6 +23,8 @@ internal class WebAuthnException(val name: String, message: String) : Exception(
 /** [WebAuthnBridge] on `navigator.credentials`. Cancelling the calling coroutine aborts the browser request. */
 internal object BrowserWebAuthn : WebAuthnBridge {
     private var nextId = 0
+
+    override fun pageHost(): String = passkiPageHost()
 
     override suspend fun call(op: String, json: String, mediation: String?): String =
         suspendCancellableCoroutine { continuation ->
@@ -32,6 +37,11 @@ internal object BrowserWebAuthn : WebAuthnBridge {
             )
         }
 }
+
+/** `location.hostname`, or "" outside a page. */
+internal expect fun passkiPageHost(): String
+
+internal const val PAGE_HOST_JS: String = "(globalThis.location ? globalThis.location.hostname : '')"
 
 /** Aborts the request [id] of [passkiWebAuthn], if it is still pending. Runs [ABORT_JS]. */
 internal expect fun passkiAbort(id: Int)

@@ -6,7 +6,7 @@ package com.alirezaiyan.passki
  * from the PassKi check catalog that covers the cause, the same ID `PasskeyDoctor`, `./gradlew passkiCheck` and the web
  * verifier report, and [docsUrl] links its docs page.
  *
- * New subtypes may be added in minor releases — keep an `else` branch in exhaustive `when`s.
+ * Open: new subtypes may be added in minor releases; keep an `else` branch in exhaustive `when`s.
  */
 public sealed class PasskeyError {
     /** Human-readable description, suitable for logs. */
@@ -23,6 +23,32 @@ public sealed class PasskeyError {
 
     /** The docs page for [checkId]: what the check means and how to fix it. Null when [checkId] is null. */
     public val docsUrl: String? get() = checkId?.let { CHECK_DOCS_BASE + it }
+
+    /**
+     * What kind of failure this is, for deciding what to show. The set of categories is closed, so a `when` over it
+     * needs no `else`; a new error type always joins an existing category.
+     * ```kotlin
+     * when (error.category) {
+     *     PasskeyErrorCategory.UserCancelled -> Unit                    // nothing to show
+     *     PasskeyErrorCategory.NoCredential -> showPasswordForm()
+     *     PasskeyErrorCategory.AlreadyExists -> showMessage("You already have a passkey on this device.")
+     *     PasskeyErrorCategory.Unsupported -> hidePasskeyButton()
+     *     PasskeyErrorCategory.Setup, PasskeyErrorCategory.Unexpected -> showError("Passkeys aren't working right now.")
+     * }
+     * ```
+     */
+    public val category: PasskeyErrorCategory
+        get() = when (this) {
+            Cancelled, Interrupted -> PasskeyErrorCategory.UserCancelled
+            NoCredentials -> PasskeyErrorCategory.NoCredential
+            AlreadyRegistered -> PasskeyErrorCategory.AlreadyExists
+            is NotSupported -> PasskeyErrorCategory.Unsupported
+            is InvalidOptions, is Misconfigured -> PasskeyErrorCategory.Setup
+            is Unknown -> PasskeyErrorCategory.Unexpected
+        }
+
+    /** True when the user ended the request or it was interrupted ([Cancelled], [Interrupted]): show no error. */
+    public val isUserCancellation: Boolean get() = category == PasskeyErrorCategory.UserCancelled
 
     /** The user dismissed the passkey sheet. Usually not worth showing an error for. */
     public data object Cancelled : PasskeyError() {
@@ -43,9 +69,14 @@ public sealed class PasskeyError {
             "A passkey for this account already exists on this device (excludeCredentials matched)."
     }
 
-    /** The request was interrupted by the system (e.g. app backgrounded). Safe to retry. */
+    /**
+     * The request didn't run to the end, and nothing is wrong with it: the system interrupted it (e.g. the app went
+     * to the background), or another PassKi passkey request was still showing (only one runs at a time). Safe to
+     * retry; don't show it to users as a failure.
+     */
     public data object Interrupted : PasskeyError() {
-        override val message: String = "The passkey request was interrupted. Retry it."
+        override val message: String =
+            "The passkey request was interrupted, or another passkey request is in progress. Retry it."
     }
 
     /** The device, OS or platform does not support the requested operation. */
@@ -56,24 +87,22 @@ public sealed class PasskeyError {
     }
 
     /** The options JSON passed in was malformed or invalid. See [fixHint]; [checkId] is `CFG-01` for a bad RP ID. */
-    public class InvalidOptions(
+    public class InvalidOptions internal constructor(
         override val message: String,
         override val checkId: String?,
+        override val fixHint: String,
     ) : PasskeyError() {
+        public constructor(message: String, checkId: String?) : this(message, checkId, INVALID_OPTIONS_HINT)
+
         /** An options error that no setup check covers. */
         public constructor(message: String) : this(message, null)
-
-        override val fixHint: String =
-            "Pass the server's WebAuthn options JSON unchanged " +
-                "(PublicKeyCredentialCreationOptionsJSON / PublicKeyCredentialRequestOptionsJSON). " +
-                "Binary fields (challenge, user.id, credential ids) must be base64url."
 
         override fun equals(other: Any?): Boolean =
             other is InvalidOptions && message == other.message && checkId == other.checkId
 
         override fun hashCode(): Int = 31 * message.hashCode() + (checkId?.hashCode() ?: 0)
         override fun toString(): String =
-            "InvalidOptions(message=$message" + checkId?.let { ", checkId=$it" }.orEmpty() + ")"
+            "InvalidOptions(message=$message" + checkId?.let { ", checkId=$it, docsUrl=$docsUrl" }.orEmpty() + ")"
     }
 
     /** The app or its environment is set up incorrectly (e.g. missing asset links). See [fixHint] and [docsUrl]. */
@@ -90,7 +119,7 @@ public sealed class PasskeyError {
 
         override fun hashCode(): Int = 31 * (31 * message.hashCode() + fixHint.hashCode()) + (checkId?.hashCode() ?: 0)
         override fun toString(): String =
-            "Misconfigured(message=$message, fixHint=$fixHint" + checkId?.let { ", checkId=$it" }.orEmpty() + ")"
+            "Misconfigured(message=$message, fixHint=$fixHint" + checkId?.let { ", checkId=$it, docsUrl=$docsUrl" }.orEmpty() + ")"
     }
 
     /** Any failure PassKi could not classify. */
@@ -113,6 +142,34 @@ public sealed class PasskeyError {
     }
 }
 
+/**
+ * The kind of a [PasskeyError], from [PasskeyError.category].
+ *
+ * Closed: there are exactly these six categories, in every release; a `when` over it needs no `else` branch.
+ */
+public enum class PasskeyErrorCategory {
+    /** The user closed the sheet or the request was interrupted ([PasskeyError.Cancelled], [PasskeyError.Interrupted]). */
+    UserCancelled,
+
+    /** No passkey for this account on this device ([PasskeyError.NoCredentials]): offer another sign-in method. */
+    NoCredential,
+
+    /** The device already has a passkey for this account ([PasskeyError.AlreadyRegistered]). */
+    AlreadyExists,
+
+    /** The device, OS or credential provider can't do this ([PasskeyError.NotSupported]). */
+    Unsupported,
+
+    /**
+     * A developer must fix the app, its server or its options ([PasskeyError.Misconfigured],
+     * [PasskeyError.InvalidOptions]).
+     */
+    Setup,
+
+    /** Anything else ([PasskeyError.Unknown]). */
+    Unexpected,
+}
+
 /** Where each catalog check's docs page lives (the same pages as `docs/checks/<ID>.md` in the repository). */
 private const val CHECK_DOCS_BASE = "https://passki.alirezaiyan.com/checks/"
 
@@ -125,3 +182,8 @@ public class PasskeyException(public val error: PasskeyError) :
             error.fixHint?.let { " Fix: $it" }.orEmpty() +
             error.docsUrl?.let { " Docs: $it" }.orEmpty(),
     )
+
+private const val INVALID_OPTIONS_HINT: String =
+    "Pass the server's WebAuthn options JSON unchanged " +
+        "(PublicKeyCredentialCreationOptionsJSON / PublicKeyCredentialRequestOptionsJSON). " +
+        "Binary fields (challenge, user.id, credential ids) must be base64url."

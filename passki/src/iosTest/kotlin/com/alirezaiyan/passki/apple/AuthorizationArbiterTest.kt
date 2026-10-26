@@ -1,5 +1,6 @@
 package com.alirezaiyan.passki.apple
 
+import com.alirezaiyan.passki.internal.ModalGate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runCurrent
@@ -7,13 +8,18 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AuthorizationArbiterTest {
+    // Each test gets its own gate; the production arbiter shares the process-wide one.
+    private fun arbiter() = AuthorizationArbiter(ModalGate())
+
     @Test
     fun autoFillStartsAtOnceWhenNoModalRuns() = runTest {
-        val arbiter = AuthorizationArbiter()
+        val arbiter = arbiter()
         val wait = async { arbiter.awaitNoModal() }
         runCurrent()
         assertTrue(wait.isCompleted)
@@ -21,8 +27,8 @@ class AuthorizationArbiterTest {
 
     @Test
     fun autoFillWaitsUntilTheModalRequestEnds() = runTest {
-        val arbiter = AuthorizationArbiter()
-        val endModal = arbiter.beginModal()
+        val arbiter = arbiter()
+        val endModal = assertNotNull(arbiter.beginModal())
         val wait = async { arbiter.awaitNoModal() }
         runCurrent()
         assertFalse(wait.isCompleted)
@@ -33,27 +39,34 @@ class AuthorizationArbiterTest {
     }
 
     @Test
-    fun autoFillWaitsForEveryModalRequest() = runTest {
-        val arbiter = AuthorizationArbiter()
-        val endFirst = arbiter.beginModal()
-        val endSecond = arbiter.beginModal()
-        val wait = async { arbiter.awaitNoModal() }
+    fun aSecondModalRequestIsRefusedWhileTheFirstRuns() {
+        val arbiter = arbiter()
+        val endFirst = assertNotNull(arbiter.beginModal())
+        assertNull(arbiter.beginModal())
 
         endFirst()
-        runCurrent()
-        assertFalse(wait.isCompleted)
-
-        endSecond()
-        runCurrent()
-        assertTrue(wait.isCompleted)
+        assertNotNull(arbiter.beginModal(), "a new modal request runs once the first ended")
     }
 
     @Test
-    fun endingAModalRequestTwiceCountsOnce() = runTest {
-        val arbiter = AuthorizationArbiter()
-        val endFirst = arbiter.beginModal()
-        arbiter.beginModal()
+    fun aRefusedModalRequestCancelsNoAutoFillRequest() {
+        val arbiter = arbiter()
+        val endModal = assertNotNull(arbiter.beginModal())
+        var cancelled = false
+        arbiter.beginAutoFill { cancelled = true }
+
+        assertNull(arbiter.beginModal())
+
+        assertFalse(cancelled)
+        endModal()
+    }
+
+    @Test
+    fun endingAModalRequestTwiceDoesNotEndTheNextOne() = runTest {
+        val arbiter = arbiter()
+        val endFirst = assertNotNull(arbiter.beginModal())
         endFirst()
+        assertNotNull(arbiter.beginModal())
         endFirst()
         val wait = async { arbiter.awaitNoModal() }
         runCurrent()
@@ -63,7 +76,7 @@ class AuthorizationArbiterTest {
 
     @Test
     fun aModalRequestCancelsPendingAutoFillRequests() {
-        val arbiter = AuthorizationArbiter()
+        val arbiter = arbiter()
         var cancelled = 0
         arbiter.beginAutoFill { cancelled++ }
         arbiter.beginAutoFill { cancelled++ }
@@ -75,7 +88,7 @@ class AuthorizationArbiterTest {
 
     @Test
     fun finishedAutoFillRequestsAreNotCancelled() {
-        val arbiter = AuthorizationArbiter()
+        val arbiter = arbiter()
         var cancelled = false
         val endAutoFill = arbiter.beginAutoFill { cancelled = true }
         endAutoFill()
@@ -87,11 +100,11 @@ class AuthorizationArbiterTest {
 
     @Test
     fun anAutoFillRequestCancelledByAModalIsCancelledOnce() {
-        val arbiter = AuthorizationArbiter()
+        val arbiter = arbiter()
         var cancelled = 0
         arbiter.beginAutoFill { cancelled++ }
 
-        arbiter.beginModal()()
+        arbiter.beginModal()!!()
         arbiter.beginModal()
 
         assertEquals(1, cancelled)

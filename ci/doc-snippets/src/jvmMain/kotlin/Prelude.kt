@@ -21,6 +21,9 @@ fun showError(message: String) = println(message)
 
 fun showMessage(message: String) = println(message)
 
+// What an app's API client throws when the server has no such passkey.
+class UnknownPasskeyException : Exception()
+
 // Your server's endpoints, as server tests call them.
 interface MyServer {
     suspend fun registrationOptions(user: String): String
@@ -34,4 +37,30 @@ val user: String = "alice"
 
 object BuildConfig {
     const val DEBUG: Boolean = true
+}
+
+// The logging libraries the README's handler examples route to, with the signatures of Timber 5, Kermit 2 and
+// Firebase Crashlytics.
+object Timber {
+    class Tree {
+        fun e(t: Throwable?, message: String?) = println(message)
+        fun w(t: Throwable?, message: String?) = println(message)
+        fun d(t: Throwable?, message: String?) = println(message)
+    }
+
+    fun tag(tag: String): Tree = Tree()
+}
+
+enum class Severity { Debug, Error }
+
+object Logger {
+    fun log(severity: Severity, tag: String, throwable: Throwable?, message: String) = println("$severity $tag $message")
+}
+
+class FirebaseCrashlytics {
+    fun log(message: String) = println(message)
+}
+
+object Firebase {
+    val crashlytics: FirebaseCrashlytics = FirebaseCrashlytics()
 }

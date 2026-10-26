@@ -34,12 +34,16 @@ import com.alirezaiyan.passki.PasskeySignals
 import com.alirezaiyan.passki.Passkeys
 import com.alirezaiyan.passki.SignInCredential
 import com.alirezaiyan.passki.SignInMode
+import com.alirezaiyan.passki.SignalOutcome
 import com.alirezaiyan.passki.internal.doctor.CheckIds
 import com.alirezaiyan.passki.internal.SignalRequests
 import com.alirezaiyan.passki.internal.WebAuthnOptions
 import com.alirezaiyan.passki.internal.parseAssertion
 import com.alirezaiyan.passki.internal.parseRegistration
+import com.alirezaiyan.passki.internal.ModalGate
+import com.alirezaiyan.passki.internal.exclusive
 import com.alirezaiyan.passki.internal.passkeyCatching
+import com.alirezaiyan.passki.internal.toSignalOutcome
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -95,13 +99,18 @@ internal fun androidCapabilities(sdkInt: Int): PasskeyCapabilities {
     )
 }
 
-internal class AndroidPasskeys(private val tracker: ActivityTracker = ActivityTracker) : Passkeys {
+internal class AndroidPasskeys(
+    private val tracker: ActivityTracker = ActivityTracker,
+    // Seams for host tests, which have no real Build values.
+    private val sdkInt: () -> Int = { Build.VERSION.SDK_INT },
+    private val gate: ModalGate = ModalGate.shared,
+) : Passkeys {
 
     private val manager: CredentialManager by lazy { CredentialManager.create(requireApplication()) }
 
-    private val supported: Boolean get() = androidCapabilities(Build.VERSION.SDK_INT).isSupported
+    private val supported: Boolean get() = androidCapabilities(sdkInt()).isSupported
 
-    override suspend fun capabilities(): PasskeyCapabilities = androidCapabilities(Build.VERSION.SDK_INT)
+    override suspend fun capabilities(): PasskeyCapabilities = androidCapabilities(sdkInt())
 
     override suspend fun register(optionsJson: String): PasskeyResult<PasskeyRegistration> =
         createPasskey(optionsJson, conditional = false)
@@ -114,40 +123,45 @@ internal class AndroidPasskeys(private val tracker: ActivityTracker = ActivityTr
 
     /** [signIn]; in [SignInMode.Autofill] the request goes to [anchor]'s focused view when given. */
     internal suspend fun signIn(optionsJson: String, mode: SignInMode, anchor: View?): PasskeyResult<PasskeyAssertion> {
-        var context = errorContext(rpId = null)
-        return passkeyCatching({ it.toPasskeyError(context = context) }) {
+        var rpId: String? = null
+        return passkeyCatching({ it.toPasskeyError(context = errorContext(rpId)) }) {
             requireSupported()
             val options = WebAuthnOptions.parseRequest(optionsJson)
-            context = errorContext(WebAuthnOptions.requireRpId(options.model.rpId, "rpId"))
+            val optionsRpId = WebAuthnOptions.requireRpId(options.model.rpId, "rpId").also { rpId = it }
             val autofill = mode == SignInMode.Autofill
-            if (autofill) autofillUnsupported(Build.VERSION.SDK_INT)?.let { throw PasskeyException(it) }
-            val request = GetCredentialRequest(
-                credentialOptions = listOf(GetPublicKeyCredentialOption(requestJson = options.json)),
-                preferImmediatelyAvailableCredentials = mode == SignInMode.ImmediateOnly,
-            )
-            val response = if (autofill) awaitAutofill(request, anchor) else manager.getCredential(requireActivity(), request)
+            if (autofill) autofillUnsupported(sdkInt())?.let { throw PasskeyException(it) }
+            val immediate = mode == SignInMode.ImmediateOnly
+            val response = if (autofill) {
+                gate.awaitIdle() // autofill waits out a modal sheet instead of competing with it
+                awaitAutofill(passkeyRequest(options.json, immediate), anchor)
+            } else {
+                gate.exclusive { manager.getCredential(requireActivity(), passkeyRequest(options.json, immediate)) }
+            }
             when (val credential = response.credential) {
-                is PublicKeyCredential -> parseAssertion(credential.authenticationResponseJson)
+                is PublicKeyCredential -> parseAssertion(credential.authenticationResponseJson, optionsRpId)
                 else -> throw unexpected(credential)
             }
         }
     }
 
     override suspend fun signInOrPassword(optionsJson: String): PasskeyResult<SignInCredential> {
-        var context = errorContext(rpId = null)
-        return passkeyCatching({ it.toPasskeyError(context = context) }) {
+        var rpId: String? = null
+        return passkeyCatching({ it.toPasskeyError(context = errorContext(rpId)) }) {
             requireSupported()
             val options = WebAuthnOptions.parseRequest(optionsJson)
-            context = errorContext(WebAuthnOptions.requireRpId(options.model.rpId, "rpId"))
-            val request = GetCredentialRequest(
-                credentialOptions = listOf(
-                    GetPublicKeyCredentialOption(requestJson = options.json),
-                    GetPasswordOption(),
-                ),
-            )
-            when (val credential = manager.getCredential(requireActivity(), request).credential) {
+            val optionsRpId = WebAuthnOptions.requireRpId(options.model.rpId, "rpId").also { rpId = it }
+            val response = gate.exclusive {
+                val request = GetCredentialRequest(
+                    credentialOptions = listOf(
+                        GetPublicKeyCredentialOption(requestJson = options.json),
+                        GetPasswordOption(),
+                    ),
+                )
+                manager.getCredential(requireActivity(), request)
+            }
+            when (val credential = response.credential) {
                 is PublicKeyCredential ->
-                    SignInCredential.Passkey(parseAssertion(credential.authenticationResponseJson))
+                    SignInCredential.Passkey(parseAssertion(credential.authenticationResponseJson, optionsRpId))
                 is PasswordCredential -> SignInCredential.Password(credential.id, credential.password)
                 else -> throw unexpected(credential)
             }
@@ -155,36 +169,44 @@ internal class AndroidPasskeys(private val tracker: ActivityTracker = ActivityTr
     }
 
     override val signals: PasskeySignals = object : PasskeySignals {
-        override suspend fun unknownCredential(rpId: String, credentialId: String): PasskeyResult<Unit> =
+        override suspend fun unknownCredential(rpId: String, credentialId: String): PasskeyResult<SignalOutcome> =
             signal(rpId) { SignalUnknownCredentialRequest(SignalRequests.unknownCredential(rpId, credentialId)) }
 
         override suspend fun acceptedCredentials(
             rpId: String,
-            userId: String,
+            userHandle: String,
             credentialIds: List<String>,
-        ): PasskeyResult<Unit> = signal(rpId) {
-            SignalAllAcceptedCredentialIdsRequest(SignalRequests.acceptedCredentials(rpId, userId, credentialIds))
+        ): PasskeyResult<SignalOutcome> = signal(rpId) {
+            SignalAllAcceptedCredentialIdsRequest(SignalRequests.acceptedCredentials(rpId, userHandle, credentialIds))
         }
 
         override suspend fun currentUserDetails(
             rpId: String,
-            userId: String,
+            userHandle: String,
             name: String,
             displayName: String,
-        ): PasskeyResult<Unit> = signal(rpId) {
-            SignalCurrentUserDetailsRequest(SignalRequests.currentUserDetails(rpId, userId, name, displayName))
+        ): PasskeyResult<SignalOutcome> = signal(rpId) {
+            SignalCurrentUserDetailsRequest(SignalRequests.currentUserDetails(rpId, userHandle, name, displayName))
         }
     }
 
+    private fun passkeyRequest(requestJson: String, preferImmediatelyAvailable: Boolean) = GetCredentialRequest(
+        credentialOptions = listOf(GetPublicKeyCredentialOption(requestJson = requestJson)),
+        preferImmediatelyAvailableCredentials = preferImmediatelyAvailable,
+    )
+
     private suspend fun createPasskey(optionsJson: String, conditional: Boolean): PasskeyResult<PasskeyRegistration> {
-        var context = errorContext(rpId = null)
-        return passkeyCatching({ it.toPasskeyError(conditional, context) }) {
+        var rpId: String? = null
+        return passkeyCatching({ it.toPasskeyError(conditional, errorContext(rpId)) }) {
             requireSupported()
             val options = WebAuthnOptions.parseCreation(optionsJson)
-            context = errorContext(WebAuthnOptions.requireRpId(options.model.rp.id, "rp.id"))
-            val request = CreatePublicKeyCredentialRequest(requestJson = options.json, isConditional = conditional)
-            when (val response = manager.createCredential(requireActivity(), request)) {
-                is CreatePublicKeyCredentialResponse -> parseRegistration(response.registrationResponseJson)
+            val optionsRpId = WebAuthnOptions.requireRpId(options.model.rp.id, "rp.id").also { rpId = it }
+            val response = gate.exclusive {
+                val request = CreatePublicKeyCredentialRequest(requestJson = options.json, isConditional = conditional)
+                manager.createCredential(requireActivity(), request)
+            }
+            when (response) {
+                is CreatePublicKeyCredentialResponse -> parseRegistration(response.registrationResponseJson, optionsRpId)
                 else -> throw unexpected(response)
             }
         }
@@ -270,14 +292,23 @@ internal class AndroidPasskeys(private val tracker: ActivityTracker = ActivityTr
             WindowInspector.getGlobalWindowViews().map { root -> WindowFocus(root.hasWindowFocus(), root.findFocus()) }
         }
 
-    private suspend fun signal(rpId: String, build: () -> SignalCredentialStateRequest): PasskeyResult<Unit> =
+    private suspend fun signal(rpId: String, build: () -> SignalCredentialStateRequest): PasskeyResult<SignalOutcome> =
         passkeyCatching({ it.toPasskeyError(context = errorContext(rpId)) }) {
-            requireSupported()
+            requireSupported() // signals need the same Android 9+ as everything else; providers may still decline
             manager.signalCredentialState(build())
-        }
+            Unit
+        }.toSignalOutcome()
 
-    private fun errorContext(rpId: String?): AndroidErrorContext =
-        AndroidErrorContext(rpId = rpId, packageName = tracker.application?.packageName)
+    // Only built when a request failed, so the signing certificates are read lazily (and cached by AppSigning).
+    private fun errorContext(rpId: String?): AndroidErrorContext {
+        val app = tracker.application
+        return AndroidErrorContext(
+            rpId = rpId,
+            packageName = app?.packageName,
+            signingFingerprints = app?.let(AppSigning::fingerprints).orEmpty(),
+            isEmulator = AppSigning.isEmulator,
+        )
+    }
 
     private fun requireSupported() {
         if (!supported) throw PasskeyException(PasskeyError.NotSupported("Passkeys require Android 9 (API 28) or newer."))

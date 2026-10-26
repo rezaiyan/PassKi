@@ -26,6 +26,9 @@ internal object AasaCheck {
         direct.fetchProblem()?.let { problem ->
             return fail(CheckIds.IOS_01, problem, "serve the file at ${direct.url} with HTTP 200, without redirects (passkiWellKnown generates it)")
         }
+        if (direct.isWebPage { parse(it) != null }) {
+            return fail(CheckIds.IOS_01, WebPageTexts.message(direct.url, NAME), WebPageTexts.fix(direct.url, NAME))
+        }
         val directJson = parse(direct.body.orEmpty()) as? JsonObject
             ?: return fail(CheckIds.IOS_01, "${direct.url} is not a JSON object", "fix the JSON syntax; passkiWellKnown generates a valid file")
 

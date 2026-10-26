@@ -43,6 +43,33 @@ internal fun HttpResult.fetchProblem(): String? = when {
     else -> null
 }
 
+/**
+ * True when a well-known path answered with a web page instead of the file, typically a single-page app's catch-all
+ * route: the body starts with `<`, or it is served as `text/html` and isn't JSON. The same rule runs in `passkiCheck`
+ * and the passki-web verifier. [isJson] tells whether the body parses as JSON.
+ */
+internal fun HttpResult.isWebPage(isJson: (String) -> Boolean): Boolean {
+    val text = body.orEmpty().trimStart('﻿', ' ', '\t', '\r', '\n')
+    if (text.startsWith("<")) return true
+    return contentType.orEmpty().contains("text/html", ignoreCase = true) && !isJson(text)
+}
+
+/**
+ * Message and fix for [isWebPage], from the `html` entry of AND-01 and IOS-01 in docs/checks/catalog.json
+ * (a test keeps them equal).
+ */
+internal object WebPageTexts {
+    const val MESSAGE: String = "<url> served a web page, not <file>"
+    const val FIX: String =
+        "Your site answered <url> with a web page (often a single-page app's catch-all route). Serve <file> before " +
+            "that route, or from your server, with status 200 and Content-Type application/json, and keep it out of " +
+            "folders a deploy mirrors or deletes."
+
+    fun message(url: String, file: String): String = MESSAGE.replace("<url>", url).replace("<file>", file)
+
+    fun fix(url: String, file: String): String = FIX.replace("<url>", url).replace("<file>", file)
+}
+
 /** The host part of an `https://host/...` URL. */
 internal fun hostOf(url: String): String = url.substringAfter("://").substringBefore('/').substringBefore('?')
 

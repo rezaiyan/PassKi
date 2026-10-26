@@ -34,6 +34,35 @@ final enum class com.alirezaiyan.passki/LargeBlobSupport : kotlin/Enum<com.alire
     final fun values(): kotlin/Array<com.alirezaiyan.passki/LargeBlobSupport> // com.alirezaiyan.passki/LargeBlobSupport.values|values#static(){}[0]
 }
 
+final enum class com.alirezaiyan.passki/PasskeyErrorCategory : kotlin/Enum<com.alirezaiyan.passki/PasskeyErrorCategory> { // com.alirezaiyan.passki/PasskeyErrorCategory|null[0]
+    enum entry AlreadyExists // com.alirezaiyan.passki/PasskeyErrorCategory.AlreadyExists|null[0]
+    enum entry NoCredential // com.alirezaiyan.passki/PasskeyErrorCategory.NoCredential|null[0]
+    enum entry Setup // com.alirezaiyan.passki/PasskeyErrorCategory.Setup|null[0]
+    enum entry Unexpected // com.alirezaiyan.passki/PasskeyErrorCategory.Unexpected|null[0]
+    enum entry Unsupported // com.alirezaiyan.passki/PasskeyErrorCategory.Unsupported|null[0]
+    enum entry UserCancelled // com.alirezaiyan.passki/PasskeyErrorCategory.UserCancelled|null[0]
+
+    final val entries // com.alirezaiyan.passki/PasskeyErrorCategory.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.alirezaiyan.passki/PasskeyErrorCategory> // com.alirezaiyan.passki/PasskeyErrorCategory.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): com.alirezaiyan.passki/PasskeyErrorCategory // com.alirezaiyan.passki/PasskeyErrorCategory.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.alirezaiyan.passki/PasskeyErrorCategory> // com.alirezaiyan.passki/PasskeyErrorCategory.values|values#static(){}[0]
+}
+
+final enum class com.alirezaiyan.passki/PasskiLogLevel : kotlin/Enum<com.alirezaiyan.passki/PasskiLogLevel> { // com.alirezaiyan.passki/PasskiLogLevel|null[0]
+    enum entry Debug // com.alirezaiyan.passki/PasskiLogLevel.Debug|null[0]
+    enum entry Error // com.alirezaiyan.passki/PasskiLogLevel.Error|null[0]
+    enum entry Info // com.alirezaiyan.passki/PasskiLogLevel.Info|null[0]
+    enum entry None // com.alirezaiyan.passki/PasskiLogLevel.None|null[0]
+    enum entry Warn // com.alirezaiyan.passki/PasskiLogLevel.Warn|null[0]
+
+    final val entries // com.alirezaiyan.passki/PasskiLogLevel.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.alirezaiyan.passki/PasskiLogLevel> // com.alirezaiyan.passki/PasskiLogLevel.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): com.alirezaiyan.passki/PasskiLogLevel // com.alirezaiyan.passki/PasskiLogLevel.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.alirezaiyan.passki/PasskiLogLevel> // com.alirezaiyan.passki/PasskiLogLevel.values|values#static(){}[0]
+}
+
 final enum class com.alirezaiyan.passki/SignInMode : kotlin/Enum<com.alirezaiyan.passki/SignInMode> { // com.alirezaiyan.passki/SignInMode|null[0]
     enum entry Autofill // com.alirezaiyan.passki/SignInMode.Autofill|null[0]
     enum entry ImmediateOnly // com.alirezaiyan.passki/SignInMode.ImmediateOnly|null[0]
@@ -46,10 +75,20 @@ final enum class com.alirezaiyan.passki/SignInMode : kotlin/Enum<com.alirezaiyan
     final fun values(): kotlin/Array<com.alirezaiyan.passki/SignInMode> // com.alirezaiyan.passki/SignInMode.values|values#static(){}[0]
 }
 
+abstract fun interface com.alirezaiyan.passki/PasskiLogHandler { // com.alirezaiyan.passki/PasskiLogHandler|null[0]
+    abstract fun log(com.alirezaiyan.passki/PasskiLogLevel, kotlin/String, kotlin/String, kotlin/Throwable?) // com.alirezaiyan.passki/PasskiLogHandler.log|log(com.alirezaiyan.passki.PasskiLogLevel;kotlin.String;kotlin.String;kotlin.Throwable?){}[0]
+
+    final object Companion { // com.alirezaiyan.passki/PasskiLogHandler.Companion|null[0]
+        final val Platform // com.alirezaiyan.passki/PasskiLogHandler.Companion.Platform|{}Platform[0]
+            final fun <get-Platform>(): com.alirezaiyan.passki/PasskiLogHandler // com.alirezaiyan.passki/PasskiLogHandler.Companion.Platform.<get-Platform>|<get-Platform>(){}[0]
+    }
+}
+
 abstract interface com.alirezaiyan.passki/PasskeySignals { // com.alirezaiyan.passki/PasskeySignals|null[0]
-    abstract suspend fun acceptedCredentials(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String>): com.alirezaiyan.passki/PasskeyResult<kotlin/Unit> // com.alirezaiyan.passki/PasskeySignals.acceptedCredentials|acceptedCredentials(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
-    abstract suspend fun currentUserDetails(kotlin/String, kotlin/String, kotlin/String, kotlin/String): com.alirezaiyan.passki/PasskeyResult<kotlin/Unit> // com.alirezaiyan.passki/PasskeySignals.currentUserDetails|currentUserDetails(kotlin.String;kotlin.String;kotlin.String;kotlin.String){}[0]
-    abstract suspend fun unknownCredential(kotlin/String, kotlin/String): com.alirezaiyan.passki/PasskeyResult<kotlin/Unit> // com.alirezaiyan.passki/PasskeySignals.unknownCredential|unknownCredential(kotlin.String;kotlin.String){}[0]
+    abstract suspend fun acceptedCredentials(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String>): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignalOutcome> // com.alirezaiyan.passki/PasskeySignals.acceptedCredentials|acceptedCredentials(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+    abstract suspend fun currentUserDetails(kotlin/String, kotlin/String, kotlin/String, kotlin/String): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignalOutcome> // com.alirezaiyan.passki/PasskeySignals.currentUserDetails|currentUserDetails(kotlin.String;kotlin.String;kotlin.String;kotlin.String){}[0]
+    abstract suspend fun unknownCredential(kotlin/String, kotlin/String): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignalOutcome> // com.alirezaiyan.passki/PasskeySignals.unknownCredential|unknownCredential(kotlin.String;kotlin.String){}[0]
+    open suspend fun syncAccount(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String>, kotlin/String, kotlin/String): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignalOutcome> // com.alirezaiyan.passki/PasskeySignals.syncAccount|syncAccount(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.String;kotlin.String){}[0]
 }
 
 abstract interface com.alirezaiyan.passki/Passkeys { // com.alirezaiyan.passki/Passkeys|null[0]
@@ -110,6 +149,25 @@ sealed interface com.alirezaiyan.passki/SignInCredential { // com.alirezaiyan.pa
             final fun <get-password>(): kotlin/String // com.alirezaiyan.passki/SignInCredential.Password.password.<get-password>|<get-password>(){}[0]
 
         final fun toString(): kotlin/String // com.alirezaiyan.passki/SignInCredential.Password.toString|toString(){}[0]
+    }
+}
+
+sealed interface com.alirezaiyan.passki/SignalOutcome { // com.alirezaiyan.passki/SignalOutcome|null[0]
+    final class Skipped : com.alirezaiyan.passki/SignalOutcome { // com.alirezaiyan.passki/SignalOutcome.Skipped|null[0]
+        constructor <init>(kotlin/String) // com.alirezaiyan.passki/SignalOutcome.Skipped.<init>|<init>(kotlin.String){}[0]
+
+        final val reason // com.alirezaiyan.passki/SignalOutcome.Skipped.reason|{}reason[0]
+            final fun <get-reason>(): kotlin/String // com.alirezaiyan.passki/SignalOutcome.Skipped.reason.<get-reason>|<get-reason>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki/SignalOutcome.Skipped.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.alirezaiyan.passki/SignalOutcome.Skipped.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.alirezaiyan.passki/SignalOutcome.Skipped.toString|toString(){}[0]
+    }
+
+    final object Applied : com.alirezaiyan.passki/SignalOutcome { // com.alirezaiyan.passki/SignalOutcome.Applied|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.alirezaiyan.passki/SignalOutcome.Applied.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.alirezaiyan.passki/SignalOutcome.Applied.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.alirezaiyan.passki/SignalOutcome.Applied.toString|toString(){}[0]
     }
 }
 
@@ -563,7 +621,7 @@ final class com.alirezaiyan.passki/DoctorReport { // com.alirezaiyan.passki/Doct
 }
 
 final class com.alirezaiyan.passki/PasskeyAssertion { // com.alirezaiyan.passki/PasskeyAssertion|null[0]
-    constructor <init>(kotlin/String, kotlin/String, kotlin/String?, com.alirezaiyan.passki/PrfResults? = ..., kotlin/ByteArray? = ..., kotlin/Boolean? = ...) // com.alirezaiyan.passki/PasskeyAssertion.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;com.alirezaiyan.passki.PrfResults?;kotlin.ByteArray?;kotlin.Boolean?){}[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String?, com.alirezaiyan.passki/PrfResults? = ..., kotlin/ByteArray? = ..., kotlin/Boolean? = ..., kotlin/String) // com.alirezaiyan.passki/PasskeyAssertion.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;com.alirezaiyan.passki.PrfResults?;kotlin.ByteArray?;kotlin.Boolean?;kotlin.String){}[0]
 
     final val credentialId // com.alirezaiyan.passki/PasskeyAssertion.credentialId|{}credentialId[0]
         final fun <get-credentialId>(): kotlin/String // com.alirezaiyan.passki/PasskeyAssertion.credentialId.<get-credentialId>|<get-credentialId>(){}[0]
@@ -575,6 +633,8 @@ final class com.alirezaiyan.passki/PasskeyAssertion { // com.alirezaiyan.passki/
         final fun <get-largeBlobWritten>(): kotlin/Boolean? // com.alirezaiyan.passki/PasskeyAssertion.largeBlobWritten.<get-largeBlobWritten>|<get-largeBlobWritten>(){}[0]
     final val prf // com.alirezaiyan.passki/PasskeyAssertion.prf|{}prf[0]
         final fun <get-prf>(): com.alirezaiyan.passki/PrfResults? // com.alirezaiyan.passki/PasskeyAssertion.prf.<get-prf>|<get-prf>(){}[0]
+    final val rpId // com.alirezaiyan.passki/PasskeyAssertion.rpId|{}rpId[0]
+        final fun <get-rpId>(): kotlin/String // com.alirezaiyan.passki/PasskeyAssertion.rpId.<get-rpId>|<get-rpId>(){}[0]
     final val userHandle // com.alirezaiyan.passki/PasskeyAssertion.userHandle|{}userHandle[0]
         final fun <get-userHandle>(): kotlin/String? // com.alirezaiyan.passki/PasskeyAssertion.userHandle.<get-userHandle>|<get-userHandle>(){}[0]
 
@@ -608,7 +668,7 @@ final class com.alirezaiyan.passki/PasskeyException : kotlin/Exception { // com.
 }
 
 final class com.alirezaiyan.passki/PasskeyRegistration { // com.alirezaiyan.passki/PasskeyRegistration|null[0]
-    constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String>, kotlin/String?, kotlin/Boolean? = ..., com.alirezaiyan.passki/PrfResults? = ..., kotlin/Boolean? = ...) // com.alirezaiyan.passki/PasskeyRegistration.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.String?;kotlin.Boolean?;com.alirezaiyan.passki.PrfResults?;kotlin.Boolean?){}[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String>, kotlin/String?, kotlin/Boolean? = ..., com.alirezaiyan.passki/PrfResults? = ..., kotlin/Boolean? = ..., kotlin/String) // com.alirezaiyan.passki/PasskeyRegistration.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.String?;kotlin.Boolean?;com.alirezaiyan.passki.PrfResults?;kotlin.Boolean?;kotlin.String){}[0]
 
     final val authenticatorAttachment // com.alirezaiyan.passki/PasskeyRegistration.authenticatorAttachment|{}authenticatorAttachment[0]
         final fun <get-authenticatorAttachment>(): kotlin/String? // com.alirezaiyan.passki/PasskeyRegistration.authenticatorAttachment.<get-authenticatorAttachment>|<get-authenticatorAttachment>(){}[0]
@@ -622,6 +682,8 @@ final class com.alirezaiyan.passki/PasskeyRegistration { // com.alirezaiyan.pass
         final fun <get-prf>(): com.alirezaiyan.passki/PrfResults? // com.alirezaiyan.passki/PasskeyRegistration.prf.<get-prf>|<get-prf>(){}[0]
     final val prfEnabled // com.alirezaiyan.passki/PasskeyRegistration.prfEnabled|{}prfEnabled[0]
         final fun <get-prfEnabled>(): kotlin/Boolean? // com.alirezaiyan.passki/PasskeyRegistration.prfEnabled.<get-prfEnabled>|<get-prfEnabled>(){}[0]
+    final val rpId // com.alirezaiyan.passki/PasskeyRegistration.rpId|{}rpId[0]
+        final fun <get-rpId>(): kotlin/String // com.alirezaiyan.passki/PasskeyRegistration.rpId.<get-rpId>|<get-rpId>(){}[0]
     final val transports // com.alirezaiyan.passki/PasskeyRegistration.transports|{}transports[0]
         final fun <get-transports>(): kotlin.collections/List<kotlin/String> // com.alirezaiyan.passki/PasskeyRegistration.transports.<get-transports>|<get-transports>(){}[0]
 
@@ -644,8 +706,12 @@ final class com.alirezaiyan.passki/PrfResults { // com.alirezaiyan.passki/PrfRes
 sealed class com.alirezaiyan.passki/PasskeyError { // com.alirezaiyan.passki/PasskeyError|null[0]
     abstract val message // com.alirezaiyan.passki/PasskeyError.message|{}message[0]
         abstract fun <get-message>(): kotlin/String // com.alirezaiyan.passki/PasskeyError.message.<get-message>|<get-message>(){}[0]
+    final val category // com.alirezaiyan.passki/PasskeyError.category|{}category[0]
+        final fun <get-category>(): com.alirezaiyan.passki/PasskeyErrorCategory // com.alirezaiyan.passki/PasskeyError.category.<get-category>|<get-category>(){}[0]
     final val docsUrl // com.alirezaiyan.passki/PasskeyError.docsUrl|{}docsUrl[0]
         final fun <get-docsUrl>(): kotlin/String? // com.alirezaiyan.passki/PasskeyError.docsUrl.<get-docsUrl>|<get-docsUrl>(){}[0]
+    final val isUserCancellation // com.alirezaiyan.passki/PasskeyError.isUserCancellation|{}isUserCancellation[0]
+        final fun <get-isUserCancellation>(): kotlin/Boolean // com.alirezaiyan.passki/PasskeyError.isUserCancellation.<get-isUserCancellation>|<get-isUserCancellation>(){}[0]
     open val checkId // com.alirezaiyan.passki/PasskeyError.checkId|{}checkId[0]
         open fun <get-checkId>(): kotlin/String? // com.alirezaiyan.passki/PasskeyError.checkId.<get-checkId>|<get-checkId>(){}[0]
     open val fixHint // com.alirezaiyan.passki/PasskeyError.fixHint|{}fixHint[0]
@@ -788,9 +854,31 @@ final object com.alirezaiyan.passki.internal/ExtensionsJson { // com.alirezaiyan
     }
 }
 
+final object com.alirezaiyan.passki.internal/PasskiLog { // com.alirezaiyan.passki.internal/PasskiLog|null[0]
+    final const val TAG // com.alirezaiyan.passki.internal/PasskiLog.TAG|{}TAG[0]
+        final fun <get-TAG>(): kotlin/String // com.alirezaiyan.passki.internal/PasskiLog.TAG.<get-TAG>|<get-TAG>(){}[0]
+
+    final fun isLoggable(com.alirezaiyan.passki/PasskiLogLevel): kotlin/Boolean // com.alirezaiyan.passki.internal/PasskiLog.isLoggable|isLoggable(com.alirezaiyan.passki.PasskiLogLevel){}[0]
+    final fun lengthOf(kotlin/String): kotlin/String // com.alirezaiyan.passki.internal/PasskiLog.lengthOf|lengthOf(kotlin.String){}[0]
+    final fun levelOf(com.alirezaiyan.passki/PasskeyError): com.alirezaiyan.passki/PasskiLogLevel // com.alirezaiyan.passki.internal/PasskiLog.levelOf|levelOf(com.alirezaiyan.passki.PasskeyError){}[0]
+    final fun log(com.alirezaiyan.passki/PasskiLogLevel, kotlin/Throwable? = ..., kotlin/Function0<kotlin/String>) // com.alirezaiyan.passki.internal/PasskiLog.log|log(com.alirezaiyan.passki.PasskiLogLevel;kotlin.Throwable?;kotlin.Function0<kotlin.String>){}[0]
+    final fun platformError(kotlin/Throwable, com.alirezaiyan.passki/PasskeyError) // com.alirezaiyan.passki.internal/PasskiLog.platformError|platformError(kotlin.Throwable;com.alirezaiyan.passki.PasskeyError){}[0]
+    final fun shortId(kotlin/String): kotlin/String // com.alirezaiyan.passki.internal/PasskiLog.shortId|shortId(kotlin.String){}[0]
+    final suspend fun acceptedCredentials(kotlin/String, kotlin.collections/List<kotlin/String>, kotlin.coroutines/SuspendFunction0<com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignalOutcome>>): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignalOutcome> // com.alirezaiyan.passki.internal/PasskiLog.acceptedCredentials|acceptedCredentials(kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.coroutines.SuspendFunction0<com.alirezaiyan.passki.PasskeyResult<com.alirezaiyan.passki.SignalOutcome>>){}[0]
+    final suspend fun capabilities(kotlin.coroutines/SuspendFunction0<com.alirezaiyan.passki/PasskeyCapabilities>): com.alirezaiyan.passki/PasskeyCapabilities // com.alirezaiyan.passki.internal/PasskiLog.capabilities|capabilities(kotlin.coroutines.SuspendFunction0<com.alirezaiyan.passki.PasskeyCapabilities>){}[0]
+    final suspend fun currentUserDetails(kotlin/String, kotlin.coroutines/SuspendFunction0<com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignalOutcome>>): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignalOutcome> // com.alirezaiyan.passki.internal/PasskiLog.currentUserDetails|currentUserDetails(kotlin.String;kotlin.coroutines.SuspendFunction0<com.alirezaiyan.passki.PasskeyResult<com.alirezaiyan.passki.SignalOutcome>>){}[0]
+    final suspend fun register(kotlin/String, kotlin.coroutines/SuspendFunction0<com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/PasskeyRegistration>>): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/PasskeyRegistration> // com.alirezaiyan.passki.internal/PasskiLog.register|register(kotlin.String;kotlin.coroutines.SuspendFunction0<com.alirezaiyan.passki.PasskeyResult<com.alirezaiyan.passki.PasskeyRegistration>>){}[0]
+    final suspend fun signIn(kotlin/String, com.alirezaiyan.passki/SignInMode, kotlin.coroutines/SuspendFunction0<com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/PasskeyAssertion>>): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/PasskeyAssertion> // com.alirezaiyan.passki.internal/PasskiLog.signIn|signIn(kotlin.String;com.alirezaiyan.passki.SignInMode;kotlin.coroutines.SuspendFunction0<com.alirezaiyan.passki.PasskeyResult<com.alirezaiyan.passki.PasskeyAssertion>>){}[0]
+    final suspend fun signInOrPassword(kotlin/String, kotlin.coroutines/SuspendFunction0<com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignInCredential>>): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignInCredential> // com.alirezaiyan.passki.internal/PasskiLog.signInOrPassword|signInOrPassword(kotlin.String;kotlin.coroutines.SuspendFunction0<com.alirezaiyan.passki.PasskeyResult<com.alirezaiyan.passki.SignInCredential>>){}[0]
+    final suspend fun syncAccount(kotlin/String, kotlin.collections/List<kotlin/String>, kotlin.coroutines/SuspendFunction0<com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignalOutcome>>): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignalOutcome> // com.alirezaiyan.passki.internal/PasskiLog.syncAccount|syncAccount(kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.coroutines.SuspendFunction0<com.alirezaiyan.passki.PasskeyResult<com.alirezaiyan.passki.SignalOutcome>>){}[0]
+    final suspend fun unknownCredential(kotlin/String, kotlin/String, kotlin.coroutines/SuspendFunction0<com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignalOutcome>>): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignalOutcome> // com.alirezaiyan.passki.internal/PasskiLog.unknownCredential|unknownCredential(kotlin.String;kotlin.String;kotlin.coroutines.SuspendFunction0<com.alirezaiyan.passki.PasskeyResult<com.alirezaiyan.passki.SignalOutcome>>){}[0]
+    final suspend fun upgrade(kotlin/String, kotlin.coroutines/SuspendFunction0<com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/PasskeyRegistration>>): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/PasskeyRegistration> // com.alirezaiyan.passki.internal/PasskiLog.upgrade|upgrade(kotlin.String;kotlin.coroutines.SuspendFunction0<com.alirezaiyan.passki.PasskeyResult<com.alirezaiyan.passki.PasskeyRegistration>>){}[0]
+}
+
 final object com.alirezaiyan.passki.internal/SignalRequests { // com.alirezaiyan.passki.internal/SignalRequests|null[0]
     final fun acceptedCredentials(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/String>): kotlin/String // com.alirezaiyan.passki.internal/SignalRequests.acceptedCredentials|acceptedCredentials(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
     final fun currentUserDetails(kotlin/String, kotlin/String, kotlin/String, kotlin/String): kotlin/String // com.alirezaiyan.passki.internal/SignalRequests.currentUserDetails|currentUserDetails(kotlin.String;kotlin.String;kotlin.String;kotlin.String){}[0]
+    final fun invalidArgument(kotlin/String, kotlin/String?): com.alirezaiyan.passki/PasskeyError.InvalidOptions // com.alirezaiyan.passki.internal/SignalRequests.invalidArgument|invalidArgument(kotlin.String;kotlin.String?){}[0]
     final fun unknownCredential(kotlin/String, kotlin/String): kotlin/String // com.alirezaiyan.passki.internal/SignalRequests.unknownCredential|unknownCredential(kotlin.String;kotlin.String){}[0]
 }
 
@@ -803,6 +891,15 @@ final object com.alirezaiyan.passki.internal/WebAuthnOptions { // com.alirezaiya
 final object com.alirezaiyan.passki.internal/WebAuthnResponses { // com.alirezaiyan.passki.internal/WebAuthnResponses|null[0]
     final fun authentication(kotlin/ByteArray, kotlin/ByteArray, kotlin/ByteArray, kotlin/ByteArray, kotlin/ByteArray?, kotlin/String?, kotlinx.serialization.json/JsonObject = ...): kotlin/String // com.alirezaiyan.passki.internal/WebAuthnResponses.authentication|authentication(kotlin.ByteArray;kotlin.ByteArray;kotlin.ByteArray;kotlin.ByteArray;kotlin.ByteArray?;kotlin.String?;kotlinx.serialization.json.JsonObject){}[0]
     final fun registration(kotlin/ByteArray, kotlin/ByteArray, kotlin/ByteArray, kotlin.collections/List<kotlin/String>, kotlin/String?, kotlinx.serialization.json/JsonObject = ...): kotlin/String // com.alirezaiyan.passki.internal/WebAuthnResponses.registration|registration(kotlin.ByteArray;kotlin.ByteArray;kotlin.ByteArray;kotlin.collections.List<kotlin.String>;kotlin.String?;kotlinx.serialization.json.JsonObject){}[0]
+}
+
+final object com.alirezaiyan.passki/PassKi { // com.alirezaiyan.passki/PassKi|null[0]
+    final var logHandler // com.alirezaiyan.passki/PassKi.logHandler|{}logHandler[0]
+        final fun <get-logHandler>(): com.alirezaiyan.passki/PasskiLogHandler // com.alirezaiyan.passki/PassKi.logHandler.<get-logHandler>|<get-logHandler>(){}[0]
+        final fun <set-logHandler>(com.alirezaiyan.passki/PasskiLogHandler) // com.alirezaiyan.passki/PassKi.logHandler.<set-logHandler>|<set-logHandler>(com.alirezaiyan.passki.PasskiLogHandler){}[0]
+    final var logLevel // com.alirezaiyan.passki/PassKi.logLevel|{}logLevel[0]
+        final fun <get-logLevel>(): com.alirezaiyan.passki/PasskiLogLevel // com.alirezaiyan.passki/PassKi.logLevel.<get-logLevel>|<get-logLevel>(){}[0]
+        final fun <set-logLevel>(com.alirezaiyan.passki/PasskiLogLevel) // com.alirezaiyan.passki/PassKi.logLevel.<set-logLevel>|<set-logLevel>(com.alirezaiyan.passki.PasskiLogLevel){}[0]
 }
 
 final object com.alirezaiyan.passki/PasskeyDoctor { // com.alirezaiyan.passki/PasskeyDoctor|null[0]
@@ -819,12 +916,22 @@ final object com.alirezaiyan.passki/PasskeyExtensions { // com.alirezaiyan.passk
 
 final val com.alirezaiyan.passki.internal/PasskiJson // com.alirezaiyan.passki.internal/PasskiJson|{}PasskiJson[0]
     final fun <get-PasskiJson>(): kotlinx.serialization.json/Json // com.alirezaiyan.passki.internal/PasskiJson.<get-PasskiJson>|<get-PasskiJson>(){}[0]
+final val com.alirezaiyan.passki/isFailure // com.alirezaiyan.passki/isFailure|@com.alirezaiyan.passki.PasskeyResult<*>{}isFailure[0]
+    final fun (com.alirezaiyan.passki/PasskeyResult<*>).<get-isFailure>(): kotlin/Boolean // com.alirezaiyan.passki/isFailure.<get-isFailure>|<get-isFailure>@com.alirezaiyan.passki.PasskeyResult<*>(){}[0]
+final val com.alirezaiyan.passki/isSuccess // com.alirezaiyan.passki/isSuccess|@com.alirezaiyan.passki.PasskeyResult<*>{}isSuccess[0]
+    final fun (com.alirezaiyan.passki/PasskeyResult<*>).<get-isSuccess>(): kotlin/Boolean // com.alirezaiyan.passki/isSuccess.<get-isSuccess>|<get-isSuccess>@com.alirezaiyan.passki.PasskeyResult<*>(){}[0]
 
+final fun (com.alirezaiyan.passki/PasskeyResult<*>).com.alirezaiyan.passki/errorOrNull(): com.alirezaiyan.passki/PasskeyError? // com.alirezaiyan.passki/errorOrNull|errorOrNull@com.alirezaiyan.passki.PasskeyResult<*>(){}[0]
+final fun (com.alirezaiyan.passki/PasskeyResult<kotlin/Unit>).com.alirezaiyan.passki.internal/toSignalOutcome(): com.alirezaiyan.passki/PasskeyResult<com.alirezaiyan.passki/SignalOutcome> // com.alirezaiyan.passki.internal/toSignalOutcome|toSignalOutcome@com.alirezaiyan.passki.PasskeyResult<kotlin.Unit>(){}[0]
 final fun <#A: kotlin/Any?> (com.alirezaiyan.passki/PasskeyResult<#A>).com.alirezaiyan.passki/getOrNull(): #A? // com.alirezaiyan.passki/getOrNull|getOrNull@com.alirezaiyan.passki.PasskeyResult<0:0>(){0§<kotlin.Any?>}[0]
 final fun <#A: kotlin/Any?> (com.alirezaiyan.passki/PasskeyResult<#A>).com.alirezaiyan.passki/getOrThrow(): #A // com.alirezaiyan.passki/getOrThrow|getOrThrow@com.alirezaiyan.passki.PasskeyResult<0:0>(){0§<kotlin.Any?>}[0]
-final fun com.alirezaiyan.passki.internal/parseAssertion(kotlin/String): com.alirezaiyan.passki/PasskeyAssertion // com.alirezaiyan.passki.internal/parseAssertion|parseAssertion(kotlin.String){}[0]
-final fun com.alirezaiyan.passki.internal/parseRegistration(kotlin/String): com.alirezaiyan.passki/PasskeyRegistration // com.alirezaiyan.passki.internal/parseRegistration|parseRegistration(kotlin.String){}[0]
+final fun <#A: kotlin/Any?> (com.alirezaiyan.passki/PasskeyResult<#A>).com.alirezaiyan.passki/toResult(): kotlin/Result<#A> // com.alirezaiyan.passki/toResult|toResult@com.alirezaiyan.passki.PasskeyResult<0:0>(){0§<kotlin.Any?>}[0]
+final fun com.alirezaiyan.passki.internal/parseAssertion(kotlin/String, kotlin/String): com.alirezaiyan.passki/PasskeyAssertion // com.alirezaiyan.passki.internal/parseAssertion|parseAssertion(kotlin.String;kotlin.String){}[0]
+final fun com.alirezaiyan.passki.internal/parseRegistration(kotlin/String, kotlin/String): com.alirezaiyan.passki/PasskeyRegistration // com.alirezaiyan.passki.internal/parseRegistration|parseRegistration(kotlin.String;kotlin.String){}[0]
 final fun com.alirezaiyan.passki/Passkeys(): com.alirezaiyan.passki/Passkeys // com.alirezaiyan.passki/Passkeys|Passkeys(){}[0]
+final inline fun <#A: kotlin/Any?, #B: kotlin/Any?> (com.alirezaiyan.passki/PasskeyResult<#A>).com.alirezaiyan.passki/fold(kotlin/Function1<#A, #B>, kotlin/Function1<com.alirezaiyan.passki/PasskeyError, #B>): #B // com.alirezaiyan.passki/fold|fold@com.alirezaiyan.passki.PasskeyResult<0:0>(kotlin.Function1<0:0,0:1>;kotlin.Function1<com.alirezaiyan.passki.PasskeyError,0:1>){0§<kotlin.Any?>;1§<kotlin.Any?>}[0]
 final inline fun <#A: kotlin/Any?, #B: kotlin/Any?> (com.alirezaiyan.passki/PasskeyResult<#A>).com.alirezaiyan.passki/map(kotlin/Function1<#A, #B>): com.alirezaiyan.passki/PasskeyResult<#B> // com.alirezaiyan.passki/map|map@com.alirezaiyan.passki.PasskeyResult<0:0>(kotlin.Function1<0:0,0:1>){0§<kotlin.Any?>;1§<kotlin.Any?>}[0]
+final inline fun <#A: kotlin/Any?> (com.alirezaiyan.passki/PasskeyResult<#A>).com.alirezaiyan.passki/mapError(kotlin/Function1<com.alirezaiyan.passki/PasskeyError, com.alirezaiyan.passki/PasskeyError>): com.alirezaiyan.passki/PasskeyResult<#A> // com.alirezaiyan.passki/mapError|mapError@com.alirezaiyan.passki.PasskeyResult<0:0>(kotlin.Function1<com.alirezaiyan.passki.PasskeyError,com.alirezaiyan.passki.PasskeyError>){0§<kotlin.Any?>}[0]
 final inline fun <#A: kotlin/Any?> (com.alirezaiyan.passki/PasskeyResult<#A>).com.alirezaiyan.passki/onFailure(kotlin/Function1<com.alirezaiyan.passki/PasskeyError, kotlin/Unit>): com.alirezaiyan.passki/PasskeyResult<#A> // com.alirezaiyan.passki/onFailure|onFailure@com.alirezaiyan.passki.PasskeyResult<0:0>(kotlin.Function1<com.alirezaiyan.passki.PasskeyError,kotlin.Unit>){0§<kotlin.Any?>}[0]
 final inline fun <#A: kotlin/Any?> (com.alirezaiyan.passki/PasskeyResult<#A>).com.alirezaiyan.passki/onSuccess(kotlin/Function1<#A, kotlin/Unit>): com.alirezaiyan.passki/PasskeyResult<#A> // com.alirezaiyan.passki/onSuccess|onSuccess@com.alirezaiyan.passki.PasskeyResult<0:0>(kotlin.Function1<0:0,kotlin.Unit>){0§<kotlin.Any?>}[0]
+final inline fun <#A: kotlin/Any?> (com.alirezaiyan.passki/PasskeyResult<#A>).com.alirezaiyan.passki/recover(kotlin/Function1<com.alirezaiyan.passki/PasskeyError, #A>): com.alirezaiyan.passki/PasskeyResult<#A> // com.alirezaiyan.passki/recover|recover@com.alirezaiyan.passki.PasskeyResult<0:0>(kotlin.Function1<com.alirezaiyan.passki.PasskeyError,0:0>){0§<kotlin.Any?>}[0]

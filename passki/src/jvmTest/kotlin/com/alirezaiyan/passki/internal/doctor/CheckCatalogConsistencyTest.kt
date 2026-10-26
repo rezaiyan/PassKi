@@ -34,6 +34,15 @@ class CheckCatalogConsistencyTest {
     }
 
     @Test
+    fun webPageTextsMatchTheCatalog() {
+        for (id in listOf(CheckIds.AND_01, CheckIds.IOS_01)) {
+            val html = catalog.first { it["id"]!!.jsonPrimitive.content == id }["html"]!!.jsonObject
+            assertEquals(WebPageTexts.MESSAGE, html["message"]!!.jsonPrimitive.content, "$id html.message")
+            assertEquals(WebPageTexts.FIX, html["fix"]!!.jsonPrimitive.content, "$id html.fix")
+        }
+    }
+
+    @Test
     fun catalogIdsAreUniqueAndHaveDocs() {
         assertEquals(catalogIds.size, catalogIds.toSet().size, "duplicate IDs in catalog")
         val docsDir = File(catalogFile.parentFile, "")

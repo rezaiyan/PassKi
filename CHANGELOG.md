@@ -5,6 +5,83 @@ listed here.
 
 ## 0.1.0-alpha05 (unreleased)
 
+### Changed
+- **BREAKING: signals return `PasskeyResult<SignalOutcome>`.** `SignalOutcome` is `Applied` or `Skipped(reason)`.
+  When the OS or credential provider can't apply a signal, you now get `Success(SignalOutcome.Skipped(reason))`
+  instead of `Failure(PasskeyError.NotSupported)`, so `onFailure` only sees problems worth logging
+  (`Misconfigured`, `InvalidOptions`, `Unknown`). On JVM desktop every signal is skipped.
+  **Migrating from alpha04:** drop any `NotSupported` special case for signals; code that only used
+  `onSuccess` / `onFailure` keeps compiling.
+  ```kotlin
+  // before
+  passkeys.signals.unknownCredential(rpId, id).onFailure { if (it !is PasskeyError.NotSupported) log(it) }
+  // after
+  passkeys.signals.unknownCredential(rpId, id).onFailure { log(it) }
+  ```
+- **BREAKING (named arguments): `userId` is now `userHandle`** in `PasskeySignals.acceptedCredentials` and
+  `currentUserDetails`, and in passki-test's `FakeSignal` and `FakeAuthenticator.retainOnly`. It is the WebAuthn user
+  handle (`user.id` of the creation options, also `PasskeyAssertion.userHandle`), never your account id. A value that
+  isn't base64url fails with `InvalidOptions` naming `userHandle`, with a fix hint that says where the handle comes
+  from. **Migrating from alpha04:** rename `userId =` to `userHandle =`; positional calls are unaffected.
+- **BREAKING (behaviour): one passkey sheet at a time.** While `register`, `signIn` (modal or `ImmediateOnly`),
+  `signInOrPassword` or `upgrade` is pending, another of these calls now fails at once with
+  `PasskeyError.Interrupted` instead of competing with it (before, what happened was up to each platform). The
+  pending call carries on. Autofill sign-in waits for
+  it to finish, as it already did on iOS. `Interrupted`'s message now covers both causes.
+  **Migrating from alpha04:** nothing to change if you already treat `Interrupted` as "retry later"; don't show it as
+  an error after a double tap.
+- **Threads and cancellation are documented.** Every call is main-safe, and cancelling the calling coroutine
+  withdraws the request (`CancellationException`, no late result); see the `Passkeys` KDoc and
+  `docs/platforms.md#threads-cancellation-and-one-sheet-at-a-time`. Behaviour was already like this; it is now part of
+  the contract and tested on Android, iOS and the web.
+- **Enums and sealed types say whether they can grow.** Their KDoc starts a paragraph with "Open:" (keep an `else`
+  branch) or "Closed:" (`PasskeyResult`), and CI checks every public one.
+- **AND-03 errors name the key to add** (Android). Every `Misconfigured` error with check ID `AND-03` (from a sign-in,
+  a registration or a signal) now ends with the SHA-256 fingerprint of each certificate the running app is signed
+  with and its `android:apk-key-hash:` origin, so the fix can be copied from logcat or a crash report, including the
+  Play App Signing key of a Play Store build. On an emulator the hint adds that some emulator images fail RP ID
+  validation even when `assetlinks.json` is right. `PasskeyDoctor` reads the fingerprints the same way.
+- **A web page at a well-known path gets its own message.** When `assetlinks.json` or
+  `apple-app-site-association` comes back as HTML (usually a single-page app's catch-all route), `PasskeyDoctor`,
+  `passkiCheck` / `passkiVerify` and the web verifier report AND-01 / IOS-01 as "served a web page" with a hosting
+  fix, instead of "not valid JSON". The text lives in `docs/checks/catalog.json` (`html`).
+
+- **Errors with a docs page print it:** `Misconfigured` and `InvalidOptions` with a check ID now include
+  `docsUrl=...` in `toString()`, after the check ID. Errors without one print as before.
+
+### Added
+- **Results carry the RP ID: `PasskeyRegistration.rpId` and `PasskeyAssertion.rpId`.** The RP ID the ceremony ran
+  for: the options' RP ID, or on the web the page's host when the options name none. Pass it to signals, such as
+  `signals.unknownCredential(assertion.rpId, assertion.credentialId)`, instead of parsing the options again.
+  passki-test's `FakePasskeys` fills it the same way (the origin's host when the options name none).
+- **`PasskeyResult` helpers named as in `kotlin.Result`:** `fold(onSuccess, onFailure)`, `mapError`, `recover`,
+  `isSuccess`, `isFailure`, `errorOrNull()` and `toResult()` (a `kotlin.Result` whose failure is a `PasskeyException`
+  with the original error).
+- **`PasskeyError.category` and `PasskeyErrorCategory`:** `UserCancelled` (`Cancelled`, `Interrupted`),
+  `NoCredential`, `AlreadyExists`, `Unsupported`, `Setup` (`Misconfigured`, `InvalidOptions`) and `Unexpected`
+  (`Unknown`). The set is closed: a `when (error.category)` needs no `else` and keeps compiling when a release adds an
+  error type, which always joins an existing category.
+- **`PasskeyError.isUserCancellation`:** true for `Cancelled` and `Interrupted`, when no error should be shown.
+- **`capabilities()` KDoc says it is cheap,** so it can be called before every sign-in.
+- **Logging: `PassKi.logLevel` and `PassKi.logHandler`.** By default (`PasskiLogLevel.Error`) PassKi logs every
+  failure with a fix hint (`Misconfigured`, `InvalidOptions`) and every `Unknown`, once per failed call, with the
+  check ID, fix and docs link: logcat tag `PassKi` on Android, `NSLog` on iOS, the browser console on the web,
+  standard error on the JVM. The user closing the sheet, `NoCredentials` and `AlreadyRegistered` are not logged at
+  this level. `Warn`, `Info` and `Debug` add more, up to each call's start and how each platform error was mapped.
+  A handler (`PasskiLogHandler`, a `fun interface`) routes entries to Timber, Kermit or a crash reporter instead.
+  Logs never contain challenges, user handles, options or response JSON, passwords, PRF outputs or large-blob data;
+  credential IDs are shortened. `PasskiLogRedactionTest` checks a full debug trace for these. passki-test's
+  `FakePasskeys` logs the same way. **If your app logs PassKi errors itself**, remove that code or set
+  `PassKi.logLevel = PasskiLogLevel.None` to avoid duplicate lines.
+- **`PasskeySignals.syncAccount(rpId, userHandle, credentialIds, name, displayName)`.** One call that tells the
+  credential provider an account's complete list of passkeys and its current label, for example when the passkey
+  settings screen opens. It returns `Applied` if the provider took either signal and stops at the first failure.
+  It has a default implementation, so your own `PasskeySignals` implementations keep compiling.
+- **`passkiSetup` warns about an RP ID shared with other apps.** When the RP ID is a bare domain (`example.com`) and
+  its live well-known files already list apps other than yours, the task warns that the RP ID can't change later
+  without orphaning passkeys and suggests a product subdomain. Best effort: skipped offline, never fails the task;
+  turn it off with `-Ppasski.setup.sharedRpIdCheck=false`.
+
 ### Fixed
 - **Immediate sign-in in Chromium browsers that only claim it** (js and wasmJs). Some Chromium builds report
   `immediateGet` from `getClientCapabilities()` yet reject `mediation: "immediate"` as an unknown enum value, so
@@ -13,6 +90,9 @@ listed here.
   which the browser rejects before any UI or authenticator (a `TypeError` means it doesn't know the value). If a sign-in
   still meets that `TypeError`, `ImmediateOnly` fails with `NotSupported`, so callers can fall back to `Modal`, and
   `immediateSignIn` is false from then on. Other `TypeError`s are still `InvalidOptions`.
+- **Error messages no longer repeat the JSON they failed on.** `InvalidOptions` for malformed options JSON, and
+  `Unknown` for a malformed platform response, included kotlinx.serialization's "JSON input: …" excerpt, which could
+  hold the challenge or user handle. They now keep only the reason.
 
 ## 0.1.0-alpha04 (2026-10-25)
 

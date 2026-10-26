@@ -30,15 +30,45 @@ internal const val ASSET_LINKS_HINT: String =
         "relation \"delegate_permission/common.get_login_creds\" with this app's package name and SHA-256 " +
         "signing certificate fingerprint. Debug, release and Play App Signing keys differ; list each one."
 
-/** What the caller knew when the request failed; lets the mapper name the exact domain and package in hints. */
-internal class AndroidErrorContext(val rpId: String? = null, val packageName: String? = null)
+/**
+ * What the caller knew when the request failed; lets the mapper name the exact domain, package and signing keys in
+ * hints. [signingFingerprints] are the app's current signing certificates (colon hex), empty when they couldn't be
+ * read. The values are gathered by the caller so the mapper stays pure and host-testable.
+ */
+internal class AndroidErrorContext(
+    val rpId: String? = null,
+    val packageName: String? = null,
+    val signingFingerprints: List<String> = emptyList(),
+    val isEmulator: Boolean = false,
+)
+
+internal const val EMULATOR_NOTE: String =
+    "On an emulator: some emulator images fail RP ID validation even when assetlinks.json is correct. If " +
+        "PasskeyDoctor passes and the fingerprint above is listed, try a real device or another emulator image."
 
 internal fun assetLinksHint(context: AndroidErrorContext): String {
-    val rpId = context.rpId?.takeIf { it.isNotBlank() } ?: return ASSET_LINKS_HINT
-    val pkg = context.packageName?.takeIf { it.isNotBlank() }?.let { "package $it" } ?: "this app's package"
-    return "Serve https://$rpId/.well-known/assetlinks.json with relation \"delegate_permission/common.get_login_creds\" " +
-        "listing $pkg with your signing SHA-256 (run ./gradlew passkiFingerprints, or " +
-        "PasskeyDoctor.run(\"$rpId\")). Debug, release and Play App Signing keys differ; list each one."
+    val rpId = context.rpId?.takeIf { it.isNotBlank() }
+    val base = if (rpId == null) {
+        ASSET_LINKS_HINT
+    } else {
+        val pkg = context.packageName?.takeIf { it.isNotBlank() }?.let { "package $it" } ?: "this app's package"
+        "Serve https://$rpId/.well-known/assetlinks.json with relation \"delegate_permission/common.get_login_creds\" " +
+            "listing $pkg with your signing SHA-256 (run ./gradlew passkiFingerprints, or " +
+            "PasskeyDoctor.run(\"$rpId\")). Debug, release and Play App Signing keys differ; list each one."
+    }
+    val evidence = signingEvidence(context.signingFingerprints)
+    val emulator = if (context.isEmulator) " $EMULATOR_NOTE" else ""
+    return "$base $evidence$emulator"
+}
+
+/** "This app is signed with SHA-256 A (origin X) and B (origin Y)." — the values to copy into assetlinks.json. */
+private fun signingEvidence(fingerprints: List<String>): String {
+    if (fingerprints.isEmpty()) {
+        return "PassKi couldn't read this app's signing certificate here; ./gradlew passkiFingerprints and " +
+            "PasskeyDoctor show it."
+    }
+    val keys = fingerprints.joinToString(" and ") { "$it (origin ${androidOrigin(it)})" }
+    return "This app is signed with SHA-256 $keys."
 }
 
 private const val PROVIDER_HINT: String =

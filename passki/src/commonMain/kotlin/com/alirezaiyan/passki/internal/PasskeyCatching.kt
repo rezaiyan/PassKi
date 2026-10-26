@@ -23,5 +23,5 @@ internal inline fun <T> passkeyCatching(
 } catch (e: PasskeyException) {
     PasskeyResult.Failure(e.error)
 } catch (e: Throwable) {
-    PasskeyResult.Failure(mapError(e))
+    PasskeyResult.Failure(mapError(e).also { PasskiLog.platformError(e, it) })
 }

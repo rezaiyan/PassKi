@@ -128,6 +128,22 @@ internal class AuthorizationSession private constructor(
                     "Call PassKi while your app has a visible, foreground-active window scene.",
                 ),
             )
+            // One modal request at a time: a second one fails here, before anything is shown.
+            val endModal = if (autoFill) null else arbiter.beginModal() ?: throw PasskeyException(PasskeyError.Interrupted)
+            try {
+                awaitAuthorization(requests, window, presentation, endModal)
+            } catch (e: Throwable) {
+                endModal?.invoke() // idempotent; normally the session already ended it
+                throw e
+            }
+        }
+
+        private suspend fun awaitAuthorization(
+            requests: List<ASAuthorizationRequest>,
+            window: UIWindow,
+            presentation: Presentation,
+            endModal: (() -> Unit)?,
+        ): ASAuthorization =
             suspendCancellableCoroutine { continuation ->
                 val session = AuthorizationSession(window, continuation)
                 active += session
@@ -135,7 +151,7 @@ internal class AuthorizationSession private constructor(
                 val controller = ASAuthorizationController(authorizationRequests = requests)
                 controller.delegate = session
                 controller.presentationContextProvider = session
-                session.release = if (autoFill) arbiter.beginAutoFill { controller.cancel() } else arbiter.beginModal()
+                session.release = endModal ?: arbiter.beginAutoFill { controller.cancel() }
                 continuation.invokeOnCancellation {
                     dispatch_async(dispatch_get_main_queue()) {
                         controller.cancel()
@@ -149,6 +165,5 @@ internal class AuthorizationSession private constructor(
                     Presentation.Modal -> controller.performRequests()
                 }
             }
-        }
     }
 }

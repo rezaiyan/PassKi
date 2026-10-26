@@ -26,6 +26,9 @@ internal object AssetLinksCheck {
         result.fetchProblem()?.let { problem ->
             return fail(CheckIds.AND_01, problem, "serve the file at ${result.url} with HTTP 200, without redirects (passkiWellKnown generates it)")
         }
+        if (result.isWebPage(::isJson)) {
+            return fail(CheckIds.AND_01, WebPageTexts.message(result.url, NAME), WebPageTexts.fix(result.url, NAME))
+        }
         val statements = parseStatements(result.body.orEmpty())
             ?: return fail(CheckIds.AND_01, "${result.url} is not a JSON array of statements", "fix the JSON syntax; passkiWellKnown generates a valid file")
 
@@ -112,6 +115,13 @@ internal object AssetLinksCheck {
         val fingerprints: List<String>,
         val include: String?,
     )
+
+    private fun isJson(body: String): Boolean = try {
+        PasskiJson.parseToJsonElement(body)
+        true
+    } catch (_: SerializationException) {
+        false
+    }
 
     /** Null when [body] isn't a JSON array. Malformed entries inside the array are skipped. */
     private fun parseStatements(body: String): List<Statement>? {

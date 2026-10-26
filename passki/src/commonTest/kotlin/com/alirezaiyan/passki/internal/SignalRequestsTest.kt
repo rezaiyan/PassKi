@@ -6,6 +6,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class SignalRequestsTest {
     @Test
@@ -36,6 +37,25 @@ class SignalRequestsTest {
     fun rejectsNonBase64Ids() {
         val e = assertFailsWith<PasskeyException> { SignalRequests.unknownCredential("example.com", "***") }
         assertIs<PasskeyError.InvalidOptions>(e.error)
+    }
+
+    @Test
+    fun anEmailAsUserHandleNamesTheParameterAndSaysWhereTheHandleComesFrom() {
+        val e = assertFailsWith<PasskeyException> {
+            SignalRequests.acceptedCredentials("example.com", "pat@example.com", listOf("BAUG"))
+        }
+        val error = assertIs<PasskeyError.InvalidOptions>(e.error)
+        assertTrue(error.message.startsWith("userHandle must be base64url"), error.message)
+        assertTrue("user.id" in error.fixHint && "PasskeyAssertion.userHandle" in error.fixHint, error.fixHint)
+        assertTrue("account id" in error.fixHint, error.fixHint)
+    }
+
+    @Test
+    fun aBadCredentialIdNamesItsParameter() {
+        val e = assertFailsWith<PasskeyException> { SignalRequests.acceptedCredentials("example.com", "AQID", listOf("***")) }
+        val error = assertIs<PasskeyError.InvalidOptions>(e.error)
+        assertTrue(error.message.startsWith("credentialIds must be base64url"), error.message)
+        assertTrue("credentialId" in error.fixHint, error.fixHint)
     }
 
     @Test

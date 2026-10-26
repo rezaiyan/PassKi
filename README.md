@@ -60,6 +60,7 @@ Full example with error handling: [Usage](#usage).
 [Testing](#test-without-devices) ·
 [Setup](#setup) ·
 [Sample app](#sample-app) ·
+[Logging](#logging) ·
 [Good to know](#good-to-know) ·
 [More docs](#more-docs)
 
@@ -290,15 +291,35 @@ val passkeys = Passkeys() // no Activity, no UIWindow
 passkeys.register(api.registrationOptions())
     .onSuccess { api.finishRegistration(it.json) }
     .onFailure { error ->
-        when (error) {
-            PasskeyError.Cancelled -> Unit
-            is PasskeyError.Misconfigured -> log("${error.fixHint} ${error.docsUrl}") // what's wrong + its check's docs page
+        when (error.category) {
+            PasskeyErrorCategory.UserCancelled -> Unit // the user closed the sheet: show nothing
+            PasskeyErrorCategory.Setup -> log(error)  // what's wrong, its check ID and docs page (PassKi logs it too)
             else -> showError(error.message)
         }
     }
 
 passkeys.signIn(api.authenticationOptions()).onSuccess { api.finishSignIn(it.json) }
 ```
+
+`error.category` is one of six values (`UserCancelled`, `NoCredential`, `AlreadyExists`, `Unsupported`, `Setup`,
+`Unexpected`) and the set never grows, so a `when` over it needs no `else`. To turn a result into your own type, use
+`fold`:
+
+```kotlin
+sealed interface SignInState {
+    data object Idle : SignInState
+    data object SignedIn : SignInState
+    data class Failed(val message: String) : SignInState
+}
+
+suspend fun signInState(): SignInState = passkeys.signIn(api.authenticationOptions()).fold(
+    onSuccess = { api.finishSignIn(it.json); SignInState.SignedIn },
+    onFailure = { if (it.isUserCancellation) SignInState.Idle else SignInState.Failed(it.message) },
+)
+```
+
+`PasskeyResult` also has `map`, `mapError`, `recover`, `getOrNull`, `errorOrNull`, `isSuccess` and `toResult()` (a
+`kotlin.Result`), named as in `kotlin.Result`.
 
 Pass your server's options JSON to PassKi as it is. A `{"publicKey": ...}` wrapper is fine. Check the returned `json`
 on your server, for example with java-webauthn-server, webauthn4j, SimpleWebAuthn or py_webauthn.
@@ -324,12 +345,36 @@ no check ID.
 | `signIn(options, mode)` | Signs in. `mode` is `Modal` (the default), `ImmediateOnly` (only passkeys already on this device; fails fast with `NoCredentials` if there are none; [which one to use](#a-sign-in-with-a-passkey-button)) or `Autofill` |
 | `signInOrPassword(options)` | Shows one sheet with both passkeys and saved passwords |
 | `upgrade(options)` | Adds a passkey without any UI after a password sign-in, if the platform allows it ([details](#good-to-know)) |
-| `signals.unknownCredential(rpId, credentialId)` | Tells the credential provider that a passkey was deleted on your server. Also `acceptedCredentials` and `currentUserDetails` |
+| `signals.syncAccount(...)`, `signals.unknownCredential(rpId, credentialId)` | Keep the credential provider in step with your server: an account's passkeys and label, or one passkey your server deleted. A device that can't apply a signal returns `SignalOutcome.Skipped`, never an error. Registrations and assertions carry the `rpId` to pass |
 | `capabilities()` | Reports what this device supports |
 
 ```kotlin
 val caps = passkeys.capabilities()
 if (caps.unifiedPasswordSignIn) { /* offer the combined passkey + password button */ }
+```
+
+When your passkey settings screen loads an account's passkeys from your server, pass them on in one call:
+
+```kotlin
+passkeys.signals.syncAccount(
+    rpId = "example.com",
+    userHandle = "AQID", // the base64url user.id from the creation options, never your account id or email
+    credentialIds = listOf("BAUG"), // every passkey your server still has for this account
+    name = "alice@example.com",
+    displayName = "Alice",
+).onFailure { log(it) } // only real problems arrive here; an unsupported device is Success(Skipped)
+```
+
+When your server rejects a sign-in because it no longer has that passkey, tell the provider so it stops offering it:
+
+```kotlin
+passkeys.signIn(api.authenticationOptions()).onSuccess { assertion ->
+    try {
+        api.finishSignIn(assertion.json)
+    } catch (e: UnknownPasskeyException) { // however your API client reports "no such passkey" (e.g. HTTP 404)
+        passkeys.signals.unknownCredential(assertion.rpId, assertion.credentialId)
+    }
+}
 ```
 
 ### A "Sign in with a passkey" button
@@ -346,9 +391,9 @@ val mode = if (passkeys.capabilities().immediateSignIn) SignInMode.ImmediateOnly
 passkeys.signIn(api.authenticationOptions(), mode)
     .onSuccess { api.finishSignIn(it.json) }
     .onFailure { error ->
-        when (error) {
-            PasskeyError.NoCredentials -> showMessage("No passkey on this device yet. Sign in another way, then add one in Settings.")
-            PasskeyError.Cancelled -> Unit
+        when (error.category) {
+            PasskeyErrorCategory.NoCredential -> showMessage("No passkey on this device yet. Sign in another way, then add one in Settings.")
+            PasskeyErrorCategory.UserCancelled -> Unit
             else -> showError(error.message)
         }
     }
@@ -551,12 +596,59 @@ call against the demo server, and the server checks every response. It has three
   - iOS: `xcrun simctl launch --console <device> <your bundle ID> -passkiAutorun`. With the example `Local.xcconfig`,
     the bundle ID is `com.alirezaiyan.passki.PassKi.<TEAM_ID>`.
 
+## Logging
+
+PassKi logs setup problems without any code from you, so a misconfigured release build still says why passkeys
+fail: logcat (tag `PassKi`) on Android, `NSLog` on iOS, the browser console on the web.
+
+```kotlin
+PassKi.logLevel = if (BuildConfig.DEBUG) PasskiLogLevel.Debug else PasskiLogLevel.Error
+```
+
+| Level | What's logged |
+|---|---|
+| `None` | Nothing |
+| `Error` (default) | Failures with a fix hint (`Misconfigured`, `InvalidOptions`) and `Unknown`: the call, check ID, fix and docs link |
+| `Warn` | Also `Interrupted` and `NotSupported` |
+| `Info` | Also each call's outcome, including the user closing the sheet |
+| `Debug` | Also each call's start (mode, RP ID, extensions) and the platform error each failure was mapped from |
+
+To send entries elsewhere, set a handler. It replaces the platform log; `PasskiLogHandler.Platform` restores it.
+
+```kotlin
+PassKi.logHandler = PasskiLogHandler { level, tag, message, throwable ->
+    when (level) {
+        PasskiLogLevel.Error -> Timber.tag(tag).e(throwable, message)
+        PasskiLogLevel.Warn -> Timber.tag(tag).w(throwable, message)
+        else -> Timber.tag(tag).d(throwable, message)
+    }
+}
+```
+
+```kotlin
+// Kermit
+PassKi.logHandler = PasskiLogHandler { level, tag, message, throwable ->
+    Logger.log(if (level == PasskiLogLevel.Error) Severity.Error else Severity.Debug, tag, throwable, message)
+}
+// Crashlytics: setup errors end up in the crash report's log
+PassKi.logHandler = PasskiLogHandler { _, tag, message, _ -> Firebase.crashlytics.log("$tag $message") }
+```
+
+**Never logged:** challenges, user handles, options or response JSON, passwords, PRF outputs and large-blob data.
+Credential IDs appear as their first 8 characters (`duiH5hP-…`) and JSON as its length. A test checks a full debug
+trace for each of these
+([`PasskiLogRedactionTest`](passki-test/src/commonTest/kotlin/com/alirezaiyan/passki/test/FakePasskeysLoggingTest.kt)).
+If your app already logs PassKi errors, delete that code or set `PasskiLogLevel.None` to avoid duplicates.
+
 ## Good to know
 
 - **`upgrade()` may silently do nothing.** The platform can decline without showing anything; you then get
   `PasskeyError.NotSupported`. Don't show an error for a failed `upgrade()`.
 - **On Android, `upgrade()` and `signals` depend on the user's credential provider.** They can return `NotSupported`
   even when `capabilities()` says they are available.
+- **Calls are main-safe, and only one sheet runs at a time.** A second `register` or `signIn` while a sheet is
+  showing (a double tap) fails with `PasskeyError.Interrupted`; don't show it as an error. Cancelling the calling
+  coroutine withdraws the request. [Details](docs/platforms.md#threads-cancellation-and-one-sheet-at-a-time).
 - **iOS before 17.4 ignores `excludeCredentials`,** so the same person can end up with two passkeys. Remove duplicates
   on your server.
 - **On Android, clear the username field on sign-out.** With Gboard on Android 16, passkey suggestions show only while

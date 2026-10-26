@@ -3,12 +3,15 @@ package com.alirezaiyan.passki.apple
 import com.alirezaiyan.passki.PasskeyError
 import com.alirezaiyan.passki.PasskeyResult
 import com.alirezaiyan.passki.PasskeySignals
+import com.alirezaiyan.passki.SignalOutcome
 import com.alirezaiyan.passki.apple.swift.passki_callback
 import com.alirezaiyan.passki.apple.swift.passki_report_all_accepted
 import com.alirezaiyan.passki.apple.swift.passki_report_details
 import com.alirezaiyan.passki.apple.swift.passki_report_unknown
 import com.alirezaiyan.passki.internal.Base64Url
+import com.alirezaiyan.passki.internal.SignalRequests
 import com.alirezaiyan.passki.internal.doctor.CheckIds
+import com.alirezaiyan.passki.internal.toSignalOutcome
 import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CPointerVar
@@ -63,19 +66,19 @@ private fun signalError(message: String?): PasskeyError {
 /** WebAuthn Signal API on iOS 26+, through ASCredentialUpdater (Swift-only) via the C bridge. */
 @OptIn(ExperimentalForeignApi::class)
 internal object IosSignals : PasskeySignals {
-    override suspend fun unknownCredential(rpId: String, credentialId: String): PasskeyResult<Unit> {
+    override suspend fun unknownCredential(rpId: String, credentialId: String): PasskeyResult<SignalOutcome> {
         val id = decode(credentialId, "credentialId").getOrElse { return it }
         return call { cb, ctx ->
             memScoped { passki_report_unknown(rpId, bytes(id), id.size, cb, ctx) }
-        }
+        }.toSignalOutcome()
     }
 
     override suspend fun acceptedCredentials(
         rpId: String,
-        userId: String,
+        userHandle: String,
         credentialIds: List<String>,
-    ): PasskeyResult<Unit> {
-        val user = decode(userId, "userId").getOrElse { return it }
+    ): PasskeyResult<SignalOutcome> {
+        val user = decode(userHandle, "userHandle").getOrElse { return it }
         val ids = credentialIds.map { decode(it, "credentialIds").getOrElse { failure -> return failure } }
         return call { cb, ctx ->
             memScoped {
@@ -87,26 +90,26 @@ internal object IosSignals : PasskeySignals {
                 }
                 passki_report_all_accepted(rpId, bytes(user), user.size, pointers, lengths, ids.size, cb, ctx)
             }
-        }
+        }.toSignalOutcome()
     }
 
     override suspend fun currentUserDetails(
         rpId: String,
-        userId: String,
+        userHandle: String,
         name: String,
         displayName: String,
-    ): PasskeyResult<Unit> {
-        val user = decode(userId, "userId").getOrElse { return it }
+    ): PasskeyResult<SignalOutcome> {
+        val user = decode(userHandle, "userHandle").getOrElse { return it }
         // ASCredentialUpdater only takes one name: the account name the passkey is saved under.
         return call { cb, ctx ->
             memScoped { passki_report_details(rpId, bytes(user), user.size, name, cb, ctx) }
-        }
+        }.toSignalOutcome()
     }
 
     private fun decode(value: String, field: String): Decoded = try {
         Decoded.Bytes(Base64Url.decode(value))
     } catch (e: IllegalArgumentException) {
-        Decoded.Invalid(PasskeyResult.Failure(PasskeyError.InvalidOptions("$field must be base64url: ${e.message}")))
+        Decoded.Invalid(PasskeyResult.Failure(SignalRequests.invalidArgument(field, e.message)))
     }
 
     private sealed interface Decoded {

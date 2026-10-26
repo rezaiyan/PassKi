@@ -43,14 +43,23 @@ public final class com/alirezaiyan/passki/LargeBlobSupport : java/lang/Enum {
 	public static fun values ()[Lcom/alirezaiyan/passki/LargeBlobSupport;
 }
 
+public final class com/alirezaiyan/passki/PassKi {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/PassKi;
+	public final fun getLogHandler ()Lcom/alirezaiyan/passki/PasskiLogHandler;
+	public final fun getLogLevel ()Lcom/alirezaiyan/passki/PasskiLogLevel;
+	public final fun setLogHandler (Lcom/alirezaiyan/passki/PasskiLogHandler;)V
+	public final fun setLogLevel (Lcom/alirezaiyan/passki/PasskiLogLevel;)V
+}
+
 public final class com/alirezaiyan/passki/PasskeyAssertion {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/alirezaiyan/passki/PrfResults;[BLjava/lang/Boolean;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/alirezaiyan/passki/PrfResults;[BLjava/lang/Boolean;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/alirezaiyan/passki/PrfResults;[BLjava/lang/Boolean;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/alirezaiyan/passki/PrfResults;[BLjava/lang/Boolean;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getCredentialId ()Ljava/lang/String;
 	public final fun getJson ()Ljava/lang/String;
 	public final fun getLargeBlob ()[B
 	public final fun getLargeBlobWritten ()Ljava/lang/Boolean;
 	public final fun getPrf ()Lcom/alirezaiyan/passki/PrfResults;
+	public final fun getRpId ()Ljava/lang/String;
 	public final fun getUserHandle ()Ljava/lang/String;
 	public fun toString ()Ljava/lang/String;
 }
@@ -72,10 +81,12 @@ public final class com/alirezaiyan/passki/PasskeyDoctor {
 }
 
 public abstract class com/alirezaiyan/passki/PasskeyError {
+	public final fun getCategory ()Lcom/alirezaiyan/passki/PasskeyErrorCategory;
 	public fun getCheckId ()Ljava/lang/String;
 	public final fun getDocsUrl ()Ljava/lang/String;
 	public fun getFixHint ()Ljava/lang/String;
 	public abstract fun getMessage ()Ljava/lang/String;
+	public final fun isUserCancellation ()Z
 }
 
 public final class com/alirezaiyan/passki/PasskeyError$AlreadyRegistered : com/alirezaiyan/passki/PasskeyError {
@@ -151,6 +162,18 @@ public final class com/alirezaiyan/passki/PasskeyError$Unknown : com/alirezaiyan
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class com/alirezaiyan/passki/PasskeyErrorCategory : java/lang/Enum {
+	public static final field AlreadyExists Lcom/alirezaiyan/passki/PasskeyErrorCategory;
+	public static final field NoCredential Lcom/alirezaiyan/passki/PasskeyErrorCategory;
+	public static final field Setup Lcom/alirezaiyan/passki/PasskeyErrorCategory;
+	public static final field Unexpected Lcom/alirezaiyan/passki/PasskeyErrorCategory;
+	public static final field Unsupported Lcom/alirezaiyan/passki/PasskeyErrorCategory;
+	public static final field UserCancelled Lcom/alirezaiyan/passki/PasskeyErrorCategory;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/alirezaiyan/passki/PasskeyErrorCategory;
+	public static fun values ()[Lcom/alirezaiyan/passki/PasskeyErrorCategory;
+}
+
 public final class com/alirezaiyan/passki/PasskeyException : java/lang/Exception {
 	public fun <init> (Lcom/alirezaiyan/passki/PasskeyError;)V
 	public final fun getError ()Lcom/alirezaiyan/passki/PasskeyError;
@@ -168,14 +191,15 @@ public final class com/alirezaiyan/passki/PasskeyExtensions {
 }
 
 public final class com/alirezaiyan/passki/PasskeyRegistration {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/Boolean;Lcom/alirezaiyan/passki/PrfResults;Ljava/lang/Boolean;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/Boolean;Lcom/alirezaiyan/passki/PrfResults;Ljava/lang/Boolean;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/Boolean;Lcom/alirezaiyan/passki/PrfResults;Ljava/lang/Boolean;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/Boolean;Lcom/alirezaiyan/passki/PrfResults;Ljava/lang/Boolean;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getAuthenticatorAttachment ()Ljava/lang/String;
 	public final fun getCredentialId ()Ljava/lang/String;
 	public final fun getJson ()Ljava/lang/String;
 	public final fun getLargeBlobSupported ()Ljava/lang/Boolean;
 	public final fun getPrf ()Lcom/alirezaiyan/passki/PrfResults;
 	public final fun getPrfEnabled ()Ljava/lang/Boolean;
+	public final fun getRpId ()Ljava/lang/String;
 	public final fun getTransports ()Ljava/util/List;
 	public fun toString ()Ljava/lang/String;
 }
@@ -206,17 +230,29 @@ public final class com/alirezaiyan/passki/PasskeyResult$Success : com/alirezaiya
 }
 
 public final class com/alirezaiyan/passki/PasskeyResultKt {
+	public static final fun errorOrNull (Lcom/alirezaiyan/passki/PasskeyResult;)Lcom/alirezaiyan/passki/PasskeyError;
+	public static final fun fold (Lcom/alirezaiyan/passki/PasskeyResult;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public static final fun getOrNull (Lcom/alirezaiyan/passki/PasskeyResult;)Ljava/lang/Object;
 	public static final fun getOrThrow (Lcom/alirezaiyan/passki/PasskeyResult;)Ljava/lang/Object;
+	public static final fun isFailure (Lcom/alirezaiyan/passki/PasskeyResult;)Z
+	public static final fun isSuccess (Lcom/alirezaiyan/passki/PasskeyResult;)Z
 	public static final fun map (Lcom/alirezaiyan/passki/PasskeyResult;Lkotlin/jvm/functions/Function1;)Lcom/alirezaiyan/passki/PasskeyResult;
+	public static final fun mapError (Lcom/alirezaiyan/passki/PasskeyResult;Lkotlin/jvm/functions/Function1;)Lcom/alirezaiyan/passki/PasskeyResult;
 	public static final fun onFailure (Lcom/alirezaiyan/passki/PasskeyResult;Lkotlin/jvm/functions/Function1;)Lcom/alirezaiyan/passki/PasskeyResult;
 	public static final fun onSuccess (Lcom/alirezaiyan/passki/PasskeyResult;Lkotlin/jvm/functions/Function1;)Lcom/alirezaiyan/passki/PasskeyResult;
+	public static final fun recover (Lcom/alirezaiyan/passki/PasskeyResult;Lkotlin/jvm/functions/Function1;)Lcom/alirezaiyan/passki/PasskeyResult;
+	public static final fun toResult (Lcom/alirezaiyan/passki/PasskeyResult;)Ljava/lang/Object;
 }
 
 public abstract interface class com/alirezaiyan/passki/PasskeySignals {
 	public abstract fun acceptedCredentials (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun currentUserDetails (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun syncAccount (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun unknownCredential (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/alirezaiyan/passki/PasskeySignals$DefaultImpls {
+	public static fun syncAccount (Lcom/alirezaiyan/passki/PasskeySignals;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class com/alirezaiyan/passki/Passkeys {
@@ -235,6 +271,26 @@ public final class com/alirezaiyan/passki/Passkeys$DefaultImpls {
 
 public final class com/alirezaiyan/passki/Passkeys_jvmKt {
 	public static final fun Passkeys ()Lcom/alirezaiyan/passki/Passkeys;
+}
+
+public abstract interface class com/alirezaiyan/passki/PasskiLogHandler {
+	public static final field Companion Lcom/alirezaiyan/passki/PasskiLogHandler$Companion;
+	public abstract fun log (Lcom/alirezaiyan/passki/PasskiLogLevel;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)V
+}
+
+public final class com/alirezaiyan/passki/PasskiLogHandler$Companion {
+	public final fun getPlatform ()Lcom/alirezaiyan/passki/PasskiLogHandler;
+}
+
+public final class com/alirezaiyan/passki/PasskiLogLevel : java/lang/Enum {
+	public static final field Debug Lcom/alirezaiyan/passki/PasskiLogLevel;
+	public static final field Error Lcom/alirezaiyan/passki/PasskiLogLevel;
+	public static final field Info Lcom/alirezaiyan/passki/PasskiLogLevel;
+	public static final field None Lcom/alirezaiyan/passki/PasskiLogLevel;
+	public static final field Warn Lcom/alirezaiyan/passki/PasskiLogLevel;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/alirezaiyan/passki/PasskiLogLevel;
+	public static fun values ()[Lcom/alirezaiyan/passki/PasskiLogLevel;
 }
 
 public final class com/alirezaiyan/passki/PrfResults {
@@ -269,6 +325,24 @@ public final class com/alirezaiyan/passki/SignInMode : java/lang/Enum {
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lcom/alirezaiyan/passki/SignInMode;
 	public static fun values ()[Lcom/alirezaiyan/passki/SignInMode;
+}
+
+public abstract interface class com/alirezaiyan/passki/SignalOutcome {
+}
+
+public final class com/alirezaiyan/passki/SignalOutcome$Applied : com/alirezaiyan/passki/SignalOutcome {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/SignalOutcome$Applied;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/SignalOutcome$Skipped : com/alirezaiyan/passki/SignalOutcome {
+	public fun <init> (Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getReason ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/alirezaiyan/passki/internal/AssertionResponseJson {
@@ -531,6 +605,27 @@ public final class com/alirezaiyan/passki/internal/NormalizedOptions {
 	public final fun getModel ()Ljava/lang/Object;
 }
 
+public final class com/alirezaiyan/passki/internal/PasskiLog {
+	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/PasskiLog;
+	public static final field TAG Ljava/lang/String;
+	public final fun acceptedCredentials (Ljava/lang/String;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun capabilities (Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun currentUserDetails (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun isLoggable (Lcom/alirezaiyan/passki/PasskiLogLevel;)Z
+	public final fun lengthOf (Ljava/lang/String;)Ljava/lang/String;
+	public final fun levelOf (Lcom/alirezaiyan/passki/PasskeyError;)Lcom/alirezaiyan/passki/PasskiLogLevel;
+	public final fun log (Lcom/alirezaiyan/passki/PasskiLogLevel;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun log$default (Lcom/alirezaiyan/passki/internal/PasskiLog;Lcom/alirezaiyan/passki/PasskiLogLevel;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public final fun platformError (Ljava/lang/Throwable;Lcom/alirezaiyan/passki/PasskeyError;)V
+	public final fun register (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun shortId (Ljava/lang/String;)Ljava/lang/String;
+	public final fun signIn (Ljava/lang/String;Lcom/alirezaiyan/passki/SignInMode;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun signInOrPassword (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun syncAccount (Ljava/lang/String;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun unknownCredential (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun upgrade (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class com/alirezaiyan/passki/internal/PubKeyCredParamJson {
 	public static final field Companion Lcom/alirezaiyan/passki/internal/PubKeyCredParamJson$Companion;
 	public fun <init> (Ljava/lang/String;I)V
@@ -671,7 +766,12 @@ public final class com/alirezaiyan/passki/internal/SignalRequests {
 	public static final field INSTANCE Lcom/alirezaiyan/passki/internal/SignalRequests;
 	public final fun acceptedCredentials (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
 	public final fun currentUserDetails (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public final fun invalidArgument (Ljava/lang/String;Ljava/lang/String;)Lcom/alirezaiyan/passki/PasskeyError$InvalidOptions;
 	public final fun unknownCredential (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class com/alirezaiyan/passki/internal/SignalRequestsKt {
+	public static final fun toSignalOutcome (Lcom/alirezaiyan/passki/PasskeyResult;)Lcom/alirezaiyan/passki/PasskeyResult;
 }
 
 public final class com/alirezaiyan/passki/internal/UserJson {
@@ -726,7 +826,7 @@ public final class com/alirezaiyan/passki/internal/WebAuthnResponses {
 }
 
 public final class com/alirezaiyan/passki/internal/WebAuthnResponsesKt {
-	public static final fun parseAssertion (Ljava/lang/String;)Lcom/alirezaiyan/passki/PasskeyAssertion;
-	public static final fun parseRegistration (Ljava/lang/String;)Lcom/alirezaiyan/passki/PasskeyRegistration;
+	public static final fun parseAssertion (Ljava/lang/String;Ljava/lang/String;)Lcom/alirezaiyan/passki/PasskeyAssertion;
+	public static final fun parseRegistration (Ljava/lang/String;Ljava/lang/String;)Lcom/alirezaiyan/passki/PasskeyRegistration;
 }
 

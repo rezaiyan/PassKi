@@ -60,11 +60,11 @@ public object WebAuthnResponses {
 }
 
 @InternalPasskiApi
-public fun parseRegistration(json: String): PasskeyRegistration {
+public fun parseRegistration(json: String, rpId: String): PasskeyRegistration {
     val model = try {
         PasskiJson.decodeFromString(RegistrationResponseJson.serializer(), json)
     } catch (e: IllegalArgumentException) {
-        throw PasskeyException(PasskeyError.Unknown("Platform returned malformed registration JSON: ${e.message}", null))
+        throw PasskeyException(PasskeyError.Unknown("Platform returned malformed registration JSON: ${e.message?.withoutJsonInput()}", null))
     }
     requireBase64Url(model.id)
     return PasskeyRegistration(
@@ -75,15 +75,16 @@ public fun parseRegistration(json: String): PasskeyRegistration {
         prfEnabled = ExtensionsJson.prfEnabled(model.clientExtensionResults),
         prf = ExtensionsJson.prfResults(model.clientExtensionResults),
         largeBlobSupported = ExtensionsJson.largeBlobSupported(model.clientExtensionResults),
+        rpId = rpId,
     )
 }
 
 @InternalPasskiApi
-public fun parseAssertion(json: String): PasskeyAssertion {
+public fun parseAssertion(json: String, rpId: String): PasskeyAssertion {
     val model = try {
         PasskiJson.decodeFromString(AuthenticationResponseJson.serializer(), json)
     } catch (e: IllegalArgumentException) {
-        throw PasskeyException(PasskeyError.Unknown("Platform returned malformed assertion JSON: ${e.message}", null))
+        throw PasskeyException(PasskeyError.Unknown("Platform returned malformed assertion JSON: ${e.message?.withoutJsonInput()}", null))
     }
     requireBase64Url(model.id)
     model.response.userHandle?.let(::requireBase64Url)
@@ -96,6 +97,7 @@ public fun parseAssertion(json: String): PasskeyAssertion {
         prf = ExtensionsJson.prfResults(extensions),
         largeBlob = ExtensionsJson.largeBlob(extensions),
         largeBlobWritten = ExtensionsJson.largeBlobWritten(extensions),
+        rpId = rpId,
     )
 }
 

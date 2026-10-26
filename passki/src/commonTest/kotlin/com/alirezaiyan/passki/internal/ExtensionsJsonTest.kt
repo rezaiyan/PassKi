@@ -137,10 +137,12 @@ class ExtensionsJsonTest {
 
     private fun registration(ext: JsonObject) = parseRegistration(
         WebAuthnResponses.registration(byteArrayOf(1), byteArrayOf(2), byteArrayOf(3), emptyList(), null, ext),
+        "example.com",
     )
 
     private fun assertion(ext: JsonObject) = parseAssertion(
         WebAuthnResponses.authentication(byteArrayOf(1), byteArrayOf(2), byteArrayOf(3), byteArrayOf(4), null, null, ext),
+        "example.com",
     )
 
     @Test
@@ -178,7 +180,7 @@ class ExtensionsJsonTest {
         val json = """{"id":"AQ","rawId":"AQ","type":"public-key","authenticatorAttachment":"platform",""" +
             """"response":{"clientDataJSON":"e30","authenticatorData":"AQ","signature":"AQ","userHandle":"AQ"},""" +
             """"clientExtensionResults":{"prf":{"results":{"first":"${Base64Url.encode(first)}"}}}}"""
-        val a = parseAssertion(json)
+        val a = parseAssertion(json, "example.com")
         assertContentEquals(first, a.prf!!.first)
         assertNull(a.prf.second)
         assertEquals(32, a.prf.first.size)
@@ -189,7 +191,7 @@ class ExtensionsJsonTest {
         val json = """{"id":"AQ","rawId":"AQ","type":"public-key","response":{"clientDataJSON":"e30",""" +
             """"attestationObject":"AQ","transports":["internal","hybrid"]},""" +
             """"clientExtensionResults":{"credProps":{"rk":true},"prf":{"enabled":true}}}"""
-        val r = parseRegistration(json)
+        val r = parseRegistration(json, "example.com")
         assertEquals(true, r.prfEnabled)
         assertNull(r.prf)
     }

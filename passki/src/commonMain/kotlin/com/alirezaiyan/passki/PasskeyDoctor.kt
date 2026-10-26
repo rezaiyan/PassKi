@@ -116,7 +116,7 @@ public class DoctorCheck @InternalPasskiApi constructor(
 /**
  * Outcome of a [DoctorCheck].
  *
- * New statuses may be added in minor releases; keep an `else` branch in exhaustive `when`s.
+ * Open: new statuses may be added in minor releases; keep an `else` branch in exhaustive `when`s.
  */
 public enum class DoctorStatus {
     /** Configured correctly. */

@@ -57,11 +57,12 @@ class WebAuthnResponsesTest {
     @Test
     fun parseRegistrationExposesTypedFields() {
         val json = registrationJson()
-        val registration = parseRegistration(json)
+        val registration = parseRegistration(json, "example.com")
         assertEquals(json, registration.json)
         assertEquals("AQID", registration.credentialId)
         assertEquals(listOf("internal"), registration.transports)
         assertEquals("platform", registration.authenticatorAttachment)
+        assertEquals("example.com", registration.rpId)
     }
 
     @Test
@@ -74,23 +75,24 @@ class WebAuthnResponsesTest {
             userHandle = byteArrayOf(7),
             attachment = "platform",
         )
-        val assertion = parseAssertion(json)
+        val assertion = parseAssertion(json, "example.com")
         assertEquals("AQID", assertion.credentialId)
         assertEquals("Bw", assertion.userHandle)
+        assertEquals("example.com", assertion.rpId)
     }
 
     @Test
     fun emptyUserHandleIsNull() {
         // WebAuthn: a credential without a user handle reports it as null; some providers send "" instead.
         val auth = """{"id":"AQID","rawId":"AQID","response":{"clientDataJSON":"e30","authenticatorData":"e30","signature":"e30","userHandle":""}}"""
-        val assertion = parseAssertion(auth)
+        val assertion = parseAssertion(auth, "example.com")
         assertNull(assertion.userHandle)
         assertEquals(auth, assertion.json)
     }
 
     @Test
     fun malformedPlatformJsonBecomesUnknown() {
-        val e = assertFailsWith<PasskeyException> { parseRegistration("""{"id":"x"}""") }
+        val e = assertFailsWith<PasskeyException> { parseRegistration("""{"id":"x"}""", "example.com") }
         assertIs<PasskeyError.Unknown>(e.error)
     }
 
@@ -102,25 +104,25 @@ class WebAuthnResponsesTest {
     @Test
     fun nonBase64urlCredentialIdIsRejected() {
         val reg = """{"id":"***","rawId":"***","response":{"clientDataJSON":"e30","attestationObject":"e30"}}"""
-        assertTrue("non-base64url" in unknownMessage { parseRegistration(reg) })
+        assertTrue("non-base64url" in unknownMessage { parseRegistration(reg, "example.com") })
         val auth = """{"id":"***","rawId":"***","response":{"clientDataJSON":"e30","authenticatorData":"e30","signature":"e30"}}"""
-        assertTrue("non-base64url" in unknownMessage { parseAssertion(auth) })
+        assertTrue("non-base64url" in unknownMessage { parseAssertion(auth, "example.com") })
     }
 
     @Test
     fun nonBase64urlUserHandleIsRejected() {
         val auth = """{"id":"AQID","rawId":"AQID","response":{"clientDataJSON":"e30","authenticatorData":"e30","signature":"e30","userHandle":"***"}}"""
-        assertTrue("non-base64url" in unknownMessage { parseAssertion(auth) })
+        assertTrue("non-base64url" in unknownMessage { parseAssertion(auth, "example.com") })
     }
 
     @Test
     fun malformedAssertionJsonBecomesUnknown() {
-        unknownMessage { parseAssertion("""{"id":"x"}""") }
+        unknownMessage { parseAssertion("""{"id":"x"}""", "example.com") }
     }
 
     @Test
     fun clientExtensionResultsPassThroughVerbatim() {
         val json = """{"id":"AQID","rawId":"AQID","response":{"clientDataJSON":"e30","attestationObject":"e30"},"clientExtensionResults":{"credProps":{"rk":true}}}"""
-        assertEquals(json, parseRegistration(json).json)
+        assertEquals(json, parseRegistration(json, "example.com").json)
     }
 }

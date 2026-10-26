@@ -34,6 +34,23 @@ and its output is `null`.
 | PRF | Passed to the credential provider. Google Password Manager supports it. | Passed to the browser |
 | largeBlob | Passed to the credential provider | 17+ | Passed to the browser |
 
+## Threads, cancellation and one sheet at a time
+
+These rules are the same on Android, iOS and the web:
+
+- **Call from any dispatcher.** Every `Passkeys` and `signals` call is main-safe. PassKi moves its UI work to the main
+  thread and never blocks the calling thread, and the result comes back in your coroutine.
+- **Cancelling withdraws the request.** When the calling coroutine is cancelled (the screen closes, the ViewModel is
+  cleared), the call ends with `CancellationException` and no result arrives later. On iOS and the web the sheet
+  closes too. On Android PassKi cancels the Credential Manager request, but some credential providers keep their sheet
+  open; a passkey picked there is discarded. A user closing the sheet is different: that returns
+  `PasskeyError.Cancelled`.
+- **One sheet at a time.** While `register`, `signIn` (except autofill), `signInOrPassword` or `upgrade` is pending,
+  another of these calls fails at once with `PasskeyError.Interrupted`, and the pending call carries on. This is what a
+  double tap on a button produces. Don't show `Interrupted` as an error; ignore it or retry later. Autofill sign-in
+  waits until the pending call finishes, then starts.
+- **Signals show no sheet,** so they don't take part in the one-sheet rule.
+
 ## Good to know
 
 **`upgrade()` may silently do nothing.**

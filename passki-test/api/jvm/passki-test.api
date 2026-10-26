@@ -67,7 +67,7 @@ public final class com/alirezaiyan/passki/test/FakeSignal$AcceptedCredentials : 
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCredentialIds ()Ljava/util/List;
 	public final fun getRpId ()Ljava/lang/String;
-	public final fun getUserId ()Ljava/lang/String;
+	public final fun getUserHandle ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -84,7 +84,7 @@ public final class com/alirezaiyan/passki/test/FakeSignal$CurrentUserDetails : c
 	public final fun getDisplayName ()Ljava/lang/String;
 	public final fun getName ()Ljava/lang/String;
 	public final fun getRpId ()Ljava/lang/String;
-	public final fun getUserId ()Ljava/lang/String;
+	public final fun getUserHandle ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }

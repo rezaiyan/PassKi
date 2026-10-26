@@ -4,6 +4,7 @@ import com.alirezaiyan.passki.PasskeyError
 import com.alirezaiyan.passki.PasskeyResult
 import com.alirezaiyan.passki.SignInCredential
 import com.alirezaiyan.passki.SignInMode
+import com.alirezaiyan.passki.SignalOutcome
 import com.alirezaiyan.passki.getOrThrow
 import com.alirezaiyan.passki.internal.Base64Url
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +30,15 @@ class FakePasskeysTest {
         val registration = passkeys.register(TestOptions.creation(rpId)).getOrThrow()
         val assertion = passkeys.signIn(TestOptions.request(rpId)).getOrThrow()
         assertEquals(registration.credentialId, assertion.credentialId)
+    }
+
+    @Test
+    fun resultsCarryTheRpId() = runTest {
+        assertEquals(rpId, passkeys.register(TestOptions.creation(rpId)).getOrThrow().rpId)
+        assertEquals(rpId, passkeys.signIn(TestOptions.request(rpId)).getOrThrow().rpId)
+        // Options without an RP ID use the origin's host, like a browser.
+        val withoutRpId = TestOptions.request(rpId).replace(""""rpId":"$rpId",""", "")
+        assertEquals(rpId, passkeys.signIn(withoutRpId).getOrThrow().rpId)
     }
 
     @Test
@@ -79,6 +89,11 @@ class FakePasskeysTest {
         val failure = assertIs<PasskeyResult.Failure>(result)
         val error = assertIs<PasskeyError.NotSupported>(failure.error)
         assertTrue("(FakePasskeys: $flag = false)" in error.message, error.message)
+    }
+
+    private fun skipped(result: PasskeyResult<SignalOutcome>, flag: String) {
+        val outcome = assertIs<SignalOutcome.Skipped>(assertIs<PasskeyResult.Success<SignalOutcome>>(result).value)
+        assertTrue("(FakePasskeys: $flag = false)" in outcome.reason, outcome.reason)
     }
 
     @Test
@@ -168,9 +183,9 @@ class FakePasskeysTest {
         notSupported(passkeys.signIn(TestOptions.request(rpId)), "isSupported")
         notSupported(passkeys.signIn(TestOptions.request(rpId), SignInMode.ImmediateOnly), "isSupported")
         notSupported(passkeys.signInOrPassword(TestOptions.request(rpId)), "isSupported")
-        notSupported(passkeys.signals.unknownCredential(rpId, "AAAA"), "isSupported")
-        notSupported(passkeys.signals.acceptedCredentials(rpId, "AAAA", emptyList()), "isSupported")
-        notSupported(passkeys.signals.currentUserDetails(rpId, "AAAA", "a", "A"), "isSupported")
+        skipped(passkeys.signals.unknownCredential(rpId, "AAAA"), "isSupported")
+        skipped(passkeys.signals.acceptedCredentials(rpId, "AAAA", emptyList()), "isSupported")
+        skipped(passkeys.signals.currentUserDetails(rpId, "AAAA", "a", "A"), "isSupported")
         assertTrue(passkeys.authenticator.storedCredentials.isEmpty())
     }
 
@@ -204,12 +219,12 @@ class FakePasskeysTest {
     }
 
     @Test
-    fun signalsSupportedFalseFailsEverySignal() = runTest {
+    fun signalsSupportedFalseSkipsEverySignal() = runTest {
         passkeys.signalsSupported = false
         val registration = passkeys.register(TestOptions.creation(rpId)).getOrThrow()
-        notSupported(passkeys.signals.unknownCredential(rpId, registration.credentialId), "signalsSupported")
-        notSupported(passkeys.signals.acceptedCredentials(rpId, "AAAA", emptyList()), "signalsSupported")
-        notSupported(passkeys.signals.currentUserDetails(rpId, "AAAA", "a", "A"), "signalsSupported")
+        skipped(passkeys.signals.unknownCredential(rpId, registration.credentialId), "signalsSupported")
+        skipped(passkeys.signals.acceptedCredentials(rpId, "AAAA", emptyList()), "signalsSupported")
+        skipped(passkeys.signals.currentUserDetails(rpId, "AAAA", "a", "A"), "signalsSupported")
         assertTrue(passkeys.receivedSignals.isEmpty())
         assertEquals(1, passkeys.authenticator.storedCredentials.size)
     }
@@ -240,6 +255,31 @@ class FakePasskeysTest {
         passkeys.signals.acceptedCredentials(rpId, padded(userId), listOf(padded(registration.credentialId))).getOrThrow()
         assertEquals(registration.credentialId, passkeys.authenticator.storedCredentials.single().id)
         assertIs<PasskeyResult.Success<*>>(passkeys.signIn(TestOptions.request(rpId)))
+    }
+
+    @Test
+    fun syncAccountSendsBothSignalsAndTheFakeAppliesThem() = runTest {
+        val kept = passkeys.register(TestOptions.creation(rpId, userId = userId, userName = "alice")).getOrThrow()
+
+        val result = passkeys.signals.syncAccount(
+            rpId = rpId,
+            userHandle = userId,
+            credentialIds = listOf(kept.credentialId),
+            name = "bob",
+            displayName = "Bob",
+        )
+
+        assertEquals(SignalOutcome.Applied, result.getOrThrow())
+        assertEquals(
+            listOf(
+                FakeSignal.AcceptedCredentials(rpId, userId, listOf(kept.credentialId)),
+                FakeSignal.CurrentUserDetails(rpId, userId, "bob", "Bob"),
+            ),
+            passkeys.receivedSignals,
+        )
+        val stored = passkeys.authenticator.storedCredentials.single()
+        assertEquals(kept.credentialId, stored.id, "the accepted passkey stays")
+        assertEquals("bob", stored.userName, "and takes the new label")
     }
 
     @Test

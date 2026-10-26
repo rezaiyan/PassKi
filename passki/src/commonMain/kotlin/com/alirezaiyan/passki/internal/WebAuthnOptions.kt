@@ -56,14 +56,14 @@ public object WebAuthnOptions {
         val element = try {
             PasskiJson.parseToJsonElement(json)
         } catch (e: IllegalArgumentException) {
-            throw invalid("Options are not valid JSON: ${e.message}")
+            throw invalid("Options are not valid JSON: ${e.message?.withoutJsonInput()}")
         }
         val root = element as? JsonObject ?: throw invalid("Options must be a JSON object.")
         val unwrapped = root["publicKey"] as? JsonObject ?: root
         try {
             PasskiJson.decodeFromJsonElement(serializer, unwrapped)
         } catch (e: IllegalArgumentException) {
-            throw invalid("Options do not match the WebAuthn JSON format: ${e.message}")
+            throw invalid("Options do not match the WebAuthn JSON format: ${e.message?.withoutJsonInput()}")
         }
         val canonical = try {
             canonicalize(unwrapped)
@@ -73,7 +73,7 @@ public object WebAuthnOptions {
         val model = try {
             PasskiJson.decodeFromJsonElement(serializer, canonical)
         } catch (e: IllegalArgumentException) {
-            throw invalid("Options do not match the WebAuthn JSON format: ${e.message}")
+            throw invalid("Options do not match the WebAuthn JSON format: ${e.message?.withoutJsonInput()}")
         }
         return NormalizedOptions(canonical.toString(), model)
     }

@@ -25,7 +25,7 @@ data class Activity(val seq: Int, val label: String, val outcome: Outcome, val t
     val checkId: String? get() = CHECK_ID_IN_TITLE.find(title)?.groupValues?.get(1)
 }
 
-private val CHECK_ID_IN_TITLE = Regex("""✗ \[\w+ ([A-Z]{3}-\d{2})]""")
+private val CHECK_ID_IN_TITLE = Regex("""✗ \[\w+ ([A-Z]{3}-\d{2})\]""") // `]` escaped: JS regexes run in unicode mode
 
 /** The docs page of a catalog check, as on the PassKi website (the same page as `PasskeyError.docsUrl`). */
 fun checkDocsUrl(id: String): String = "${PasskiDemoServer.URL}/checks/$id"
@@ -196,10 +196,16 @@ class DemoController(
         return "PRF ✓ ${output.size} bytes, first 8: $hex\n$stability\n$server"
     }
 
+    /** A skipped signal is normal (the OS or provider can't apply it), so it's logged without a failure mark. */
+    private fun signalLog(label: String, outcome: SignalOutcome, detail: String): String = when (outcome) {
+        SignalOutcome.Applied -> "$label ✓ $detail"
+        is SignalOutcome.Skipped -> "$label skipped: ${outcome.reason}"
+    }
+
     suspend fun signalUnknown(): String {
         val id = rp.account?.credentialIds?.lastOrNull() ?: return "Signal unknown: register or sign in first"
         return when (val r = passkeys.signals.unknownCredential(rpId(), id)) {
-            is PasskeyResult.Success -> "Signal unknown ✓ $id"
+            is PasskeyResult.Success -> signalLog("Signal unknown", r.value, id)
             is PasskeyResult.Failure -> failureLog("Signal unknown", r.error)
         }
     }
@@ -208,7 +214,7 @@ class DemoController(
         val account = rp.account ?: return "Signal user details: register or sign in first"
         val name = username.ifBlank { "PassKi demo user" }
         return when (val r = passkeys.signals.currentUserDetails(rpId(), account.userHandle, name, name)) {
-            is PasskeyResult.Success -> "Signal user details ✓ ${account.userHandle} → $name"
+            is PasskeyResult.Success -> signalLog("Signal user details", r.value, "${account.userHandle} → $name")
             is PasskeyResult.Failure -> failureLog("Signal user details", r.error)
         }
     }
@@ -295,7 +301,7 @@ class DemoController(
         }
         step("Signal unknown") {
             when (val r = passkeys.signals.unknownCredential(rpId(), "AA")) {
-                is PasskeyResult.Success -> "Signal unknown ✓"
+                is PasskeyResult.Success -> signalLog("Signal unknown", r.value, "AA")
                 is PasskeyResult.Failure -> failureLog("Signal unknown", r.error)
             }
         }

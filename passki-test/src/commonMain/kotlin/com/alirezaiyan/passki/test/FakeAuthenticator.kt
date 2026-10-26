@@ -3,6 +3,7 @@ package com.alirezaiyan.passki.test
 import com.alirezaiyan.passki.PasskeyError
 import com.alirezaiyan.passki.PasskeyException
 import com.alirezaiyan.passki.internal.Base64Url
+import com.alirezaiyan.passki.internal.SignalRequests
 import com.alirezaiyan.passki.internal.ExtensionsJson
 import com.alirezaiyan.passki.internal.WebAuthnOptions
 import com.alirezaiyan.passki.internal.WebAuthnResponses
@@ -212,20 +213,20 @@ public class FakeAuthenticator(
     }
 
     /**
-     * Deletes every passkey of [userId] on [rpId] whose id is not in [credentialIds]. Ids are compared by their
+     * Deletes every passkey of [userHandle] on [rpId] whose id is not in [credentialIds]. Ids are compared by their
      * bytes. Throws [PasskeyException] with [PasskeyError.InvalidOptions] for an undecodable id.
      */
-    public suspend fun retainOnly(rpId: String, userId: String, credentialIds: List<String>) {
-        val user = canonical(userId, "userId")
+    public suspend fun retainOnly(rpId: String, userHandle: String, credentialIds: List<String>) {
+        val user = canonical(userHandle, "userHandle")
         val keep = credentialIds.map { canonical(it, "credentialIds") }.toSet()
         lock.withLock {
             credentials = credentials.filterNot { it.rpId == rpId && it.userId == user && it.id !in keep }
         }
     }
 
-    /** Sets [FakeCredential.userName] of [userId]'s passkeys on [rpId] to [name]. */
-    internal suspend fun updateUserName(rpId: String, userId: String, name: String) {
-        val user = canonical(userId, "userId")
+    /** Sets [FakeCredential.userName] of [userHandle]'s passkeys on [rpId] to [name]. */
+    internal suspend fun updateUserName(rpId: String, userHandle: String, name: String) {
+        val user = canonical(userHandle, "userHandle")
         lock.withLock {
             credentials.filter { it.rpId == rpId && it.userId == user }.forEach { it.userName = name }
         }
@@ -250,10 +251,17 @@ public class FakeAuthenticator(
     private fun canonical(value: String, field: String): String = try {
         Base64Url.encode(Base64Url.decode(value))
     } catch (e: IllegalArgumentException) {
-        throw PasskeyException(PasskeyError.InvalidOptions("$field must be base64url: ${e.message}"))
+        throw PasskeyException(SignalRequests.invalidArgument(field, e.message))
     }
 
     /** The effective RP ID, validated against [origin] the way browsers and platform authenticators do. */
+    /** The RP ID [register] uses for these creation options (the options' `rp.id`, or [origin]'s host). */
+    internal fun creationRpId(optionsJson: String): String =
+        resolveRpId(WebAuthnOptions.parseCreation(optionsJson).model.rp.id)
+
+    /** The RP ID [signIn] uses for these request options (the options' `rpId`, or [origin]'s host). */
+    internal fun requestRpId(optionsJson: String): String = resolveRpId(WebAuthnOptions.parseRequest(optionsJson).model.rpId)
+
     private fun resolveRpId(requested: String?): String {
         if (!origin.startsWith("https://") && !origin.startsWith("http://")) {
             return requested

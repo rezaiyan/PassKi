@@ -10,15 +10,22 @@ import com.alirezaiyan.passki.PasskeySignals
 import com.alirezaiyan.passki.Passkeys
 import com.alirezaiyan.passki.SignInCredential
 import com.alirezaiyan.passki.SignInMode
+import com.alirezaiyan.passki.SignalOutcome
+import com.alirezaiyan.passki.internal.PasskiLog
 import com.alirezaiyan.passki.internal.SignalRequests
 import com.alirezaiyan.passki.internal.parseAssertion
 import com.alirezaiyan.passki.internal.parseRegistration
+import com.alirezaiyan.passki.internal.toSignalOutcome
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.random.Random
 
-/** A signal call recorded by [FakePasskeys.signals], in [FakePasskeys.receivedSignals]. */
+/**
+ * A signal call recorded by [FakePasskeys.signals], in [FakePasskeys.receivedSignals].
+ *
+ * Open: a new subtype is added with each new signal; keep an `else` branch in exhaustive `when`s.
+ */
 public sealed interface FakeSignal {
     /** Recorded [PasskeySignals.unknownCredential] call. */
     public data class UnknownCredential(public val rpId: String, public val credentialId: String) : FakeSignal
@@ -26,14 +33,14 @@ public sealed interface FakeSignal {
     /** Recorded [PasskeySignals.acceptedCredentials] call. */
     public data class AcceptedCredentials(
         public val rpId: String,
-        public val userId: String,
+        public val userHandle: String,
         public val credentialIds: List<String>,
     ) : FakeSignal
 
     /** Recorded [PasskeySignals.currentUserDetails] call. */
     public data class CurrentUserDetails(
         public val rpId: String,
-        public val userId: String,
+        public val userHandle: String,
         public val name: String,
         public val displayName: String,
     ) : FakeSignal
@@ -49,6 +56,10 @@ public sealed interface FakeSignal {
  * Operations are safe to call from concurrent coroutines. The public mutable collections [savedPasswords] and
  * [receivedSignals] are not synchronised: mutate or inspect them from test code before or after calls,
  * not concurrently with them.
+ *
+ * Logs like the platform implementations do, through [com.alirezaiyan.passki.PassKi.logHandler], so a test can
+ * assert what your app's users would see in logcat. A test that changes `PassKi.logLevel` or `PassKi.logHandler`
+ * should restore them in `@AfterTest`: they are process-wide.
  *
  * @param origin the web origin written into clientDataJSON, e.g. `https://example.com`.
  * @param random source for credential ids; pass a seeded [Random] for deterministic ids.
@@ -82,8 +93,8 @@ public class FakePasskeys(origin: String, random: Random = Random.Default) : Pas
     public var conditionalCreate: Boolean = true
 
     /**
-     * [signals] are available ([PasskeyCapabilities.signals]). When false, every signal fails with
-     * [PasskeyError.NotSupported] and is not recorded. Default true.
+     * [signals] are available ([PasskeyCapabilities.signals]). When false, every signal returns
+     * [SignalOutcome.Skipped] and is not recorded, as on a device without the Signal API. Default true.
      */
     public var signalsSupported: Boolean = true
 
@@ -126,28 +137,34 @@ public class FakePasskeys(origin: String, random: Random = Random.Default) : Pas
         queuedErrors.addLast(error)
     }
 
-    override suspend fun capabilities(): PasskeyCapabilities = PasskeyCapabilities(
-        isSupported = isSupported,
-        immediateSignIn = isSupported && immediateSignIn,
-        unifiedPasswordSignIn = isSupported && unifiedPasswordSignIn,
-        conditionalCreate = isSupported && conditionalCreate,
-        signals = isSupported && signalsSupported,
-        autofill = isSupported && autofillSupported,
-    )
+    override suspend fun capabilities(): PasskeyCapabilities = PasskiLog.capabilities {
+        PasskeyCapabilities(
+            isSupported = isSupported,
+            immediateSignIn = isSupported && immediateSignIn,
+            unifiedPasswordSignIn = isSupported && unifiedPasswordSignIn,
+            conditionalCreate = isSupported && conditionalCreate,
+            signals = isSupported && signalsSupported,
+            autofill = isSupported && autofillSupported,
+        )
+    }
 
     override suspend fun register(optionsJson: String): PasskeyResult<PasskeyRegistration> =
-        result { parseRegistration(authenticator.register(optionsJson)) }
+        PasskiLog.register(optionsJson) { result { registration(optionsJson, conditional = false) } }
 
     override suspend fun upgrade(optionsJson: String): PasskeyResult<PasskeyRegistration> =
-        result(conditionalCreate, "conditionalCreate") {
-            parseRegistration(authenticator.register(optionsJson, conditional = true))
+        PasskiLog.upgrade(optionsJson) {
+            result(conditionalCreate, "conditionalCreate") {
+                registration(optionsJson, conditional = true)
+            }
         }
 
     override suspend fun signIn(optionsJson: String, mode: SignInMode): PasskeyResult<PasskeyAssertion> =
-        when (mode) {
-            SignInMode.ImmediateOnly -> result(immediateSignIn, "immediateSignIn") { assertion(optionsJson) }
-            SignInMode.Autofill -> autofill(optionsJson)
-            SignInMode.Modal -> result { assertion(optionsJson) }
+        PasskiLog.signIn(optionsJson, mode) {
+            when (mode) {
+                SignInMode.ImmediateOnly -> result(immediateSignIn, "immediateSignIn") { assertion(optionsJson) }
+                SignInMode.Autofill -> autofill(optionsJson)
+                SignInMode.Modal -> result { assertion(optionsJson) }
+            }
         }
 
     /** See [autofillSupported]: no matching passkey means no suggestion, so wait (outside [lock]) until cancelled. */
@@ -165,46 +182,58 @@ public class FakePasskeys(origin: String, random: Random = Random.Default) : Pas
         return result
     }
 
-    private suspend fun assertion(optionsJson: String): PasskeyAssertion = parseAssertion(authenticator.signIn(optionsJson))
+    private suspend fun assertion(optionsJson: String): PasskeyAssertion =
+        parseAssertion(authenticator.signIn(optionsJson), authenticator.requestRpId(optionsJson))
+
+    private suspend fun registration(optionsJson: String, conditional: Boolean): PasskeyRegistration =
+        parseRegistration(authenticator.register(optionsJson, conditional), authenticator.creationRpId(optionsJson))
 
     override suspend fun signInOrPassword(optionsJson: String): PasskeyResult<SignInCredential> =
-        result(unifiedPasswordSignIn, "unifiedPasswordSignIn") {
-            try {
-                SignInCredential.Passkey(parseAssertion(authenticator.signIn(optionsJson)))
-            } catch (e: PasskeyException) {
-                val password = savedPasswords.entries.firstOrNull()
-                if (e.error != PasskeyError.NoCredentials || password == null) throw e
-                SignInCredential.Password(password.key, password.value)
+        PasskiLog.signInOrPassword(optionsJson) {
+            result(unifiedPasswordSignIn, "unifiedPasswordSignIn") {
+                try {
+                    SignInCredential.Passkey(assertion(optionsJson))
+                } catch (e: PasskeyException) {
+                    val password = savedPasswords.entries.firstOrNull()
+                    if (e.error != PasskeyError.NoCredentials || password == null) throw e
+                    SignInCredential.Password(password.key, password.value)
+                }
             }
         }
 
     override val signals: PasskeySignals = object : PasskeySignals {
-        override suspend fun unknownCredential(rpId: String, credentialId: String): PasskeyResult<Unit> =
-            result(signalsSupported, "signalsSupported") {
-                SignalRequests.unknownCredential(rpId, credentialId)
-                receivedSignals += FakeSignal.UnknownCredential(rpId, credentialId)
-                authenticator.remove(rpId, credentialId)
+        override suspend fun unknownCredential(rpId: String, credentialId: String): PasskeyResult<SignalOutcome> =
+            PasskiLog.unknownCredential(rpId, credentialId) {
+                result(signalsSupported, "signalsSupported") {
+                    SignalRequests.unknownCredential(rpId, credentialId)
+                    receivedSignals += FakeSignal.UnknownCredential(rpId, credentialId)
+                    authenticator.remove(rpId, credentialId)
+                }.toSignalOutcome()
             }
 
         override suspend fun acceptedCredentials(
             rpId: String,
-            userId: String,
+            userHandle: String,
             credentialIds: List<String>,
-        ): PasskeyResult<Unit> = result(signalsSupported, "signalsSupported") {
-            SignalRequests.acceptedCredentials(rpId, userId, credentialIds)
-            receivedSignals += FakeSignal.AcceptedCredentials(rpId, userId, credentialIds)
-            authenticator.retainOnly(rpId, userId, credentialIds)
+        ): PasskeyResult<SignalOutcome> = PasskiLog.acceptedCredentials(rpId, credentialIds) {
+            result(signalsSupported, "signalsSupported") {
+                SignalRequests.acceptedCredentials(rpId, userHandle, credentialIds)
+                receivedSignals += FakeSignal.AcceptedCredentials(rpId, userHandle, credentialIds)
+                authenticator.retainOnly(rpId, userHandle, credentialIds)
+            }.toSignalOutcome()
         }
 
         override suspend fun currentUserDetails(
             rpId: String,
-            userId: String,
+            userHandle: String,
             name: String,
             displayName: String,
-        ): PasskeyResult<Unit> = result(signalsSupported, "signalsSupported") {
-            SignalRequests.currentUserDetails(rpId, userId, name, displayName)
-            receivedSignals += FakeSignal.CurrentUserDetails(rpId, userId, name, displayName)
-            authenticator.updateUserName(rpId, userId, name)
+        ): PasskeyResult<SignalOutcome> = PasskiLog.currentUserDetails(rpId) {
+            result(signalsSupported, "signalsSupported") {
+                SignalRequests.currentUserDetails(rpId, userHandle, name, displayName)
+                receivedSignals += FakeSignal.CurrentUserDetails(rpId, userHandle, name, displayName)
+                authenticator.updateUserName(rpId, userHandle, name)
+            }.toSignalOutcome()
         }
     }
 

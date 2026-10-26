@@ -2,6 +2,8 @@
 
 package com.alirezaiyan.passki.web
 
+internal actual fun passkiPageHost(): String = js(PAGE_HOST_JS)
+
 internal actual fun passkiAbort(id: Int): Unit = js(ABORT_JS)
 
 internal actual fun passkiWebAuthn(

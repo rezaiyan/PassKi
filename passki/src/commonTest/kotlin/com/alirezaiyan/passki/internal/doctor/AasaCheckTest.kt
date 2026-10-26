@@ -68,9 +68,25 @@ class AasaCheckTest {
 
     @Test
     fun failsWhenDirectFileIsNotJson() {
-        val check = evaluate(ok(directUrl, "<html>"))
+        val check = evaluate(ok(directUrl, """{"webcredentials":"""))
         assertEquals(DoctorStatus.Fail, check.status)
         assertTrue("JSON" in check.message)
+    }
+
+    @Test
+    fun webPageIsReportedAsIos01WithHostingFix() {
+        val direct = HttpResult(directUrl, status = 200, contentType = "text/html; charset=utf-8", body = SPA_INDEX_HTML, redirectedTo = null, error = null)
+        val check = evaluate(direct)
+        assertEquals(DoctorStatus.Fail, check.status)
+        assertEquals("IOS-01", check.id)
+        assertEquals("$directUrl served a web page, not apple-app-site-association", check.message)
+        assertTrue("catch-all route" in check.fixHint.orEmpty(), check.fixHint)
+    }
+
+    @Test
+    fun jsonServedAsTextHtmlIsCheckedAsJson() {
+        val direct = HttpResult(directUrl, status = 200, contentType = "text/html", body = body, redirectedTo = null, error = null)
+        assertEquals(DoctorStatus.Pass, evaluate(direct).status)
     }
 
     @Test

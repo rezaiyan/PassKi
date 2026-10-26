@@ -93,7 +93,7 @@ class AssetLinksCheckTest {
 
     @Test
     fun failsWhenBodyIsNotJson() {
-        val check = evaluate(ok("<html>"))
+        val check = evaluate(ok("not json"))
         assertEquals(DoctorStatus.Fail, check.status)
         assertTrue("JSON" in check.message)
     }
@@ -211,5 +211,40 @@ class AssetLinksCheckTest {
         val check = evaluate(result)
         assertEquals(DoctorStatus.Fail, check.status)
         assertTrue("larger than 1 MiB" in check.message, check.message)
+    }
+
+    @Test
+    fun webPageIsReportedAsAnd01WithHostingFix() {
+        val check = evaluate(ok(SPA_INDEX_HTML, contentType = "text/html; charset=utf-8"))
+        assertEquals(DoctorStatus.Fail, check.status)
+        assertEquals("AND-01", check.id)
+        assertEquals("$url served a web page, not assetlinks.json", check.message)
+        assertTrue("catch-all route" in check.fixHint.orEmpty(), check.fixHint)
+    }
+
+    @Test
+    fun htmlBodyIsAWebPageWhateverTheContentType() {
+        assertEquals("$url served a web page, not assetlinks.json", evaluate(ok(SPA_INDEX_HTML)).message)
+    }
+
+    @Test
+    fun nonJsonTextHtmlIsAWebPage() {
+        val check = evaluate(ok("Not found", contentType = "text/html"))
+        assertTrue("served a web page" in check.message, check.message)
+    }
+
+    @Test
+    fun jsonServedAsTextHtmlIsCheckedAsJson() {
+        // A valid file with the wrong content type gets the content-type warning, not the web-page failure.
+        val check = evaluate(ok("[${statement()}]", contentType = "text/html"))
+        assertEquals(DoctorStatus.Warn, check.status)
+        assertTrue("expected application/json" in check.message, check.message)
+    }
+
+    @Test
+    fun malformedJsonKeepsTheJsonMessage() {
+        val check = evaluate(ok("""[{"relation":"""))
+        assertEquals("AND-01", check.id)
+        assertTrue("is not a JSON array" in check.message, check.message)
     }
 }

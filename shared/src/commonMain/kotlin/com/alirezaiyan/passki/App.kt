@@ -74,6 +74,8 @@ fun App(
     rp: PasskiDemoServer = remember { PasskiDemoServer() },
     appRpId: String = PasskiDemoServer.RP_ID,
 ) {
+    // The sample traces every call (logcat tag PassKi, NSLog, the browser console); apps keep the default, Error.
+    remember { PassKi.logLevel = PasskiLogLevel.Debug }
     PassKiTheme {
         val scope = rememberCoroutineScope()
         val controller = remember { DemoController(passkeys, rp, appOrigin, getPlatform().name, scope, appRpId) }

@@ -115,7 +115,7 @@ public object PasskeyExtensions {
 /**
  * Whether a new passkey must have large-blob storage ([PasskeyExtensions.withLargeBlob]).
  *
- * New entries may be added in minor releases — keep an `else` branch in exhaustive `when`s.
+ * Open: new entries may be added in minor releases; keep an `else` branch in exhaustive `when`s.
  */
 public enum class LargeBlobSupport(internal val webAuthnValue: String) {
     /** Only offer authenticators with large-blob storage. */

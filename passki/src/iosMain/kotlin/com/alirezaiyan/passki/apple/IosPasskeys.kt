@@ -59,7 +59,7 @@ internal class IosPasskeys(private val anchor: () -> UIWindow? = ::keyWindow) : 
                 )
             }
             when (val credential = authorization.credential) {
-                is ASAuthorizationPlatformPublicKeyCredentialAssertion -> parseAssertion(AppleRequests.assertionJson(credential, options.extensions))
+                is ASAuthorizationPlatformPublicKeyCredentialAssertion -> parseAssertion(AppleRequests.assertionJson(credential, options.extensions), WebAuthnOptions.requireRpId(options.rpId, "rpId"))
                 else -> throw unexpected(credential)
             }
         }
@@ -76,7 +76,7 @@ internal class IosPasskeys(private val anchor: () -> UIWindow? = ::keyWindow) : 
             )
             when (val credential = authorization.credential) {
                 is ASAuthorizationPlatformPublicKeyCredentialAssertion ->
-                    SignInCredential.Passkey(parseAssertion(AppleRequests.assertionJson(credential, options.extensions)))
+                    SignInCredential.Passkey(parseAssertion(AppleRequests.assertionJson(credential, options.extensions), WebAuthnOptions.requireRpId(options.rpId, "rpId")))
                 is ASPasswordCredential -> SignInCredential.Password(credential.user, credential.password)
                 else -> throw unexpected(credential)
             }
@@ -96,7 +96,7 @@ internal class IosPasskeys(private val anchor: () -> UIWindow? = ::keyWindow) : 
             )
             when (val credential = authorization.credential) {
                 is ASAuthorizationPlatformPublicKeyCredentialRegistration ->
-                    parseRegistration(AppleRequests.registrationJson(credential))
+                    parseRegistration(AppleRequests.registrationJson(credential), WebAuthnOptions.requireRpId(options.rp.id, "rp.id"))
                 else -> throw unexpected(credential)
             }
         }
