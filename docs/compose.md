@@ -4,7 +4,7 @@
 `passki` and exposes it as an `api` dependency.
 
 ```kotlin
-commonMain.dependencies { implementation("com.alirezaiyan.passki:passki-compose:0.1.0-alpha04") }
+commonMain.dependencies { implementation("com.alirezaiyan.passki:passki-compose:0.1.0-alpha05") }
 ```
 
 <table>

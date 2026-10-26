@@ -37,4 +37,7 @@
 | [Security model](security-model.md) | What PassKi does and doesn't do, and what your server must check |
 | [Verified on](verified-on.md) | What was tested on which devices, and what wasn't |
 
-The API reference is generated with `./gradlew dokkaGenerate` (into `build/dokka/html/`).
+## API reference
+
+Each release publishes it to [rezaiyan.github.io/PassKi](https://rezaiyan.github.io/PassKi/), one folder per version,
+from 0.1.0-alpha05 on. For any version, `./gradlew dokkaGenerate` builds it locally into `build/dokka/html/`.

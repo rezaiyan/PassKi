@@ -37,8 +37,8 @@
 </p>
 
 People keep signing in the way they do today. Once signed in, they add a passkey: the device keeps a private key and
-your server a public one. Next time, one tap signs them in. For each passkey step, your server creates the options and verifies the result; PassKi shows the device's sheet in
-between, from `commonMain`:
+your server a public one. Next time, one tap signs them in. For each passkey step, your server creates the options
+and verifies the result; PassKi shows the device's sheet in between, from `commonMain`:
 
 ```kotlin
 val passkeys = Passkeys() // no Activity, no UIWindow
@@ -69,7 +69,7 @@ The whole flow, with Settings, deleting and renaming: [Passkeys as an extra sign
 
 - **Does:** shows the platform's own sheet (Credential Manager on Android, AuthenticationServices on iOS,
   `navigator.credentials` in the browser) and returns a typed `PasskeyResult` with the response JSON, unchanged.
-- **Doesn't:** verify responses, store credentials, or call any server. Verifying is your server's job, with any
+- **Doesn't:** verify responses, store credentials, or talk to your server. Verifying is your server's job, with any
   WebAuthn library ([how](docs/guides/verify-on-server.md)). More: [Concepts](docs/concepts.md),
   [Security model](docs/security-model.md).
 - **Tests without a device:** `FakePasskeys` signs real responses that webauthn4j and java-webauthn-server verify, so
@@ -87,8 +87,8 @@ PassKi logs it, so even a release build tells you:
 E PassKi  : signIn failed: Misconfigured [AND-03]: … Fix: add the SHA-256 fingerprint … Docs: …/checks/AND-03
 ```
 
-When `error.isUserCancellation` is true, the user closed the sheet: show nothing. [What to show
-users](docs/guides/what-to-show-users.md) · [Troubleshooting](docs/guides/troubleshooting.md) · [Logging](docs/logging.md)
+When `error.isUserCancellation` is true, the user closed the sheet: show nothing.
+[What to show users](docs/guides/what-to-show-users.md) · [Troubleshooting](docs/guides/troubleshooting.md) · [Logging](docs/logging.md)
 
 </details>
 
@@ -101,8 +101,8 @@ users](docs/guides/what-to-show-users.md) · [Troubleshooting](docs/guides/troub
   </picture>
 </p>
 
-The device only offers a passkey for `example.com` if `example.com` lists your app, and your server only accepts it
-from origins it knows. Your domain is the RP ID, and it [can't change later](docs/guides/choosing-rp-id.md).
+The device only offers a passkey for `example.com` if `example.com` lists your app (a web page there needs no files),
+and your server only accepts origins it knows. Your domain is the RP ID: [it can't change](docs/guides/choosing-rp-id.md).
 
 <details>
 <summary><b>Set it up with the Gradle plugin, or by hand</b></summary>
@@ -110,27 +110,27 @@ from origins it knows. Your domain is the RP ID, and it [can't change later](doc
 **With the plugin**, in your Android app module:
 
 ```kotlin
-plugins { id("com.alirezaiyan.passki") version "0.1.0-alpha04" }
+plugins { id("com.alirezaiyan.passki") version "0.1.0-alpha05" }
 passki { rpId = "example.com" }
 ```
 
 `./gradlew passkiSetup` writes both well-known files and the iOS entitlement, and prints your server's allowed
 origins. Upload the files to `https://example.com/.well-known/`, then `./gradlew passkiCheck` checks the live domain,
-your Xcode project and your server (also in CI). [Setup tooling](docs/setup.md)
+your Xcode project and, if configured, your server's origins (also in CI). [Setup tooling](docs/setup.md)
 
-**By hand:** serve `/.well-known/assetlinks.json` and `/.well-known/apple-app-site-association`, add `webcredentials:example.com`
-to the iOS entitlements, and allow `https://example.com` plus one `android:apk-key-hash:` origin per signing key on
-your server. [Checklist](docs/setup.md#server-setup-by-hand)
+**By hand:** serve `/.well-known/assetlinks.json` and `/.well-known/apple-app-site-association`, add
+`webcredentials:example.com` to the iOS entitlements, and allow `https://example.com` plus one `android:apk-key-hash:`
+origin per signing key on your server. [Checklist](docs/setup.md#server-setup-by-hand)
 
 </details>
 
-Either way, `PasskeyDoctor.run("example.com")` in a debug build checks it all from the device and prints each fix.
+Either way, `PasskeyDoctor.run("example.com")` in a debug build checks the domain and the device, and prints fixes.
 
 ## Get started
 
 ```kotlin
 commonMain.dependencies {
-    implementation(project.dependencies.platform("com.alirezaiyan.passki:passki-bom:0.1.0-alpha04"))
+    implementation(project.dependencies.platform("com.alirezaiyan.passki:passki-bom:0.1.0-alpha05"))
     implementation("com.alirezaiyan.passki:passki") // the BOM keeps every PassKi library on one version
 }
 commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test") }
@@ -142,7 +142,7 @@ passkey with your own server, or **[try it](docs/try-it.md)** against the hosted
 
 **More:** [Guides](docs/README.md#guides) · [Usage](docs/usage.md) · [Platforms](docs/platforms.md) ·
 [Troubleshooting](docs/guides/troubleshooting.md) · [Security model](docs/security-model.md) ·
-[All docs](docs/README.md) · [API reference](https://rezaiyan.github.io/PassKi/) · [CHANGELOG](CHANGELOG.md) ·
+[All docs](docs/README.md) · [API reference](docs/README.md#api-reference) · [CHANGELOG](CHANGELOG.md) ·
 [Versioning](docs/versioning.md)
 
 ## License

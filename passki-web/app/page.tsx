@@ -6,7 +6,7 @@ import { CheckIcon, GitHubIcon, SkipIcon } from "@/components/Icons";
 import { catalog } from "@/lib/catalog";
 
 const REPO = "https://github.com/rezaiyan/PassKi";
-const VERSION = "0.1.0-alpha03";
+const VERSION = "0.1.0-alpha05"; // kept equal to VERSION_NAME by ci/check-docs-links.py
 
 const QUICK_START = `val passkeys = Passkeys() // no Activity, no UIWindow
 

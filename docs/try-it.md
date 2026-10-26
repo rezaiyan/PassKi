@@ -90,8 +90,8 @@ response. Use it to try PassKi, not in production: it deletes its users after 24
 
    ```kotlin
    commonMain.dependencies {
-       implementation("com.alirezaiyan.passki:passki:0.1.0-alpha04")
-       implementation("com.alirezaiyan.passki:passki-demo:0.1.0-alpha04")
+       implementation("com.alirezaiyan.passki:passki:0.1.0-alpha05")
+       implementation("com.alirezaiyan.passki:passki-demo:0.1.0-alpha05")
    }
    ```
 
@@ -99,7 +99,7 @@ response. Use it to try PassKi, not in production: it deletes its users after 24
 
    ```kotlin
    plugins {
-       id("com.alirezaiyan.passki") version "0.1.0-alpha04"
+       id("com.alirezaiyan.passki") version "0.1.0-alpha05"
    }
 
    passki {

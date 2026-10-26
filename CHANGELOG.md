@@ -3,7 +3,12 @@
 All notable changes to PassKi. Versions before 1.0 are alphas: the API may still change, but every change is
 listed here.
 
-## 0.1.0-alpha05 (unreleased)
+## 0.1.0-alpha05 (2026-10-26)
+
+**Upgrading from alpha04:** three changes can need code changes, each with a "Migrating from alpha04" note below.
+Signals return `SignalOutcome` instead of failing with `NotSupported`; signal parameters named `userId` are now
+`userHandle`; and a second `register` / `signIn` while a sheet is showing fails with `Interrupted`. Everything else is
+additive: logging, `syncAccount`, `rpId` on results, result and error helpers, and `passki-bom`.
 
 ### Changed
 - **BREAKING: signals return `PasskeyResult<SignalOutcome>`.** `SignalOutcome` is `Applied` or `Skipped(reason)`.
@@ -45,43 +50,10 @@ listed here.
   `apple-app-site-association` comes back as HTML (usually a single-page app's catch-all route), `PasskeyDoctor`,
   `passkiCheck` / `passkiVerify` and the web verifier report AND-01 / IOS-01 as "served a web page" with a hosting
   fix, instead of "not valid JSON". The text lives in `docs/checks/catalog.json` (`html`).
-
 - **Errors with a docs page print it:** `Misconfigured` and `InvalidOptions` with a check ID now include
   `docsUrl=...` in `toString()`, after the check ID. Errors without one print as before.
 
 ### Added
-- **Results carry the RP ID: `PasskeyRegistration.rpId` and `PasskeyAssertion.rpId`.** The RP ID the ceremony ran
-  for: the options' RP ID, or on the web the page's host when the options name none. Pass it to signals, such as
-  `signals.unknownCredential(assertion.rpId, assertion.credentialId)`, instead of parsing the options again.
-  passki-test's `FakePasskeys` fills it the same way (the origin's host when the options name none).
-- **`PasskeyResult` helpers named as in `kotlin.Result`:** `fold(onSuccess, onFailure)`, `mapError`, `recover`,
-  `isSuccess`, `isFailure`, `errorOrNull()` and `toResult()` (a `kotlin.Result` whose failure is a `PasskeyException`
-  with the original error).
-- **`PasskeyError.category` and `PasskeyErrorCategory`:** `UserCancelled` (`Cancelled`, `Interrupted`),
-  `NoCredential`, `AlreadyExists`, `Unsupported`, `Setup` (`Misconfigured`, `InvalidOptions`) and `Unexpected`
-  (`Unknown`). The set is closed: a `when (error.category)` needs no `else` and keeps compiling when a release adds an
-  error type, which always joins an existing category.
-- **`PasskeyError.isUserCancellation`:** true for `Cancelled` and `Interrupted`, when no error should be shown.
-- **`capabilities()` KDoc says it is cheap,** so it can be called before every sign-in.
-- **`passki-bom`:** keeps `passki`, `passki-compose`, `passki-test` and `passki-demo` on one version; declare them
-  without a version. In a KMP source set:
-  `implementation(project.dependencies.platform("com.alirezaiyan.passki:passki-bom:<version>"))`.
-- **Works in minified Android release builds without app-side rules.** `passki` now ships a consumer keep rule that
-  keeps Credential Manager exception names, so the debug log and `PasskeyError.Unknown.platformCode` still read
-  `CreateCredentialCancellationException` in an R8 build, and the log names PassKi's own errors (`Cancelled`) without
-  relying on class names R8 renames. CI builds a minified consumer app against every change.
-- **Release and project policies:** [versioning and deprecation](docs/versioning.md) (what alpha, beta and 1.0
-  promise), `SECURITY.md` (private reporting through GitHub security advisories), `CODE_OF_CONDUCT.md`, issue and pull
-  request templates, Renovate for dependency updates (holding the Kotlin 2.2 floor), and KDoc `@sample`s for
-  `Passkeys`, `PasskeyResult` and `FakePasskeys`. Releases now wait until every artifact resolves from Maven Central
-  and publish the API reference to GitHub Pages, one folder per version.
-- **Docs: a short README and pages that start from your situation.** The README is now one screen with a quickstart;
-  everything it held moved to `docs/` without loss (`docs/README.md` lists every page). New: a
-  [quickstart](docs/quickstart.md) for your own server, guides on passkeys as an extra sign-in, what to show users,
-  choosing your RP ID, user names, a recommended server API, verifying on the server (webauthn4j and
-  java-webauthn-server, compiled and run in CI), upgrading users and troubleshooting, plus a
-  [security model](docs/security-model.md) and `llms.txt` on passki.alirezaiyan.com. CI keeps the README under 150
-  lines, the error table complete and the "no network calls" claim true (`ci/check-network-use.py`).
 - **Logging: `PassKi.logLevel` and `PassKi.logHandler`.** By default (`PasskiLogLevel.Error`) PassKi logs every
   failure with a fix hint (`Misconfigured`, `InvalidOptions`) and every `Unknown`, once per failed call, with the
   check ID, fix and docs link: logcat tag `PassKi` on Android, `NSLog` on iOS, the browser console on the web,
@@ -96,10 +68,43 @@ listed here.
   credential provider an account's complete list of passkeys and its current label, for example when the passkey
   settings screen opens. It returns `Applied` if the provider took either signal and stops at the first failure.
   It has a default implementation, so your own `PasskeySignals` implementations keep compiling.
+- **Results carry the RP ID: `PasskeyRegistration.rpId` and `PasskeyAssertion.rpId`.** The RP ID the ceremony ran
+  for: the options' RP ID, or on the web the page's host when the options name none. Pass it to signals, such as
+  `signals.unknownCredential(assertion.rpId, assertion.credentialId)`, instead of parsing the options again.
+  passki-test's `FakePasskeys` fills it the same way (the origin's host when the options name none).
+- **`PasskeyResult` helpers named as in `kotlin.Result`:** `fold(onSuccess, onFailure)`, `mapError`, `recover`,
+  `isSuccess`, `isFailure`, `errorOrNull()` and `toResult()` (a `kotlin.Result` whose failure is a `PasskeyException`
+  with the original error).
+- **`PasskeyError.category` and `PasskeyErrorCategory`:** `UserCancelled` (`Cancelled`, `Interrupted`),
+  `NoCredential`, `AlreadyExists`, `Unsupported`, `Setup` (`Misconfigured`, `InvalidOptions`) and `Unexpected`
+  (`Unknown`). The set is closed: a `when (error.category)` needs no `else` and keeps compiling when a release adds an
+  error type, which always joins an existing category.
+- **`PasskeyError.isUserCancellation`:** true for `Cancelled` and `Interrupted`, when no error should be shown.
+- **`passki-bom`:** keeps `passki`, `passki-compose`, `passki-test` and `passki-demo` on one version; declare them
+  without a version. In a KMP source set:
+  `implementation(project.dependencies.platform("com.alirezaiyan.passki:passki-bom:<version>"))`.
+- **Works in minified Android release builds without app-side rules.** `passki` now ships a consumer keep rule that
+  keeps Credential Manager exception names, so the debug log and `PasskeyError.Unknown.platformCode` still read
+  `CreateCredentialCancellationException` in an R8 build, and the log names PassKi's own errors (`Cancelled`) without
+  relying on class names R8 renames. CI builds a minified consumer app against every change.
 - **`passkiSetup` warns about an RP ID shared with other apps.** When the RP ID is a bare domain (`example.com`) and
   its live well-known files already list apps other than yours, the task warns that the RP ID can't change later
   without orphaning passkeys and suggests a product subdomain. Best effort: skipped offline, never fails the task;
   turn it off with `-Ppasski.setup.sharedRpIdCheck=false`.
+- **`capabilities()` KDoc says it is cheap,** so it can be called before every sign-in.
+- **Docs: a short README and pages that start from your situation.** The README is now one screen with a quickstart
+  and diagrams of the sign-in and setup journeys, each showing what happens underneath;
+  everything it held moved to `docs/` without loss (`docs/README.md` lists every page). New: a
+  [quickstart](docs/quickstart.md) for your own server, guides on passkeys as an extra sign-in, what to show users,
+  choosing your RP ID, user names, a recommended server API, verifying on the server (webauthn4j and
+  java-webauthn-server, compiled and run in CI), upgrading users and troubleshooting, plus a
+  [security model](docs/security-model.md) and `llms.txt` on passki.alirezaiyan.com. CI keeps the README under 150
+  lines, the error table complete and the "no network calls" claim true (`ci/check-network-use.py`).
+- **Release and project policies:** [versioning and deprecation](docs/versioning.md) (what alpha, beta and 1.0
+  promise), `SECURITY.md` (private reporting through GitHub security advisories), `CODE_OF_CONDUCT.md`, issue and pull
+  request templates, Renovate for dependency updates (holding the Kotlin 2.2 floor), and KDoc `@sample`s for
+  `Passkeys`, `PasskeyResult` and `FakePasskeys`. Releases now wait until every artifact resolves from Maven Central
+  and publish the API reference to GitHub Pages, one folder per version.
 
 ### Fixed
 - **Immediate sign-in in Chromium browsers that only claim it** (js and wasmJs). Some Chromium builds report
@@ -112,6 +117,8 @@ listed here.
 - **Error messages no longer repeat the JSON they failed on.** `InvalidOptions` for malformed options JSON, and
   `Unknown` for a malformed platform response, included kotlinx.serialization's "JSON input: …" excerpt, which could
   hold the challenge or user handle. They now keep only the reason.
+- **passki.alirezaiyan.com's install snippet showed 0.1.0-alpha03.** It now shows the current version, and CI checks
+  it matches `VERSION_NAME`.
 
 ## 0.1.0-alpha04 (2026-10-25)
 

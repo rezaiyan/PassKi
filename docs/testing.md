@@ -5,7 +5,7 @@ WebAuthn responses, the kind server libraries such as webauthn4j and java-webaut
 app's passkey code without a device, and your server without a phone.
 
 ```kotlin
-commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha04") }
+commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha05") }
 ```
 
 ## Test without devices
@@ -32,7 +32,7 @@ your own endpoints and verifier:
 
 ```kotlin
 dependencies {
-    testImplementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha04")
+    testImplementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha05")
     // Up to 0.1.0-alpha03 only; later versions bring coroutines with them.
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 }

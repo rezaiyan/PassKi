@@ -16,9 +16,9 @@ Only want to see PassKi work? [Try it](try-it.md) against the demo server instea
 
 ```kotlin
 commonMain.dependencies {
-    implementation("com.alirezaiyan.passki:passki:0.1.0-alpha04")
+    implementation("com.alirezaiyan.passki:passki:0.1.0-alpha05")
 }
-commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha04") }
+commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha05") }
 ```
 
 Requirements and compatibility: [Usage](usage.md#install).
@@ -65,7 +65,7 @@ the same files.
 
 ```kotlin
 plugins {
-    id("com.alirezaiyan.passki") version "0.1.0-alpha04" // in your Android app module
+    id("com.alirezaiyan.passki") version "0.1.0-alpha05" // in your Android app module
 }
 
 passki {

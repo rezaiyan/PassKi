@@ -5,7 +5,8 @@ Also fails when:
 - README.md is longer than README_LIMIT lines (details belong on docs pages; raise the limit deliberately),
 - docs/guides/what-to-show-users.md has no table row for a PasskeyError subtype,
 - a page in docs/guides/ names a check ID that isn't in docs/checks/catalog.json,
-- a link in passki-web/public/llms.txt doesn't resolve to a file in this repository.
+- a link in passki-web/public/llms.txt doesn't resolve to a file in this repository,
+- the install snippet on passki-web's landing page names another version than VERSION_NAME.
 
 Usage: python3 ci/check-docs-links.py   (from the repository root)
 """
@@ -83,8 +84,15 @@ def llms_txt():
     return problems
 
 
+def web_version():
+    version = re.search(r"^VERSION_NAME=(.+)$", read("gradle.properties"), re.M).group(1).strip()
+    page = os.path.join("passki-web", "app", "page.tsx")
+    shown = re.search(r'const VERSION = "([^"]+)"', read(page)).group(1)
+    return [] if shown == version else [f"{page}: VERSION is {shown}, but VERSION_NAME is {version}"]
+
+
 def main():
-    broken = readme_length() + error_table() + guide_check_ids() + llms_txt()
+    broken = readme_length() + error_table() + guide_check_ids() + llms_txt() + web_version()
     for name in FILES:
         path = os.path.join(ROOT, name)
         with open(path, encoding="utf-8") as f:
