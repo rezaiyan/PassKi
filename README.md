@@ -25,30 +25,98 @@
   </tr>
 </table>
 
-<p align="center"><sub>The <a href="docs/try-it.md">sample app</a>: create a passkey, the server verifies it, sign
-out, sign back in.</sub></p>
+<p align="center"><sub>The <a href="docs/try-it.md">sample app</a>: create a passkey, the server verifies it, sign out, sign back in.</sub></p>
 
-Your server creates WebAuthn options and checks the response. PassKi shows the native passkey sheet in between, from
-`commonMain`, on Android, iOS and the web:
+## How it works
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/media/how-it-works-dark.svg">
+    <img src="docs/media/how-it-works-light.svg" width="880" alt="How a passkey sign-in works: 1. your server creates options, 2. PassKi shows the native passkey sheet, 3. the user confirms with face, fingerprint or screen lock, 4. your server verifies the response and signs the user in">
+  </picture>
+</p>
+
+Your server creates the options and verifies the result. PassKi does the part in between, from `commonMain`, on
+Android, iOS and the web:
 
 ```kotlin
 val passkeys = Passkeys() // no Activity, no UIWindow
 
-passkeys.register(api.registrationOptions())         // options JSON from your server
-    .onSuccess { api.finishRegistration(it.json) }  // your server checks the response
+passkeys.signIn(api.authenticationOptions())  // steps 1-3: your server's options, the sheet
+    .onSuccess { api.finishSignIn(it.json) }  // step 4: your server verifies the response
 
-passkeys.signIn(api.authenticationOptions())
-    .onSuccess { api.finishSignIn(it.json) }
+passkeys.register(api.registrationOptions())  // creating a passkey: the same four steps
+    .onSuccess { api.finishRegistration(it.json) }
 ```
 
-- **Errors you can act on.** A setup problem comes back as `Misconfigured` with a fix and a check ID such as `AND-03`
-  that links to its docs page, and PassKi logs it, so a release build still says why.
-- **Setup that checks itself.** A Gradle plugin writes your well-known files and iOS entitlements and checks your live
-  domain; `PasskeyDoctor` runs the same checks on a device. Both are optional.
-- **Tests without a device.** `FakePasskeys` produces real signed responses that server libraries such as webauthn4j
-  and java-webauthn-server verify, so you can test your app and your server on the JVM.
+<details>
+<summary><b>What PassKi does, and what it leaves to you</b></summary>
 
-## Install
+- **Does:** shows the platform's own sheet (Credential Manager on Android, AuthenticationServices on iOS,
+  `navigator.credentials` in the browser) and returns a typed `PasskeyResult` with the response JSON, unchanged.
+- **Doesn't:** verify responses, store credentials, or call any server. Verifying is your server's job, with any
+  WebAuthn library ([how](docs/guides/verify-on-server.md)). More: [Concepts](docs/concepts.md),
+  [Security model](docs/security-model.md).
+- **Tests without a device:** `FakePasskeys` signs real responses that webauthn4j and java-webauthn-server verify, so
+  your app's and your server's tests run on the JVM ([Testing](docs/testing.md)).
+
+</details>
+
+<details>
+<summary><b>When something goes wrong</b></summary>
+
+Every failure is a `PasskeyError` with a `category` you can `when` over. A setup mistake says what to fix, and
+PassKi logs it, so even a release build tells you:
+
+```text
+E PassKi  : signIn failed: Misconfigured [AND-03]: … Fix: add the SHA-256 fingerprint … Docs: …/checks/AND-03
+```
+
+When `error.isUserCancellation` is true, the user closed the sheet: show nothing.
+[What to show users](docs/guides/what-to-show-users.md) · [Troubleshooting](docs/guides/troubleshooting.md) ·
+[Logging](docs/logging.md)
+
+</details>
+
+## Setup: three things trust each other
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/media/setup-dark.svg">
+    <img src="docs/media/setup-light.svg" width="880" alt="Your app, your domain and your server trust each other: the domain's well-known files list the app, the server uses the domain as its RP ID, and the server allows the app's origins">
+  </picture>
+</p>
+
+The device only offers a passkey for `example.com` if `example.com` lists your app, and your server only accepts it
+from origins it knows. Your domain is the RP ID, and it [can't change later](docs/guides/choosing-rp-id.md).
+
+<details>
+<summary><b>With the Gradle plugin</b></summary>
+
+```kotlin
+plugins { id("com.alirezaiyan.passki") version "0.1.0-alpha04" } // in your Android app module
+
+passki { rpId = "example.com" }
+```
+
+`./gradlew passkiSetup` writes both well-known files and the iOS entitlement, and prints your server's allowed
+origins. Upload the files to `https://example.com/.well-known/`, then `./gradlew passkiCheck` checks the live domain,
+your Xcode project and your server (also in CI). [Setup tooling](docs/setup.md)
+
+</details>
+
+<details>
+<summary><b>By hand</b></summary>
+
+Serve `/.well-known/assetlinks.json` and `/.well-known/apple-app-site-association`, add `webcredentials:example.com`
+to the iOS entitlements, and allow `https://example.com` plus one `android:apk-key-hash:` origin per signing key on
+your server. [Checklist](docs/setup.md#server-setup-by-hand)
+
+</details>
+
+Either way, `PasskeyDoctor.run("example.com")` in a debug build checks it all from the device and prints each fix.
+
+## Get started
 
 ```kotlin
 commonMain.dependencies {
@@ -58,54 +126,25 @@ commonMain.dependencies {
 commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test") }
 ```
 
-Android needs Kotlin 2.1+ and runs passkeys on Android 9+; iOS 16+ and the web need Kotlin 2.2+.
-[Requirements](docs/usage.md#install). Compose Multiplatform UI: [`passki-compose`](docs/compose.md).
+Android needs Kotlin 2.1+ and runs passkeys on Android 9+; iOS 16+ and the web need Kotlin 2.2+
+([requirements](docs/usage.md#install)). Then:
 
-## Quickstart
-
-1. **Your server** gets four endpoints, for creation options, registration, request options and sign-in, verified with
-   any WebAuthn library ([shapes](docs/guides/server-api.md), [verifying](docs/guides/verify-on-server.md)). Its RP ID
-   is your domain, such as `example.com`: [choose it carefully](docs/guides/choosing-rp-id.md), it can't change.
-2. **Your app** calls `register` and `signIn` as above, and handles errors by category:
-
-   ```kotlin
-   passkeys.signIn(api.authenticationOptions())
-       .onSuccess { api.finishSignIn(it.json) }
-       .onFailure { if (!it.isUserCancellation) showError(it.message) } // what to show: docs/guides/what-to-show-users.md
-   ```
-
-3. **Your domain** lists your app, so the OS lets it use passkeys for that domain. Pick one:
-
-   | With the Gradle plugin | By hand |
-   |---|---|
-   | `passki { rpId = "example.com" }` in your Android app module, then `./gradlew passkiSetup`: it writes both well-known files and the iOS entitlement, and prints your server's allowed origins. Upload the files, then `./gradlew passkiCheck` checks everything (also in CI) | Serve `/.well-known/assetlinks.json` and `/.well-known/apple-app-site-association`, add `webcredentials:example.com` to the iOS entitlements, and allow one `android:apk-key-hash:` origin per signing key on your server. [Checklist](docs/setup.md#server-setup-by-hand) |
-
-4. **Run it** on a device and create a passkey. In a debug build, `PasskeyDoctor.run("example.com")` prints every
-   failing check with its fix.
-
-Step by step, per platform: [Quickstart](docs/quickstart.md). Just want to see it work first?
-[Try it](docs/try-it.md) against the hosted demo server, with nothing to set up.
+- **[Quickstart](docs/quickstart.md):** your app and your own server to a first verified passkey, step by step.
+- **[Try it](docs/try-it.md):** see it work first against the hosted demo server, with nothing to set up.
 
 ## Next
 
 | Page | What's in it |
 |---|---|
-| [Quickstart](docs/quickstart.md) | Your app and your server to a first passkey, on Android, iOS and the web |
 | [Guides](docs/README.md#guides) | Passkeys as an extra sign-in, what to show users, RP ID, server API and verification, upgrades |
-| [Concepts](docs/concepts.md) | How it works, and the words these docs use |
 | [Usage](docs/usage.md) | Every call, results and errors, signals |
 | [Platforms](docs/platforms.md) | What each OS version supports, and how the platforms differ |
 | [Troubleshooting](docs/guides/troubleshooting.md) | Symptom first: AND-03, Play builds, IOS-02, the web |
 | [Security model](docs/security-model.md) | What PassKi does and doesn't do, and what your server must check |
-| [All docs](docs/README.md) | Compose, autofill, PRF and largeBlob, testing, logging, setup tooling, the check catalog |
+| [All docs](docs/README.md) | Concepts, Compose, autofill, PRF and largeBlob, testing, logging, setup tooling, check catalog |
 
-API reference: [rezaiyan.github.io/PassKi](https://rezaiyan.github.io/PassKi/) (one folder per version). Changes in
-each release: [CHANGELOG](CHANGELOG.md). What alpha, beta and 1.0 promise: [Versioning](docs/versioning.md).
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md). Building the iOS targets needs Xcode.
+[API reference](https://rezaiyan.github.io/PassKi/) · [CHANGELOG](CHANGELOG.md) · [Versioning](docs/versioning.md) (what alpha, beta and 1.0 promise)
 
 ## License
 
-Apache-2.0 © Ali Rezaiyan
+Apache-2.0 © Ali Rezaiyan. Contributions welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
