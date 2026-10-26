@@ -4,8 +4,8 @@
 
 - [x] 1.1 Add a way to list every published coordinate (Gradle task or `ci/` list checked against the projects); verify it prints the four libraries, the BOM, the plugin and the plugin marker
   - `ci/published-artifacts.py` derives the list from the build files: four libraries, `passki-bom`, `passki-gradle-plugin` and the plugin marker.
-- [ ] 1.2 Add the `verify-published` job to `release.yml` polling `repo1.maven.org` with a configurable limit and a step summary; verify with a manual `workflow_dispatch` run against the already-released 0.1.0-alpha04 coordinates (passes) and a fake version (fails naming each artifact)
-  - Open: the job and `workflow_dispatch` inputs (`verify_version`, `verify_minutes`) are in `release.yml`, and the script passed against the released 0.1.0-alpha04 and failed naming all seven artifacts for a fake version, run locally. The GitHub run needs the workflow pushed.
+- [x] 1.2 Add the `verify-published` job to `release.yml` polling `repo1.maven.org` with a configurable limit and a step summary; verify with a manual `workflow_dispatch` run against the already-released 0.1.0-alpha04 coordinates (passes) and a fake version (fails naming each artifact)
+  - Done: the v0.1.0-alpha05 release run's `verify-published` job passed (all seven artifacts). Earlier, run locally, the script passed for the released 0.1.0-alpha04 and failed naming all seven artifacts for a fake version. It now also treats a dropped connection as "not there yet".
 
 ## 2. BOM
 
@@ -15,26 +15,26 @@
 
 ## 3. API reference
 
-- [ ] 3.1 Add a Pages publishing job that generates Dokka and writes `<version>/` and `latest/` to `gh-pages`; verify a dry run on a branch produces both folders
-  - Open: `ci/api-reference-pages.py` and the `api-reference` job are in place; a local dry run into an empty folder wrote `0.1.0-alpha04/`, `0.1.0-alpha05/`, `latest/` and the index. The branch run needs a push, and GitHub Pages must be set to serve the `gh-pages` branch.
+- [x] 3.1 Add a Pages publishing job that generates Dokka and writes `<version>/` and `latest/` to `gh-pages`; verify a dry run on a branch produces both folders
+  - Done: the alpha05 release published `0.1.0-alpha05/`, `latest/` and the index to `gh-pages`; https://rezaiyan.github.io/PassKi/ serves them (Pages on the `gh-pages` branch, HTTPS enforced).
 - [x] 3.2 Link the reference from the README; verify `python3 ci/check-docs-links.py` passes
 
 ## 4. Repository hygiene
 
 - [x] 4.1 Replace the hardcoded README badge with the Maven Central badge; verify it renders the current version on GitHub
   - shields.io renders "Maven Central: v0.1.0-alpha04" for the badge URL.
-- [ ] 4.2 Add `SECURITY.md` (private reporting via GitHub security advisories, supported versions, response time); verify GitHub shows the security policy tab
-  - Open: `SECURITY.md` is written; the security policy tab shows after a push, and private vulnerability reporting must be turned on in the repository settings.
-- [ ] 4.3 Add a bug template, a feature template and a PR template; verify GitHub's new-issue page lists them
-  - Open: bug, feature and PR templates (plus `config.yml` with the security link) are written and parse as YAML; GitHub's new-issue page shows them after a push.
+- [x] 4.2 Add `SECURITY.md` (private reporting via GitHub security advisories, supported versions, response time); verify GitHub shows the security policy tab
+  - Done: private vulnerability reporting is on, and GitHub shows the Security policy tab.
+- [x] 4.3 Add a bug template, a feature template and a PR template; verify GitHub's new-issue page lists them
+  - Done: the templates are on `main`; GitHub's community profile rates the repository 100%.
 - [x] 4.4 Write `docs/versioning.md` (design decision 6: alpha / beta / 1.0 promises, "Migrating from" blocks, `@Deprecated(replaceWith)`), link it from one README line and from `CONTRIBUTING.md` (which adds the `@sample` rule); verify `python3 ci/check-docs-links.py` passes and the page links the CHANGELOG format
 - [x] 4.5 Add `@sample` links from `Passkeys`, `PasskeyResult` and `FakePasskeys` KDoc to compiled samples; verify Dokka output shows the samples
   - Samples in `passki/src/commonTest/.../samples` and `passki-test/src/commonTest/.../samples` (the latter run as tests); Dokka shows them on `Passkeys`, `PasskeyResult` and `FakePasskeys`.
 
-- [ ] 4.6 Add `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1, private contact); verify GitHub's community standards page shows it
-  - Open: written with the maintainer's address as the contact; GitHub's community standards page shows it after a push.
+- [x] 4.6 Add `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1, private contact); verify GitHub's community standards page shows it
+  - Done: GitHub lists the code of conduct (community profile 100%), with the maintainer's address as the contact.
 - [ ] 4.7 Add `renovate.json` per design decision 8 (groups, weekly schedule, `allowedVersions` holds for the Kotlin 2.2 floor); verify `npx --yes --package renovate renovate-config-validator` accepts it and a dry run lists no PR for the held packages
-  - Open: `renovate-config-validator` accepted the file; the dry run needs Renovate installed on the repository.
+  - Open: `renovate-config-validator` accepted the file; the Renovate app still needs installing on the repository, then its first run shows which updates it proposes.
 
 ## 5. Minified release builds
 
@@ -45,4 +45,5 @@
 
 ## 6. First release
 
-- [ ] 6.1 Bump `VERSION_NAME` to 0.1.0-alpha05, finalise the CHANGELOG, tag and push (after confirming with the maintainer); verify the release run and `verify-published` both succeed and the badge shows alpha05
+- [x] 6.1 Bump `VERSION_NAME` to 0.1.0-alpha05, finalise the CHANGELOG, tag and push (after confirming with the maintainer); verify the release run and `verify-published` both succeed and the badge shows alpha05
+  - Done: tagged `v0.1.0-alpha05` on `c33d6ed` after CI passed; the release run passed all four jobs, the GitHub Release exists (pre-release, CHANGELOG notes), and the badge shows alpha05.

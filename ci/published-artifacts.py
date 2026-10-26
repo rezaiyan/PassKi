@@ -18,7 +18,6 @@ import os
 import re
 import sys
 import time
-import urllib.error
 import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,7 +52,7 @@ def resolves(url):
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
             return response.status == 200
-    except (urllib.error.URLError, TimeoutError):
+    except OSError:  # URLError, timeouts and dropped connections: not there yet, ask again next round
         return False
 
 
