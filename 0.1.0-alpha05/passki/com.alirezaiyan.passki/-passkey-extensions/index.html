@@ -1,0 +1,186 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>PasskeyExtensions</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    PassKi
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector common-like" data-active="" aria-pressed="true" data-filter=":passki/commonMain">common</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":passki/commonMain" data-filter=":passki/commonMain">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    PassKi
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="passki::com.alirezaiyan.passki/PasskeyExtensions///PointingToDeclaration//792555834">
+  <div class="breadcrumbs"><a href="../../index.html">passki</a><span class="delimiter">/</span><a href="../index.html">com.alirezaiyan.passki</a><span class="delimiter">/</span><span class="current">PasskeyExtensions</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Passkey</span><wbr><span><span>Extensions</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":passki/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">PasskeyExtensions</a></div><p class="paragraph">Adds typed WebAuthn extensions to the options JSON your server produced, before you pass it to <a href="../-passkeys/register.html">Passkeys.register</a> or <a href="../-passkeys/sign-in.html">Passkeys.signIn</a>. Read the outputs from <a href="../-passkey-registration/index.html">PasskeyRegistration</a> / <a href="../-passkey-assertion/index.html">PasskeyAssertion</a>.</p><p class="paragraph">Usually your server adds extensions itself; use these helpers when the extension inputs are produced on the device (e.g. a PRF salt for client-side encryption that the server must never see).</p><p class="paragraph">Every helper returns new JSON: other extensions and fields are preserved, as is a <code class="lang-kotlin">{"publicKey": ...}</code> envelope. They throw <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-illegal-argument-exception/index.html">IllegalArgumentException</a> if the JSON is not an options object, or is the wrong kind (creation options have <code class="lang-kotlin">rp</code> / <code class="lang-kotlin">user</code>; request options do not).</p><p class="paragraph">Extensions are best-effort, as in browsers: a provider or OS that does not support one ignores it, and its output is then <code class="lang-kotlin">null</code>. PRF needs iOS 18+ (Android: provider-dependent, Google Password Manager supports it); largeBlob needs iOS 17+.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="1931913093%2FFunctions%2F792555834" anchor-label="withLargeBlob" id="1931913093%2FFunctions%2F792555834" data-filterable-set=":passki/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":passki/commonMain" data-filterable-set=":passki/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="with-large-blob.html"><span>with</span><wbr><span>Large</span><wbr><span><span>Blob</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1931913093%2FFunctions%2F792555834"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":passki/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="with-large-blob.html"><span class="token function">withLargeBlob</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">creationOptionsJson<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">support<span class="token operator">: </span><a href="../-large-blob-support/index.html">LargeBlobSupport</a><span class="token operator"> = </span>LargeBlobSupport.Preferred</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Asks the authenticator to create the passkey with large-blob storage; whether it did is <a href="../-passkey-registration/large-blob-supported.html">PasskeyRegistration.largeBlobSupported</a>. With <a href="../-large-blob-support/-required/index.html">LargeBlobSupport.Required</a>, authenticators without large-blob storage are not offered.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1959793848%2FFunctions%2F792555834" anchor-label="withLargeBlobRead" id="-1959793848%2FFunctions%2F792555834" data-filterable-set=":passki/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":passki/commonMain" data-filterable-set=":passki/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="with-large-blob-read.html"><span>with</span><wbr><span>Large</span><wbr><span>Blob</span><wbr><span><span>Read</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1959793848%2FFunctions%2F792555834"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":passki/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="with-large-blob-read.html"><span class="token function">withLargeBlobRead</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">requestOptionsJson<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Reads the passkey's large blob while signing in; the bytes arrive in <a href="../-passkey-assertion/large-blob.html">PasskeyAssertion.largeBlob</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-161358496%2FFunctions%2F792555834" anchor-label="withLargeBlobWrite" id="-161358496%2FFunctions%2F792555834" data-filterable-set=":passki/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":passki/commonMain" data-filterable-set=":passki/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="with-large-blob-write.html"><span>with</span><wbr><span>Large</span><wbr><span>Blob</span><wbr><span><span>Write</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-161358496%2FFunctions%2F792555834"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":passki/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="with-large-blob-write.html"><span class="token function">withLargeBlobWrite</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">requestOptionsJson<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">blob<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Stores <a href="with-large-blob-write.html">blob</a> in the passkey's large blob while signing in, replacing any previous blob; success is <a href="../-passkey-assertion/large-blob-written.html">PasskeyAssertion.largeBlobWritten</a>. Replaces a <a href="with-large-blob-read.html">withLargeBlobRead</a> request (read and write are exclusive).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-209758153%2FFunctions%2F792555834" anchor-label="withPrf" id="-209758153%2FFunctions%2F792555834" data-filterable-set=":passki/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":passki/commonMain" data-filterable-set=":passki/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="with-prf.html"><span>with</span><wbr><span><span>Prf</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-209758153%2FFunctions%2F792555834"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":passki/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="with-prf.html"><span class="token function">withPrf</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">creationOptionsJson<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Asks, at registration, whether the new passkey supports PRF; the answer is <a href="../-passkey-registration/prf-enabled.html">PasskeyRegistration.prfEnabled</a>. Existing <code class="lang-kotlin">prf</code> inputs (e.g. from <a href="with-prf.html">withPrf</a>) are kept.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="with-prf.html"><span class="token function">withPrf</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">optionsJson<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">first<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">second<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Requests the <code class="lang-kotlin">prf</code> extension evaluated with salts <a href="with-prf.html">first</a> and optional <a href="with-prf.html">second</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

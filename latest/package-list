@@ -1,0 +1,12 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+
+module:passki
+com.alirezaiyan.passki
+com.alirezaiyan.passki.android
+module:passki-compose
+com.alirezaiyan.passki.compose
+module:passki-demo
+com.alirezaiyan.passki.demo
+module:passki-test
+com.alirezaiyan.passki.test
