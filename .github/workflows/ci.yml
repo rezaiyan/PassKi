@@ -151,7 +151,7 @@ jobs:
       # Apps on the oldest supported toolchains, resolving PassKi from Maven Local as the README describes.
       - name: Publish to Maven Local
         run: |
-          ./gradlew :passki:publishToMavenLocal :passki-compose:publishToMavenLocal :passki-test:publishToMavenLocal :passki-demo:publishToMavenLocal
+          ./gradlew :passki:publishToMavenLocal :passki-compose:publishToMavenLocal :passki-test:publishToMavenLocal :passki-demo:publishToMavenLocal :passki-bom:publishToMavenLocal
           ./gradlew -p passki-gradle-plugin publishToMavenLocal
       - name: Published classes load on Java 11 (libraries) and Java 17 (Gradle plugin)
         run: python3 ci/check-jvm-bytecode.py
@@ -159,8 +159,8 @@ jobs:
         run: python3 ci/doc-snippets.py
       - name: Consumer app, Kotlin 2.2.21 (iOS simulator and JVM tests)
         run: ./gradlew -p ci/consumers/kmp iosSimulatorArm64Test jvmTest
-      - name: Consumer app, AGP built-in Kotlin, compileSdk 35 (README "try it in your app")
-        run: ./gradlew -p ci/consumers/android assembleDebug passkiSetup --preview
+      - name: Consumer app, AGP built-in Kotlin, compileSdk 35, debug and minified (R8) release
+        run: ./gradlew -p ci/consumers/android assembleDebug assembleRelease passkiSetup --preview
       - name: Test counts
         if: success() || failure()
         run: python3 ci/test-summary.py .

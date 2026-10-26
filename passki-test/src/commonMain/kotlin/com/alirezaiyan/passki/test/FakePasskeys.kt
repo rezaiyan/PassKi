@@ -61,6 +61,7 @@ public sealed interface FakeSignal {
  * assert what your app's users would see in logcat. A test that changes `PassKi.logLevel` or `PassKi.logHandler`
  * should restore them in `@AfterTest`: they are process-wide.
  *
+ * @sample com.alirezaiyan.passki.test.samples.FakePasskeysSamples.registerThenSignIn
  * @param origin the web origin written into clientDataJSON, e.g. `https://example.com`.
  * @param random source for credential ids; pass a seeded [Random] for deterministic ids.
  */

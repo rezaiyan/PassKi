@@ -63,6 +63,18 @@ listed here.
   error type, which always joins an existing category.
 - **`PasskeyError.isUserCancellation`:** true for `Cancelled` and `Interrupted`, when no error should be shown.
 - **`capabilities()` KDoc says it is cheap,** so it can be called before every sign-in.
+- **`passki-bom`:** keeps `passki`, `passki-compose`, `passki-test` and `passki-demo` on one version; declare them
+  without a version. In a KMP source set:
+  `implementation(project.dependencies.platform("com.alirezaiyan.passki:passki-bom:<version>"))`.
+- **Works in minified Android release builds without app-side rules.** `passki` now ships a consumer keep rule that
+  keeps Credential Manager exception names, so the debug log and `PasskeyError.Unknown.platformCode` still read
+  `CreateCredentialCancellationException` in an R8 build, and the log names PassKi's own errors (`Cancelled`) without
+  relying on class names R8 renames. CI builds a minified consumer app against every change.
+- **Release and project policies:** [versioning and deprecation](docs/versioning.md) (what alpha, beta and 1.0
+  promise), `SECURITY.md` (private reporting through GitHub security advisories), `CODE_OF_CONDUCT.md`, issue and pull
+  request templates, Renovate for dependency updates (holding the Kotlin 2.2 floor), and KDoc `@sample`s for
+  `Passkeys`, `PasskeyResult` and `FakePasskeys`. Releases now wait until every artifact resolves from Maven Central
+  and publish the API reference to GitHub Pages, one folder per version.
 - **Docs: a short README and pages that start from your situation.** The README is now one screen with a quickstart;
   everything it held moved to `docs/` without loss (`docs/README.md` lists every page). New: a
   [quickstart](docs/quickstart.md) for your own server, guides on passkeys as an extra sign-in, what to show users,

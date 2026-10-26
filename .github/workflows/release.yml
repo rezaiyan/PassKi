@@ -1,18 +1,29 @@
 name: Release
 
-# Publishes the libraries (passki, passki-compose, passki-test, passki-demo) and the Gradle plugin to Maven Central.
+# Publishes the libraries (passki, passki-compose, passki-test, passki-demo), the BOM (passki-bom) and the Gradle plugin
+# to Maven Central, waits until they resolve from repo1.maven.org, and publishes the API reference to GitHub Pages.
 #
 # - Push a tag v<VERSION_NAME> (e.g. v0.1.0-alpha02): builds, signs, checks the signatures, then uploads two deployments
 #   (libraries, Gradle plugin) to the Central Portal and releases each one as soon as Central has validated it. There
 #   is no manual Publish step: pushing the tag is the release, and a Maven Central release can't be taken back.
 #   Libraries go first; if the plugin then fails validation, the libraries are already out and the fix is a new version.
-# - "Run workflow" by hand: a dry run. Same build, signing and signature check, but nothing leaves the runner.
+# - "Run workflow" by hand: a dry run. Same build, signing and signature check, but nothing leaves the runner. To
+#   check an already-released version instead, give its number as "verify_version": only verify-published runs.
 #
 # Runs on macOS: only a Mac can build the iOS klibs, and Central needs every target in one release.
 on:
   push:
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      verify_version:
+        description: Only check that this released version resolves from Maven Central (e.g. 0.1.0-alpha04)
+        required: false
+        default: ''
+      verify_minutes:
+        description: How long to wait for Maven Central, in minutes
+        required: false
+        default: '75'
 
 concurrency:
   group: release-${{ github.ref }}
@@ -34,6 +45,7 @@ env:
 jobs:
   publish:
     name: Publish to Maven Central
+    if: inputs.verify_version == ''
     runs-on: macos-26
     timeout-minutes: 90
     steps:
@@ -79,8 +91,16 @@ jobs:
       # Signed artifacts land in Maven Local first, so the next step can check them before anything is uploaded.
       - name: Build and sign into Maven Local
         run: |
-          ./gradlew :passki:publishToMavenLocal :passki-compose:publishToMavenLocal :passki-test:publishToMavenLocal :passki-demo:publishToMavenLocal
+          ./gradlew :passki:publishToMavenLocal :passki-compose:publishToMavenLocal :passki-test:publishToMavenLocal :passki-demo:publishToMavenLocal :passki-bom:publishToMavenLocal
           ./gradlew -p passki-gradle-plugin publishToMavenLocal
+
+      # On macOS so the reference includes the iOS source sets; the pages job publishes it.
+      - name: API reference
+        run: ./gradlew dokkaGenerate
+      - uses: actions/upload-artifact@v7
+        with:
+          name: api-reference
+          path: build/dokka/html
 
       - name: Published classes load on Java 11 (libraries) and Java 17 (Gradle plugin)
         run: python3 ci/check-jvm-bytecode.py
@@ -106,13 +126,60 @@ jobs:
       - name: Upload to the Central Portal and release
         if: github.ref_type == 'tag'
         run: |
-          ./gradlew --no-configuration-cache :passki:publishAndReleaseToMavenCentral :passki-compose:publishAndReleaseToMavenCentral :passki-test:publishAndReleaseToMavenCentral :passki-demo:publishAndReleaseToMavenCentral
+          ./gradlew --no-configuration-cache :passki:publishAndReleaseToMavenCentral :passki-compose:publishAndReleaseToMavenCentral :passki-test:publishAndReleaseToMavenCentral :passki-demo:publishAndReleaseToMavenCentral :passki-bom:publishAndReleaseToMavenCentral
           ./gradlew --no-configuration-cache -p passki-gradle-plugin publishAndReleaseToMavenCentral
 
       - name: Next step
         run: |
           if [ "$GITHUB_REF_TYPE" = tag ]; then
-            echo "Released to Maven Central. It can take a while to show on repo1.maven.org; deployments: https://central.sonatype.com/publishing/deployments" >> "$GITHUB_STEP_SUMMARY"
+            echo "Uploaded and released to Maven Central; verify-published waits until every artifact resolves." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Dry run passed: everything builds and is signed with $SIGNING_KEY_ID. Nothing was uploaded." >> "$GITHUB_STEP_SUMMARY"
           fi
+
+  # Separate from publish so the macOS runner isn't held while Central syncs (often 10-30 minutes).
+  verify-published:
+    name: Every artifact resolves from Maven Central
+    needs: publish
+    if: always() && (github.ref_type == 'tag' && needs.publish.result == 'success' || inputs.verify_version != '')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - name: Wait for repo1.maven.org
+        run: |
+          version="${{ inputs.verify_version }}"
+          [ -n "$version" ] || version=$(sed -n 's/^VERSION_NAME=//p' gradle.properties)
+          python3 ci/published-artifacts.py --verify "$version" --timeout-minutes "${{ inputs.verify_minutes || '75' }}"
+
+  # One folder per version on the gh-pages branch, plus latest/: https://rezaiyan.github.io/PassKi/
+  api-reference:
+    name: Publish the API reference
+    needs: [publish, verify-published]
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v7
+        with:
+          name: api-reference
+          path: api-reference
+      - name: Write the version to gh-pages
+        run: |
+          version=$(sed -n 's/^VERSION_NAME=//p' gradle.properties)
+          git fetch origin gh-pages:gh-pages || true
+          if git show-ref --verify --quiet refs/heads/gh-pages; then
+            git worktree add pages gh-pages
+          else
+            git worktree add --orphan -b gh-pages pages
+          fi
+          python3 ci/api-reference-pages.py --version "$version" --html api-reference --pages pages
+          cd pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "API reference $version"
+          git push origin gh-pages
+          echo "API reference: https://rezaiyan.github.io/PassKi/$version/" >> "$GITHUB_STEP_SUMMARY"

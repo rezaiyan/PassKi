@@ -1,0 +1,61 @@
+name: Bug report
+description: Something in PassKi doesn't work as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Setup problems are often found by `./gradlew passkiCheck` or `PasskeyDoctor`, and
+        [Troubleshooting](https://github.com/rezaiyan/PassKi/blob/main/docs/guides/troubleshooting.md) covers the
+        common ones. **Security issues:** please report them privately instead (Security → Report a vulnerability).
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+      placeholder: "signIn fails with Misconfigured (AND-03) on a Play build, although debug builds work."
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: PassKi version
+      placeholder: 0.1.0-alpha04
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      multiple: true
+      options: [Android, iOS, Web (js), Web (wasmJs), JVM, Gradle plugin, passki-compose, passki-test]
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: OS version and device
+      description: For an emulator or simulator, the system image (for example `android-36/google_apis_playstore`, Play services version). For the web, the browser and version.
+      placeholder: "Pixel 8, Android 16, Google Password Manager"
+    validations:
+      required: true
+  - type: input
+    id: check
+    attributes:
+      label: Error and check ID, if any
+      placeholder: "PasskeyError.Misconfigured, checkId AND-03"
+  - type: textarea
+    id: doctor
+    attributes:
+      label: PasskeyDoctor report or passkiCheck output
+      description: "`println(PasskeyDoctor.run(\"your.domain\"))` in a debug build, or the output of `./gradlew passkiCheck`. Neither contains secrets."
+      render: text
+  - type: textarea
+    id: log
+    attributes:
+      label: PassKi log
+      description: "With `PassKi.logLevel = PasskiLogLevel.Debug`, the `PassKi` log lines while reproducing. PassKi never logs challenges, user handles or JSON."
+      render: text
+  - type: textarea
+    id: repro
+    attributes:
+      label: Code or steps to reproduce

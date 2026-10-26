@@ -4,6 +4,8 @@ package com.alirezaiyan.passki
  * Outcome of a passkey operation: either [Success] with a value or [Failure] with a typed [PasskeyError].
  *
  * Closed: it is always one of these two; a `when` over it needs no `else` branch.
+ *
+ * @sample com.alirezaiyan.passki.samples.foldIntoYourOwnType
  */
 public sealed interface PasskeyResult<out T> {
     /** The operation succeeded; [value] is the result. */

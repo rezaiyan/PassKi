@@ -44,6 +44,11 @@ kotlin {
             jvmTarget = JvmTarget.JVM_11
         }
         withHostTest {}
+        // Rules apps' R8 builds need for PassKi; see the file for why each one exists.
+        optimization {
+            consumerKeepRules.publish = true
+            consumerKeepRules.files.add(project.file("consumer-rules.pro"))
+        }
     }
 
     listOf(
@@ -158,4 +163,6 @@ dokka {
             suppress.set(true)
         }
     }
+    // Samples compile with the tests and are linked from KDoc with @sample. Dokka needs them on one source set.
+    dokkaSourceSets.named("commonMain") { samples.from("src/commonTest/kotlin/com/alirezaiyan/passki/samples") }
 }

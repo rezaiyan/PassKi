@@ -117,4 +117,6 @@ dokka {
             suppress.set(true)
         }
     }
+    // Samples compile with the tests and are linked from KDoc with @sample. Dokka needs them on one source set.
+    dokkaSourceSets.named("commonMain") { samples.from("src/commonTest/kotlin/com/alirezaiyan/passki/test/samples") }
 }

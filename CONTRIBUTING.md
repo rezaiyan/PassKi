@@ -75,9 +75,6 @@ published artifact and the current version. When you change an example, run it l
 
 The plugin's TestKit tests must run, not skip: a skipped functional test hides a broken plugin.
 
-CI can't tap through a passkey sheet or Face ID. Before a release, run the iOS steps in
-[`ci/manual-checks-ios.md`](ci/manual-checks-ios.md).
-
 The consumer apps fail when a Kotlin or dependency upgrade would lock out apps on older toolchains. Run them locally
 with the commands in [`ci/consumers/README.md`](ci/consumers/README.md).
 
@@ -87,15 +84,42 @@ with the commands in [`ci/consumers/README.md`](ci/consumers/README.md).
 - **Public API changes:** run `./gradlew updateLegacyAbi` and commit the updated files in `*/api/`.
   - New public declarations need KDoc: Dokka should report no undocumented declarations.
   - Constructors of result types are `@InternalPasskiApi`, so fields can be added later.
-  - New enum entries and sealed subtypes are allowed in minor releases.
+  - New enum entries and sealed subtypes are allowed in minor releases only for types labelled "Open:";
+    `ci/check-open-types.py` checks every enum and sealed type has an "Open:" or "Closed:" label.
+  - Follow [the versioning policy](docs/versioning.md): every breaking change gets a CHANGELOG entry marked
+    **BREAKING** with a "Migrating from" block (before and after code); from the first beta, deprecate with
+    `@Deprecated(replaceWith = ReplaceWith(...))` first whenever the signature allows it.
+  - The main entry points (`Passkeys`, `PasskeyResult`, `FakePasskeys`) link a compiled sample with KDoc `@sample`.
+    Samples live in `src/commonTest/kotlin/.../samples/`, so they compile with the tests; add or update one when an
+    entry point's usage changes.
 - **Logging:** every public operation logs through `PasskiLog` (`internal/PasskiLog.kt`), never `println` or a
   platform logger directly. A log line must not contain a challenge, user handle, options or response JSON, a
   password, PRF output or large-blob data: show credential IDs with `PasskiLog.shortId` and JSON with
   `PasskiLog.lengthOf`. `PasskiLogRedactionTest` (passki-test) checks a full debug trace; extend it when you add a log
   line that prints new data.
 - **Platform behaviour** (sheets, autofill, signals, PRF) can only be checked on a device or emulator. Record what you
-  verified in the pull request: OS version and credential provider. The sample's autorun flag (see the README) runs
-  the UI-free steps unattended.
+  verified in the pull request: OS version and credential provider. The sample's autorun flag
+  ([docs/try-it.md](docs/try-it.md#whats-in-the-sample)) runs the UI-free steps unattended.
+
+## Before a release
+
+CI can't tap through a passkey sheet or Face ID, or catch what R8 only breaks at run time. Before tagging:
+
+1. Run the iOS steps in [`ci/manual-checks-ios.md`](ci/manual-checks-ios.md).
+2. Run the minified Android consumer once on a device or emulator, and read its log:
+
+   ```sh
+   ./gradlew -p ci/consumers/android installRelease
+   adb shell am start -n com.example.consumer/.MainActivity
+   adb logcat -s PassKi System.out
+   ```
+
+   The `PasskeyDoctor` report must print, the `register` call must reach the sheet, and failures must be logged with
+   readable names (`Cancelled`, `CreateCredentialCancellationException`), not R8's short ones. If something breaks,
+   add a rule to `passki/consumer-rules.pro` with a comment saying what needs it.
+3. Bump `VERSION_NAME`, give the CHANGELOG section its date, tag `v<version>` and push the tag. The release workflow
+   publishes, then waits until `python3 ci/published-artifacts.py --verify` finds every artifact on Maven Central,
+   then publishes the API reference to GitHub Pages.
 
 ## Secrets
 

@@ -10,7 +10,7 @@
   <img alt="Android 9+" src="https://img.shields.io/badge/Android-9%2B-3DDC84?logo=android&logoColor=white">
   <img alt="iOS 16+" src="https://img.shields.io/badge/iOS-16%2B-000000?logo=apple&logoColor=white">
   <img alt="Web" src="https://img.shields.io/badge/Web-js%20%7C%20wasm-F7DF1E">
-  <img alt="Version" src="https://img.shields.io/badge/version-0.1.0--alpha04-orange">
+  <a href="https://central.sonatype.com/artifact/com.alirezaiyan.passki/passki"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.alirezaiyan.passki/passki?label=Maven%20Central&color=orange"></a>
   <img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-blue">
 </p>
 
@@ -51,8 +51,11 @@ passkeys.signIn(api.authenticationOptions())
 ## Install
 
 ```kotlin
-commonMain.dependencies { implementation("com.alirezaiyan.passki:passki:0.1.0-alpha04") }
-commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha04") }
+commonMain.dependencies {
+    implementation(project.dependencies.platform("com.alirezaiyan.passki:passki-bom:0.1.0-alpha04"))
+    implementation("com.alirezaiyan.passki:passki") // the BOM keeps every PassKi library on one version
+}
+commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test") }
 ```
 
 Android needs Kotlin 2.1+ and runs passkeys on Android 9+; iOS 16+ and the web need Kotlin 2.2+.
@@ -96,7 +99,8 @@ Step by step, per platform: [Quickstart](docs/quickstart.md). Just want to see i
 | [Security model](docs/security-model.md) | What PassKi does and doesn't do, and what your server must check |
 | [All docs](docs/README.md) | Compose, autofill, PRF and largeBlob, testing, logging, setup tooling, the check catalog |
 
-The API reference is generated with `./gradlew dokkaGenerate`. Changes in each release: [CHANGELOG](CHANGELOG.md).
+API reference: [rezaiyan.github.io/PassKi](https://rezaiyan.github.io/PassKi/) (one folder per version). Changes in
+each release: [CHANGELOG](CHANGELOG.md). What alpha, beta and 1.0 promise: [Versioning](docs/versioning.md).
 
 ## Contributing
 

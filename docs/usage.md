@@ -1,6 +1,7 @@
 # Usage
 
-Every PassKi call, with error handling. For a first passkey from scratch, start with the [quickstart](quickstart.md).
+Every PassKi call, with error handling. The generated API reference is at
+[rezaiyan.github.io/PassKi](https://rezaiyan.github.io/PassKi/). For a first passkey from scratch, start with the [quickstart](quickstart.md).
 
 ## Install
 
@@ -8,12 +9,16 @@ PassKi is on Maven Central:
 
 ```kotlin
 commonMain.dependencies {
-    implementation("com.alirezaiyan.passki:passki:0.1.0-alpha04")
-    implementation("com.alirezaiyan.passki:passki-compose:0.1.0-alpha04") // optional: Compose Multiplatform UI
-    implementation("com.alirezaiyan.passki:passki-demo:0.1.0-alpha04")    // optional: demo server client
+    implementation(project.dependencies.platform("com.alirezaiyan.passki:passki-bom:0.1.0-alpha04"))
+    implementation("com.alirezaiyan.passki:passki")
+    implementation("com.alirezaiyan.passki:passki-compose") // optional: Compose Multiplatform UI
+    implementation("com.alirezaiyan.passki:passki-demo")    // optional: demo server client
 }
-commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test:0.1.0-alpha04") }
+commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test") }
 ```
+
+`passki-bom` keeps the four libraries on the same version, so upgrading means changing one number. Without it, give
+each library the same version: `implementation("com.alirezaiyan.passki:passki:0.1.0-alpha04")`.
 
 The Gradle plugin is on Maven Central too, not the Gradle Plugin Portal, so `pluginManagement { repositories }` in
 `settings.gradle.kts` needs `mavenCentral()`. The Kotlin Multiplatform template already has it.

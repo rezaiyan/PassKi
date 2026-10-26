@@ -23,6 +23,8 @@ package com.alirezaiyan.passki
  * Implementing this interface is supported (e.g. for fakes; prefer passki-test's FakePasskeys).
  * New members will only ever be added with default implementations, so implementations stay
  * source- and binary-compatible.
+ *
+ * @sample com.alirezaiyan.passki.samples.registerAndSignIn
  */
 public interface Passkeys {
     /**

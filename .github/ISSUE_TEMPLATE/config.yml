@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/rezaiyan/PassKi/security/advisories/new
+    about: Please report security issues privately, not as an issue.
+  - name: Troubleshooting guide
+    url: https://github.com/rezaiyan/PassKi/blob/main/docs/guides/troubleshooting.md
+    about: Symptom-first help for AND-03, IOS-02, Play builds and the web.

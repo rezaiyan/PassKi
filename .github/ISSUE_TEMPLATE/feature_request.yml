@@ -1,0 +1,26 @@
+name: Feature request
+description: Something PassKi should do or explain better
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The situation in your app, not the API you have in mind. "Users who signed up with Apple see a relay address in the passkey sheet" helps more than "add a parameter".
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: How do you do it today?
+      description: Your workaround, if any, and what's hard about it.
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help?
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platforms
+      multiple: true
+      options: [Android, iOS, Web, JVM, Gradle plugin, passki-compose, passki-test, Docs]

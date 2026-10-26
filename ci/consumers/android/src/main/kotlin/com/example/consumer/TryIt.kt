@@ -4,7 +4,7 @@ import com.alirezaiyan.passki.Passkeys
 import com.alirezaiyan.passki.demo.PasskiDemoServer
 import com.alirezaiyan.passki.onSuccess
 
-/** The README's "try it in your app" code, verbatim. */
+/** The "Try it in your app" code from docs/try-it.md, verbatim. */
 suspend fun tryIt(passkeys: Passkeys = Passkeys()) {
     val demo = PasskiDemoServer()
     passkeys.register(demo.registrationOptions("alice"))

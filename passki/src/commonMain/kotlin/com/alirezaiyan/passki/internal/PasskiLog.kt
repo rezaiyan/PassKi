@@ -101,7 +101,7 @@ public object PasskiLog {
     public fun platformError(error: Throwable, mapped: PasskeyError) {
         log(PasskiLogLevel.Debug) {
             "platform error ${error::class.simpleName}: ${error.message?.withoutJsonInput()} -> " +
-                mapped::class.simpleName
+                typeName(mapped)
         }
     }
 
@@ -144,12 +144,24 @@ public object PasskiLog {
     }
 
     private fun describe(error: PasskeyError): String = buildString {
-        append(error::class.simpleName)
+        append(typeName(error))
         error.checkId?.let { append(" [").append(it).append(']') }
         append(": ").append(error.message)
         (error as? PasskeyError.Unknown)?.platformCode?.let { append(" (platform code ").append(it).append(')') }
         error.fixHint?.let { append(" Fix: ").append(it) }
         error.docsUrl?.let { append(" Docs: ").append(it) }
+    }
+
+    // Not ::class.simpleName: R8 renames PassKi's classes in minified app builds, and the log must still say "Cancelled".
+    private fun typeName(error: PasskeyError): String = when (error) {
+        PasskeyError.Cancelled -> "Cancelled"
+        PasskeyError.NoCredentials -> "NoCredentials"
+        PasskeyError.AlreadyRegistered -> "AlreadyRegistered"
+        PasskeyError.Interrupted -> "Interrupted"
+        is PasskeyError.NotSupported -> "NotSupported"
+        is PasskeyError.InvalidOptions -> "InvalidOptions"
+        is PasskeyError.Misconfigured -> "Misconfigured"
+        is PasskeyError.Unknown -> "Unknown"
     }
 
     private fun describe(registration: PasskeyRegistration): String =

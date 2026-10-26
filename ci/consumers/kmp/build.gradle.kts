@@ -7,13 +7,15 @@ kotlin {
     jvm()
     iosSimulatorArm64 { binaries.framework { baseName = "Consumer" } }
     sourceSets {
+        // Versions come from the BOM, as the README's Install section shows.
         commonMain.dependencies {
-            implementation("com.alirezaiyan.passki:passki:$passkiVersion")
-            implementation("com.alirezaiyan.passki:passki-demo:$passkiVersion")
+            implementation(project.dependencies.platform("com.alirezaiyan.passki:passki-bom:$passkiVersion"))
+            implementation("com.alirezaiyan.passki:passki")
+            implementation("com.alirezaiyan.passki:passki-demo")
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
-            implementation("com.alirezaiyan.passki:passki-test:$passkiVersion")
+            implementation("com.alirezaiyan.passki:passki-test")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
         }
     }

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "description": "Weekly, grouped dependency updates. Anything that would raise the toolchain floor apps need (Kotlin 2.2, see docs/versioning.md) is held; ci/consumers builds against every change still guard it.",
+  "schedule": ["before 6am on monday"],
+  "timezone": "Europe/Vienna",
+  "prConcurrentLimit": 5,
+  "labels": ["dependencies"],
+  "ignorePaths": [
+    "ci/consumers/**",
+    "ci/doc-snippets/**"
+  ],
+  "packageRules": [
+    {
+      "description": "Kotlin and its plugins: PassKi's iOS, JS and Wasm libraries are only readable by apps on the Kotlin that built them, so Kotlin stays on 2.2 until the floor moves deliberately.",
+      "matchPackageNames": ["/^org\\.jetbrains\\.kotlin/", "org.jetbrains.kotlin.multiplatform", "org.jetbrains.kotlin.jvm", "org.jetbrains.kotlin.plugin.serialization", "org.jetbrains.kotlin.plugin.compose"],
+      "groupName": "Kotlin",
+      "allowedVersions": "<2.3.0"
+    },
+    {
+      "description": "Published dependencies whose newer releases are built with a newer Kotlin (README Install section): held at the versions built with Kotlin 2.2.",
+      "matchPackageNames": ["org.jetbrains.kotlinx:kotlinx-serialization-json"],
+      "allowedVersions": "<1.10.0"
+    },
+    {
+      "matchPackageNames": ["/^io\\.ktor:/"],
+      "groupName": "Ktor",
+      "allowedVersions": "<3.4.0"
+    },
+    {
+      "matchPackageNames": ["/^org\\.jetbrains\\.compose/", "org.jetbrains.compose"],
+      "groupName": "Compose Multiplatform",
+      "allowedVersions": "<1.11.0"
+    },
+    {
+      "matchPackageNames": ["/^org\\.jetbrains\\.kotlinx:kotlinx-coroutines/"],
+      "groupName": "kotlinx.coroutines",
+      "allowedVersions": "<1.12.0"
+    },
+    {
+      "description": "passki-test depends on cryptography-kotlin; held with the other published KMP dependencies.",
+      "matchPackageNames": ["/^dev\\.whyoleg\\.cryptography:/"],
+      "groupName": "cryptography-kotlin",
+      "allowedVersions": "<0.6.0"
+    },
+    {
+      "matchPackageNames": ["/^androidx\\./"],
+      "groupName": "AndroidX"
+    },
+    {
+      "description": "Build-only tools: they don't reach apps, so they update freely.",
+      "matchPackageNames": ["/^com\\.android\\./", "/^org\\.jetbrains\\.dokka/", "/^com\\.vanniktech/", "org.gradle.toolchains.foojay-resolver-convention"],
+      "groupName": "Build tools"
+    },
+    {
+      "matchPackageNames": ["junit:junit", "/^com\\.webauthn4j:/", "/^com\\.yubico:/"],
+      "groupName": "Test tooling"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions"
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "passki-web (minor and patch)"
+    }
+  ]
+}
