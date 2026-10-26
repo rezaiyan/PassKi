@@ -31,23 +31,38 @@
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/media/how-it-works-dark.svg">
-    <img src="docs/media/how-it-works-light.svg" width="880" alt="How a passkey sign-in works: 1. your server creates options, 2. PassKi shows the native passkey sheet, 3. the user confirms with face, fingerprint or screen lock, 4. your server verifies the response and signs the user in">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/media/journey-dark.svg">
+    <img src="docs/media/journey-light.svg" width="880" alt="The user's journey: 1. they sign in as today with a password, Google or Apple; 2. signed in, they add a passkey in Settings and confirm with their fingerprint; 3. next time they tap Sign in with a passkey and confirm, and your server verifies it">
   </picture>
 </p>
 
-Your server creates the options and verifies the result. PassKi does the part in between, from `commonMain`, on
-Android, iOS and the web:
+People keep signing in the way they do today. Once signed in, they add a passkey, and next time one tap signs them
+in. For each passkey step, your server creates the options and verifies the result; PassKi shows the device's sheet in
+between, from `commonMain`:
 
 ```kotlin
 val passkeys = Passkeys() // no Activity, no UIWindow
 
-passkeys.signIn(api.authenticationOptions())  // steps 1-3: your server's options, the sheet
-    .onSuccess { api.finishSignIn(it.json) }  // step 4: your server verifies the response
+// 2. Signed in, in Settings: add a passkey
+passkeys.register(api.registrationOptions())
+    .onSuccess { api.finishRegistration(it.json) } // your server stores the new passkey
 
-passkeys.register(api.registrationOptions())  // creating a passkey: the same four steps
-    .onSuccess { api.finishRegistration(it.json) }
+// 3. Next time, on the sign-in screen
+passkeys.signIn(api.authenticationOptions())
+    .onSuccess { api.finishSignIn(it.json) }       // your server verifies it: the user is signed in
 ```
+
+The whole flow, with Settings, deleting and renaming: [Passkeys as an extra sign-in](docs/guides/extra-sign-in.md).
+
+<details>
+<summary><b>What happens in each passkey step</b></summary>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/how-it-works-dark.svg">
+  <img src="docs/media/how-it-works-light.svg" width="880" alt="Each passkey step: 1. your server creates options, 2. PassKi shows the native sheet, 3. the user confirms with face, fingerprint or screen lock, 4. your server verifies the response">
+</picture>
+
+</details>
 
 <details>
 <summary><b>What PassKi does, and what it leaves to you</b></summary>
@@ -72,9 +87,8 @@ PassKi logs it, so even a release build tells you:
 E PassKi  : signIn failed: Misconfigured [AND-03]: … Fix: add the SHA-256 fingerprint … Docs: …/checks/AND-03
 ```
 
-When `error.isUserCancellation` is true, the user closed the sheet: show nothing.
-[What to show users](docs/guides/what-to-show-users.md) · [Troubleshooting](docs/guides/troubleshooting.md) ·
-[Logging](docs/logging.md)
+When `error.isUserCancellation` is true, the user closed the sheet: show nothing. [What to show
+users](docs/guides/what-to-show-users.md) · [Troubleshooting](docs/guides/troubleshooting.md) · [Logging](docs/logging.md)
 
 </details>
 
@@ -91,11 +105,12 @@ The device only offers a passkey for `example.com` if `example.com` lists your a
 from origins it knows. Your domain is the RP ID, and it [can't change later](docs/guides/choosing-rp-id.md).
 
 <details>
-<summary><b>With the Gradle plugin</b></summary>
+<summary><b>Set it up with the Gradle plugin, or by hand</b></summary>
+
+**With the plugin**, in your Android app module:
 
 ```kotlin
-plugins { id("com.alirezaiyan.passki") version "0.1.0-alpha04" } // in your Android app module
-
+plugins { id("com.alirezaiyan.passki") version "0.1.0-alpha04" }
 passki { rpId = "example.com" }
 ```
 
@@ -103,12 +118,7 @@ passki { rpId = "example.com" }
 origins. Upload the files to `https://example.com/.well-known/`, then `./gradlew passkiCheck` checks the live domain,
 your Xcode project and your server (also in CI). [Setup tooling](docs/setup.md)
 
-</details>
-
-<details>
-<summary><b>By hand</b></summary>
-
-Serve `/.well-known/assetlinks.json` and `/.well-known/apple-app-site-association`, add `webcredentials:example.com`
+**By hand:** serve `/.well-known/assetlinks.json` and `/.well-known/apple-app-site-association`, add `webcredentials:example.com`
 to the iOS entitlements, and allow `https://example.com` plus one `android:apk-key-hash:` origin per signing key on
 your server. [Checklist](docs/setup.md#server-setup-by-hand)
 
@@ -127,23 +137,13 @@ commonTest.dependencies { implementation("com.alirezaiyan.passki:passki-test") }
 ```
 
 Android needs Kotlin 2.1+ and runs passkeys on Android 9+; iOS 16+ and the web need Kotlin 2.2+
-([requirements](docs/usage.md#install)). Then:
+([requirements](docs/usage.md#install)). Then follow the **[Quickstart](docs/quickstart.md)** to a first verified
+passkey with your own server, or **[try it](docs/try-it.md)** against the hosted demo server, with nothing to set up.
 
-- **[Quickstart](docs/quickstart.md):** your app and your own server to a first verified passkey, step by step.
-- **[Try it](docs/try-it.md):** see it work first against the hosted demo server, with nothing to set up.
-
-## Next
-
-| Page | What's in it |
-|---|---|
-| [Guides](docs/README.md#guides) | Passkeys as an extra sign-in, what to show users, RP ID, server API and verification, upgrades |
-| [Usage](docs/usage.md) | Every call, results and errors, signals |
-| [Platforms](docs/platforms.md) | What each OS version supports, and how the platforms differ |
-| [Troubleshooting](docs/guides/troubleshooting.md) | Symptom first: AND-03, Play builds, IOS-02, the web |
-| [Security model](docs/security-model.md) | What PassKi does and doesn't do, and what your server must check |
-| [All docs](docs/README.md) | Concepts, Compose, autofill, PRF and largeBlob, testing, logging, setup tooling, check catalog |
-
-[API reference](https://rezaiyan.github.io/PassKi/) · [CHANGELOG](CHANGELOG.md) · [Versioning](docs/versioning.md) (what alpha, beta and 1.0 promise)
+**More:** [Guides](docs/README.md#guides) · [Usage](docs/usage.md) · [Platforms](docs/platforms.md) ·
+[Troubleshooting](docs/guides/troubleshooting.md) · [Security model](docs/security-model.md) ·
+[All docs](docs/README.md) · [API reference](https://rezaiyan.github.io/PassKi/) · [CHANGELOG](CHANGELOG.md) ·
+[Versioning](docs/versioning.md)
 
 ## License
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Draws the README's diagrams as SVG, in a light and a dark version (the README picks one with <picture>).
 
-Usage: python3 docs/media/diagrams.py   (writes docs/media/how-it-works-*.svg and docs/media/setup-*.svg)
+Usage: python3 docs/media/diagrams.py   (writes docs/media/{journey,how-it-works,setup}-{light,dark}.svg)
 """
 import os
 from html import escape
@@ -14,9 +14,11 @@ STEP = 2  # seconds each step of the sign-in diagram stays highlighted
 
 THEMES = {
     "light": dict(card="#f6f8fa", stroke="#d0d7de", text="#1f2328", muted="#59636e", arrow="#8c959f",
-                  server="#1a7f37", passki="#7f52ff", os="#0969da", domain="#bc4c00", code="#eaeef2"),
+                  server="#1a7f37", passki="#7f52ff", os="#0969da", domain="#bc4c00", code="#eaeef2",
+                  screen="#ffffff", field="#eaeef2", sheet="#ffffff", button="#1f2328", on_button="#ffffff"),
     "dark": dict(card="#161b22", stroke="#30363d", text="#e6edf3", muted="#9198a1", arrow="#6e7681",
-                 server="#3fb950", passki="#a78bfa", os="#4493f8", domain="#f0883e", code="#21262d"),
+                 server="#3fb950", passki="#a78bfa", os="#4493f8", domain="#f0883e", code="#21262d",
+                 screen="#0d1117", field="#21262d", sheet="#1c2128", button="#e6edf3", on_button="#0d1117"),
 }
 
 
@@ -97,6 +99,109 @@ def how_it_works(t):
                style)
 
 
+PHASE = 4  # seconds each stage of the journey diagram stays highlighted
+
+
+def journey(t):
+    """The user's journey: sign in as today, add a passkey, sign in with it next time. Phones show each stage."""
+    panel_w, gap, phone_w, phone_h, top = 284, 24, 140, 214, 78
+    width = 3 * panel_w + 2 * gap
+    body = []
+
+    def rect(x, y, w, h, fill, rx=4, extra=""):
+        return f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{rx}" fill="{fill}" {extra}/>'
+
+    def button(x, y, w, label, fill, color, outline=None):
+        stroke = f'stroke="{outline}"' if outline else ""
+        return rect(x, y, w, 18, fill, 9, stroke) + text(x + w / 2, y + 12.5, label, 8.5, color, "600", anchor="middle")
+
+    def fingerprint(cx, cy, color):
+        arcs = "".join(f'<path d="M{cx - r} {cy + 2} a{r} {r} 0 0 1 {2 * r} 0" fill="none" stroke="{color}" '
+                       f'stroke-width="1.6" stroke-linecap="round"/>' for r in (4, 8, 12))
+        return f'<circle cx="{cx}" cy="{cy}" r="17" fill="{color}" opacity="0.12"/>' + arcs
+
+    def key(x, y, color):
+        return (f'<circle cx="{x}" cy="{y}" r="4.5" fill="none" stroke="{color}" stroke-width="2"/>'
+                f'<path d="M{x + 4.5} {y} h9 v3 M{x + 10} {y} v3" fill="none" stroke="{color}" stroke-width="2" '
+                f'stroke-linecap="round"/>')
+
+    stages = [
+        ("server", "Sign in as today", ["Your existing login: password,", "Google or Apple. No passkey yet."],
+         "your current sign-in"),
+        ("passki", "Add a passkey", ["Signed in, in Settings. Your server", "stores the new passkey."],
+         "passkeys.register(options)"),
+        ("os", "Next time: one tap", ["The device offers the passkey,", "your server verifies it."],
+         "passkeys.signIn(options)"),
+    ]
+    # Timeline across the top, with a dot moving along it.
+    first, last = panel_w / 2, width - panel_w / 2
+    body.append(f'<line x1="{first}" y1="22" x2="{last}" y2="22" stroke="{t["stroke"]}" stroke-width="2"/>')
+    body.append(f'<circle class="traveller" cx="{first}" cy="22" r="4" fill="{t["passki"]}"/>')
+    for i, (kind, title, desc, code) in enumerate(stages):
+        x0 = i * (panel_w + gap)
+        cx = x0 + panel_w / 2
+        color = t[kind]
+        body.append(f'<circle cx="{cx}" cy="22" r="12" fill="{color}"/>')
+        body.append(text(cx, 26.5, str(i + 1), 12, "#ffffff", "700", anchor="middle"))
+        body.append(text(cx, 56, title, 15, t["text"], "600", anchor="middle"))
+        body.append(rect(x0, top - 8, panel_w, 348, t["card"], 14, f'stroke="{t["stroke"]}"'))
+        body.append(f'<rect class="stage" style="animation-delay:{i * PHASE}s" x="{x0}" y="{top - 8}" '
+                    f'width="{panel_w}" height="348" rx="14" fill="none" stroke="{color}" stroke-width="2"/>')
+        # The phone and its screen.
+        px, py = cx - phone_w / 2, top + 6
+        body.append(f'<clipPath id="screen{i}"><rect x="{px + 5}" y="{py + 5}" width="{phone_w - 10}" '
+                    f'height="{phone_h - 10}" rx="14"/></clipPath>')
+        body.append(rect(px, py, phone_w, phone_h, t["screen"], 19, f'stroke="{t["stroke"]}" stroke-width="2"'))
+        body.append(rect(cx - 16, py + 9, 32, 6, t["stroke"], 3))
+        sx, sw = px + 14, phone_w - 28
+        screen = []
+        if i == 0:
+            screen += [text(sx, py + 42, "Sign in", 12, t["text"], "700"),
+                       rect(sx, py + 54, sw, 16, t["field"]), rect(sx, py + 76, sw, 16, t["field"]),
+                       button(sx, py + 102, sw, "Sign in", t["button"], t["on_button"]),
+                       text(cx, py + 135, "or", 8, t["muted"], anchor="middle"),
+                       button(sx, py + 144, sw, "Continue with Google", t["screen"], t["text"], t["stroke"])]
+        elif i == 1:
+            screen += [text(sx, py + 42, "Settings", 12, t["text"], "700"),
+                       rect(sx, py + 54, sw, 14, t["field"]), rect(sx, py + 74, sw, 14, t["field"]),
+                       rect(sx, py + 94, sw, 16, t["passki"], 4, 'opacity="0.18"'),
+                       key(sx + 10, py + 102, t["passki"]),
+                       text(sx + 30, py + 105.5, "Add a passkey", 8.5, t["text"], "600")]
+            sheet = [rect(px + 5, py + 122, phone_w - 10, 100, t["sheet"], 14, f'stroke="{t["stroke"]}"'),
+                     text(cx, py + 141, "Save a passkey?", 9, t["text"], "700", anchor="middle"),
+                     fingerprint(cx, py + 164, t["os"]),
+                     button(sx + 8, py + 185, sw - 16, "Continue", t["os"], "#ffffff")]
+            screen.append(f'<g class="sheet" style="animation-delay:{i * PHASE}s">{"".join(sheet)}</g>')
+        else:
+            screen += [text(sx, py + 42, "Sign in", 12, t["text"], "700"),
+                       button(sx, py + 56, sw, "Sign in with a passkey", t["passki"], "#ffffff"),
+                       rect(sx, py + 84, sw, 16, t["field"]), rect(sx, py + 106, sw, 16, t["field"])]
+            sheet = [rect(px + 5, py + 122, phone_w - 10, 100, t["sheet"], 14, f'stroke="{t["stroke"]}"'),
+                     text(cx, py + 141, "Sign in as alice?", 9, t["text"], "700", anchor="middle"),
+                     fingerprint(cx, py + 164, t["os"]),
+                     button(sx + 8, py + 185, sw - 16, "Continue", t["os"], "#ffffff")]
+            screen.append(f'<g class="sheet" style="animation-delay:{i * PHASE}s">{"".join(sheet)}</g>')
+        body.append(f'<g clip-path="url(#screen{i})">{"".join(screen)}</g>')
+        # What happens, and the call.
+        body.append(lines(cx, top + 246, desc, 12.5, t["muted"], 18, anchor="middle"))
+        body.append(rect(x0 + 24, top + 290, panel_w - 48, 28, t["code"], 6))
+        body.append(text(cx, top + 308, code, 11.5, t["text"] if i else t["muted"], family=MONO, anchor="middle"))
+    loop = 3 * PHASE
+    style = (
+        f".stage{{opacity:0;animation:stage {loop}s ease-in-out infinite}}"
+        f"@keyframes stage{{0%{{opacity:0}}4%{{opacity:1}}30%{{opacity:1}}34%{{opacity:0}}100%{{opacity:0}}}}"
+        # Each sheet rises when its stage starts and stays up; it rests up when motion is off.
+        f".sheet{{animation:sheet {loop}s ease-out infinite backwards}}"
+        f"@keyframes sheet{{0%{{transform:translateY(106px)}}8%{{transform:translateY(0)}}100%{{transform:translateY(0)}}}}"
+        f".traveller{{animation:traveller {loop}s ease-in-out infinite}}"
+        f"@keyframes traveller{{0%,25%{{transform:translateX(0)}}33%,58%{{transform:translateX({panel_w + gap}px)}}"
+        f"66%,92%{{transform:translateX({2 * (panel_w + gap)}px)}}100%{{transform:translateX(0)}}}}"
+    )
+    return svg(width, top + 352, "".join(body), "The user's journey with PassKi: 1. they sign in as today, with a "
+               "password, Google or Apple; 2. signed in, they add a passkey in Settings (passkeys.register); "
+               "3. next time they sign in with one tap (passkeys.signIn), and your server verifies it.", style)
+
+
 def setup(t):
     width, height = 900, 300
 
@@ -135,7 +240,7 @@ def setup(t):
 
 
 def main():
-    for name, draw in (("how-it-works", how_it_works), ("setup", setup)):
+    for name, draw in (("journey", journey), ("how-it-works", how_it_works), ("setup", setup)):
         for theme, colors in THEMES.items():
             path = os.path.join(HERE, f"{name}-{theme}.svg")
             with open(path, "w", encoding="utf-8") as f:
