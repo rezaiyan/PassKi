@@ -21,25 +21,31 @@ PassKi sits between your app and the device's passkey system: Credential Manager
 iOS, `navigator.credentials` in the browser. Your server creates the options and checks the result. PassKi never talks
 to your server and stores nothing ([security model](security-model.md)).
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant App as Your app
-    participant Server as Your server
-    participant PassKi
-    participant OS as Credential Manager /<br/>AuthenticationServices
-    App->>Server: Request options
-    Server-->>App: WebAuthn options JSON
-    App->>PassKi: passkeys.register(json) / signIn(json)
-    PassKi->>OS: Native request
-    OS->>OS: Fingerprint, face or screen lock
-    OS-->>PassKi: Credential
-    PassKi-->>App: PasskeyResult (response json)
-    App->>Server: Verify response json
-```
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="media/journey-dark.svg">
+    <img src="media/journey-light.svg" width="880" alt="The user's journey: sign in as today, add a passkey in Settings, then sign in with one tap; underneath, the device keeps a private key and your server a public key">
+  </picture>
+</p>
+
+Each passkey step is the same round trip:
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="media/how-it-works-dark.svg">
+    <img src="media/how-it-works-light.svg" width="880" alt="Each passkey step: your server creates options, PassKi shows the native sheet, the user confirms, your server verifies the response">
+  </picture>
+</p>
 
 A passkey works only when three things trust each other: your app, a domain you own, and a server that checks each
-sign-in. PassKi handles the app side, and its setup tools help with the other two.
+sign-in. PassKi handles the app side, and its setup tools help with the other two ([setup](setup.md)):
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="media/setup-dark.svg">
+    <img src="media/setup-light.svg" width="880" alt="Your app, your domain and your server trust each other: the domain's well-known files list the app, the server uses the domain as its RP ID, and the server allows the app's origins">
+  </picture>
+</p>
 
 ## Words used here
 

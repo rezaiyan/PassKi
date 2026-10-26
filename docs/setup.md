@@ -6,13 +6,12 @@ the [quickstart](quickstart.md#4-link-your-app-and-your-domain).
 Most passkey problems are configuration: a missing fingerprint, a wrong Team ID, or a well-known file that redirects.
 PassKi checks for these in three places, and all three use the same [check IDs](checks/README.md):
 
-```mermaid
-flowchart LR
-    A["<b>passkiSetup</b><br/>generate files,<br/>wire entitlements"] --> B["<b>Upload</b><br/>2 files to<br/>/.well-known/"]
-    B --> C["<b>passkiCheck</b><br/>check the live domain<br/>(CI gate)"]
-    C --> D["<b>PasskeyDoctor</b><br/>check on a device<br/>(debug builds)"]
-    W["<b>Web verifier</b><br/>passki.alirezaiyan.com"] -.-> C
-```
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="media/setup-journey-dark.svg">
+    <img src="media/setup-journey-light.svg" width="880" alt="Setting up: generate the files with passkiSetup, publish them at /.well-known/ and allow the origins on your server, then check everything with passkiCheck and PasskeyDoctor">
+  </picture>
+</p>
 
 With the [Gradle plugin](#gradle-plugin) applied to your Android app module:
 

@@ -92,12 +92,12 @@ users](docs/guides/what-to-show-users.md) · [Troubleshooting](docs/guides/troub
 
 </details>
 
-## Setup: three things trust each other
+## Setup: your app, your domain and your server trust each other
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/media/setup-dark.svg">
-    <img src="docs/media/setup-light.svg" width="880" alt="Your app, your domain and your server trust each other: the domain's well-known files list the app, the server uses the domain as its RP ID, and the server allows the app's origins">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/media/setup-journey-dark.svg">
+    <img src="docs/media/setup-journey-light.svg" width="880" alt="Setting up, with what happens underneath. 1. Generate the files: you pick the RP ID once, passkiSetup reads your debug and release keys and the Xcode app ID and writes assetlinks.json, the apple-app-site-association file and the iOS entitlement; the Play App Signing key is added with extraFingerprints. 2. Publish them: your domain serves both at /.well-known/ with status 200, your server uses the same RP ID and allows the printed origins, and Google and Apple fetch and cache the files. 3. Check everything: passkiCheck fetches the live files, checks the Xcode entitlement and your server and fails CI when something is wrong; PasskeyDoctor runs the same checks on a device">
   </picture>
 </p>
 
