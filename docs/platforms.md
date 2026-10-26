@@ -1,7 +1,6 @@
 # Platforms
 
-What each OS supports, and how Android and iOS behave differently. The short version is in the
-[README](../README.md#platforms).
+What each OS supports, and how Android, iOS and the browser behave differently.
 
 | Platform | What works |
 |---|---|
@@ -74,6 +73,10 @@ newer, a duplicate always fails with `PasskeyError.AlreadyRegistered`.
 When `excludeCredentials` matches, Google Password Manager still shows its "create passkey" sheet. You get
 `PasskeyError.AlreadyRegistered` only after the person taps Continue.
 
+**On Android, clear the username field on sign-out.**
+With Gboard on Android 16, passkey suggestions show only while the field is empty; text left in it shows up as a word
+suggestion instead. [Details](autofill.md).
+
 **On Android, `upgrade()` and `signals` depend on the credential provider.**
 They can return `PasskeyError.NotSupported` even when `capabilities()` says they are available.
 
@@ -94,4 +97,4 @@ iOS leaves out the WebAuthn Level 3 `publicKey` and `publicKeyAlgorithm` fields.
 
 ---
 
-[← README](../README.md)
+[← Docs](README.md)

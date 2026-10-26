@@ -1,6 +1,60 @@
 # Compose
 
-`passki-compose` in detail. The basic example is in the [README](../README.md#compose).
+`passki-compose` turns passkey sign-in into a few lines of Compose Multiplatform code. It has the same targets as
+`passki` and exposes it as an `api` dependency.
+
+```kotlin
+commonMain.dependencies { implementation("com.alirezaiyan.passki:passki-compose:0.1.0-alpha04") }
+```
+
+<table>
+<tr>
+<td>
+
+```kotlin
+@Composable
+fun SignInScreen(api: MyApi) {
+    val scope = rememberCoroutineScope()
+    val passkeys = rememberPasskeys()
+    var username by remember { mutableStateOf("") }
+
+    // Offers passkeys as keyboard suggestions
+    // while the field is focused.
+    PasskeyUsernameField(
+        value = username,
+        onValueChange = { username = it },
+        requestOptions = { api.authenticationOptions() },
+        onSignedIn = { assertion ->
+            scope.launch { api.finishSignIn(assertion.json) }
+        },
+        passkeys = passkeys,
+    )
+
+    // Material 3 button: shows progress while running,
+    // double taps are safe.
+    val signIn = rememberPasskeySignIn(
+        requestOptions = { api.authenticationOptions() },
+        passkeys = passkeys,
+    )
+    PasskeySignInButton(
+        state = signIn,
+        onSignedIn = { assertion ->
+            scope.launch { api.finishSignIn(assertion.json) }
+        },
+        onError = { error -> showError(error.message) }, // never Cancelled
+    )
+}
+```
+
+</td>
+<td width="260">
+<img src="media/android-autofill.png" width="250" alt="PasskeyUsernameField on Android: saved passkeys appear as suggestion chips above the keyboard, under a Sign in with a passkey button">
+<p align="center"><sub><code>PasskeyUsernameField</code> and <code>PasskeySignInButton</code> in the sample app on Android 16: saved passkeys show up as suggestions above the keyboard.</sub></p>
+</td>
+</tr>
+</table>
+
+Autofill with your own text field: [Autofill](autofill.md).
 
 ## Your own sign-in UI
 
@@ -23,7 +77,7 @@ state.lastError?.let { Text(it.message) } // Cancelled is never stored
 
 `ImmediateOnly` here keeps a device with no passkey from showing the "another device" sheet or a QR code. Use it when
 passkeys are optional in your app, and turn `PasskeyError.NoCredentials` into an in-app message. Why, and when to keep
-`Modal`: [A "Sign in with a passkey" button](../README.md#a-sign-in-with-a-passkey-button).
+`Modal`: [A "Sign in with a passkey" button](usage.md#a-sign-in-with-a-passkey-button).
 
 - If `signIn()` is called while a sign-in is already running, it waits for that one instead of opening a second
   sheet. Double taps are safe.
@@ -65,4 +119,4 @@ Dismissing the suggestion is not an error and is never reported.
 
 ---
 
-[← README](../README.md)
+[← Docs](README.md)

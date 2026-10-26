@@ -43,4 +43,4 @@ flowchart LR
 
 ---
 
-[← README](../README.md)
+[← Docs](README.md)

@@ -1,7 +1,7 @@
 # Setup tooling
 
-The Gradle plugin, `PasskeyDoctor` and the web dashboard in detail. The three steps are in the
-[README](../README.md#setup).
+The Gradle plugin, `PasskeyDoctor`, the web dashboard and setting up by hand. For a first setup from scratch, follow
+the [quickstart](quickstart.md#4-link-your-app-and-your-domain).
 
 Most passkey problems are configuration: a missing fingerprint, a wrong Team ID, or a well-known file that redirects.
 PassKi checks for these in three places, and all three use the same [check IDs](checks/README.md):
@@ -20,6 +20,14 @@ With the [Gradle plugin](#gradle-plugin) applied to your Android app module:
 2. **Upload two files** from `build/passki/well-known/` to `https://<your domain>/.well-known/`. They must load with
    HTTP 200 and no redirect.
 3. **Check everything:** `./gradlew passkiCheck`
+
+`passkiSetup` never edits `project.pbxproj`, and you can run it again safely. It ends with a list of every file it
+created or changed, with a diff for your own files. `passkiCheck` writes an HTML report. This is the report for the
+sample app:
+
+<p align="center">
+  <img src="media/passki-check-report.png" width="760" alt="passkiCheck HTML report: 12 passed, 1 warning, 0 failed, 1 skipped, each with a check ID and a fix">
+</p>
 
 ## What passkiSetup does
 
@@ -223,7 +231,7 @@ Android app, your domain and your iOS app, turning each check green as it passes
 - **Generator:** enter your domain, packages, SHA-256 fingerprints, Team ID and bundle ID. You get both well-known
   files, the entitlements and `xcconfig` lines, and the list of origins your server must allow, as a zip.
 - **Check docs:** one page per check ID, the same pages as [`docs/checks/`](checks/README.md).
-- **Demo server:** a working relying party for trying PassKi (path B in the README). Challenges are real and can be
+- **Demo server:** a working relying party for trying PassKi ([Try it in your app](try-it.md#try-it-in-your-app)). Challenges are real and can be
   used once, and every response gets the server's verdict. Demo users are deleted after 24 hours.
   - To use it, your app must be registered with it. `passkiSetup` does that when your plugin block says
     `useDemoServer()`: it registers your Android package and signing keys, and your iOS `TEAM.bundle` app ID, for 7
@@ -240,8 +248,19 @@ download.
 
 ## Server setup by hand
 
-If you don't use the Gradle plugin, you need the same four pieces it would generate. The short checklist is in the
-[README](../README.md#d-ship-it-without-the-plugin); the details are here. Templates for both files are in
+If you don't use the Gradle plugin, you need the same four pieces it would generate:
+
+1. **Android:** serve `/.well-known/assetlinks.json` with `delegate_permission/common.get_login_creds` for your
+   package and the SHA-256 of each signing key: debug, upload and **Play App Signing** (from Play Console).
+2. **iOS:** serve `/.well-known/apple-app-site-association` with `webcredentials.apps: ["<TeamID>.<bundleId>"]`.
+   Apple's CDN caches it, so changes take a while to reach devices.
+3. **iOS:** add `webcredentials:<your domain>` to the app's associated domains, turn on Associated Domains for the App
+   ID, and **regenerate the App Store provisioning profile**. Debug builds work without the new profile; release
+   signing in CI fails.
+4. **Server:** RP ID `<your domain>`; allowed origins `https://<your domain>` plus one `android:apk-key-hash:<base64url
+   SHA-256>` per Android signing key.
+
+`PasskeyDoctor` checks the result from a debug build either way: see [PasskeyDoctor](#passkeydoctor). The details: Templates for both files are in
 [`docs/setup/well-known/`](setup/well-known/README.md).
 
 ### Android: `assetlinks.json` and the origin
@@ -298,4 +317,4 @@ plugin.
 
 ---
 
-[← README](../README.md)
+[← Docs](README.md)

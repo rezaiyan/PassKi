@@ -63,6 +63,13 @@ listed here.
   error type, which always joins an existing category.
 - **`PasskeyError.isUserCancellation`:** true for `Cancelled` and `Interrupted`, when no error should be shown.
 - **`capabilities()` KDoc says it is cheap,** so it can be called before every sign-in.
+- **Docs: a short README and pages that start from your situation.** The README is now one screen with a quickstart;
+  everything it held moved to `docs/` without loss (`docs/README.md` lists every page). New: a
+  [quickstart](docs/quickstart.md) for your own server, guides on passkeys as an extra sign-in, what to show users,
+  choosing your RP ID, user names, a recommended server API, verifying on the server (webauthn4j and
+  java-webauthn-server, compiled and run in CI), upgrading users and troubleshooting, plus a
+  [security model](docs/security-model.md) and `llms.txt` on passki.alirezaiyan.com. CI keeps the README under 150
+  lines, the error table complete and the "no network calls" claim true (`ci/check-network-use.py`).
 - **Logging: `PassKi.logLevel` and `PassKi.logHandler`.** By default (`PasskiLogLevel.Error`) PassKi logs every
   failure with a fix hint (`Misconfigured`, `InvalidOptions`) and every `Unknown`, once per failed call, with the
   check ID, fix and docs link: logcat tag `PassKi` on Android, `NSLog` on iOS, the browser console on the web,

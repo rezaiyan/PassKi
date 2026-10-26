@@ -46,7 +46,7 @@ fun setupProblems(checks: List<CheckRow>?): String? {
 
 /**
  * State and flows of the sample, shared by every screen. Each flow runs as a "step": its log entry is printed as a
- * `PASSKI_DEMO` line (device tests and the README rely on these) and recorded as an [Activity].
+ * `PASSKI_DEMO` line (device tests and docs/try-it.md rely on these) and recorded as an [Activity].
  *
  * The RP ID for signals and the doctor comes from the server's config; [appRpId] is the domain this app can use
  * passkeys for (its associated domain, or the page's host on the web), which SRV-01 compares with the server's.

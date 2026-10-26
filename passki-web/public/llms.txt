@@ -1,0 +1,59 @@
+# PassKi
+
+> Passkeys for Kotlin Multiplatform: one `Passkeys()` API for Android (Credential Manager), iOS (AuthenticationServices) and the web (navigator.credentials). Your server creates WebAuthn options and verifies responses; PassKi shows the native passkey sheet and returns typed `PasskeyResult`s with setup errors that name a check ID and a fix.
+
+Key facts: options JSON in, response JSON out; `Passkeys()` needs no Activity or UIWindow; errors are `PasskeyError` with `category`, `fixHint`, `checkId` and `docsUrl`; `FakePasskeys` (passki-test) produces responses real server libraries verify; RP IDs are bare domains and can't change later.
+
+## Docs
+
+- [Quickstart](https://github.com/rezaiyan/PassKi/blob/main/docs/quickstart.md): Your KMP app and your own server to a first verified passkey, on Android, iOS and the web
+- [Try it](https://github.com/rezaiyan/PassKi/blob/main/docs/try-it.md): The sample app, or your app against the hosted demo server
+- [Concepts](https://github.com/rezaiyan/PassKi/blob/main/docs/concepts.md): How a passkey ceremony works, and the terms (RP ID, user handle, well-known files, check ID)
+- [Usage](https://github.com/rezaiyan/PassKi/blob/main/docs/usage.md): Install, every call (register, signIn, signInOrPassword, upgrade, signals, capabilities), results and errors
+- [Platforms](https://github.com/rezaiyan/PassKi/blob/main/docs/platforms.md): What each OS version and browser supports, threads and cancellation, platform differences
+- [Compose](https://github.com/rezaiyan/PassKi/blob/main/docs/compose.md): PasskeySignInButton, PasskeyUsernameField and sign-in state
+- [Autofill](https://github.com/rezaiyan/PassKi/blob/main/docs/autofill.md): Passkeys as keyboard suggestions with your own text field
+- [PRF and largeBlob](https://github.com/rezaiyan/PassKi/blob/main/docs/extensions.md): PasskeyExtensions: encryption keys and data stored with a passkey
+- [Testing](https://github.com/rezaiyan/PassKi/blob/main/docs/testing.md): FakePasskeys: real signed responses for app and server tests
+- [Logging](https://github.com/rezaiyan/PassKi/blob/main/docs/logging.md): PassKi.logLevel, PassKi.logHandler, what is never logged
+- [Setup tooling](https://github.com/rezaiyan/PassKi/blob/main/docs/setup.md): Gradle plugin (passkiSetup, passkiCheck), PasskeyDoctor, setting up by hand
+- [Security model](https://github.com/rezaiyan/PassKi/blob/main/docs/security-model.md): PassKi never verifies or stores; what the server must check
+
+## Guides
+
+- [Passkeys as an extra sign-in](https://github.com/rezaiyan/PassKi/blob/main/docs/guides/extra-sign-in.md): Settings, the sign-in button, list, delete and relabel with signals
+- [What to show users](https://github.com/rezaiyan/PassKi/blob/main/docs/guides/what-to-show-users.md): One row per PasskeyError and PasskeyErrorCategory
+- [Choosing your RP ID](https://github.com/rezaiyan/PassKi/blob/main/docs/guides/choosing-rp-id.md): The permanent decision: apex or subdomain, web and apps, hosting
+- [Choosing user name and display name](https://github.com/rezaiyan/PassKi/blob/main/docs/guides/user-names.md): User handle rules, account labels, Hide My Email
+- [Recommended server API](https://github.com/rezaiyan/PassKi/blob/main/docs/guides/server-api.md): Endpoints, request and response shapes, status codes
+- [Verifying on the server](https://github.com/rezaiyan/PassKi/blob/main/docs/guides/verify-on-server.md): webauthn4j and java-webauthn-server examples with FakePasskeys tests
+- [Upgrading users](https://github.com/rezaiyan/PassKi/blob/main/docs/guides/upgrading-users.md): When upgrade() creates a passkey without a sheet
+- [Troubleshooting](https://github.com/rezaiyan/PassKi/blob/main/docs/guides/troubleshooting.md): Symptom first: AND-03, Play builds, IOS-02, the web
+
+## Setup checks
+
+- [Check catalog](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/README.md): every check ID used by errors, PasskeyDoctor, passkiCheck and the web verifier
+- [AND-01](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/AND-01.md): assetlinks.json reachable
+- [AND-02](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/AND-02.md): Login credentials delegated to the app
+- [AND-03](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/AND-03.md): Signing certificate listed
+- [AND-04](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/AND-04.md): Google Digital Asset Links agrees
+- [AND-05](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/AND-05.md): Play App Signing key listed
+- [AND-06](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/AND-06.md): PassKi initialised in the app
+- [IOS-01](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/IOS-01.md): apple-app-site-association reachable
+- [IOS-02](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/IOS-02.md): App listed under webcredentials
+- [IOS-03](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/IOS-03.md): Apple CDN has the app
+- [IOS-04](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/IOS-04.md): Entitlements list webcredentials
+- [IOS-05](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/IOS-05.md): Entitlements wired into the Xcode build
+- [IOS-06](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/IOS-06.md): Built app carries the entitlement
+- [SRV-01](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/SRV-01.md): Server RP ID matches
+- [SRV-02](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/SRV-02.md): Server allows all origins
+- [SRV-03](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/SRV-03.md): Server options are valid WebAuthn
+- [CFG-01](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/CFG-01.md): RP ID is a bare domain
+- [DEV-01](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/DEV-01.md): Android device can store passkeys
+- [DEV-02](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/DEV-02.md): iOS device can use passkeys
+- [DEV-03](https://github.com/rezaiyan/PassKi/blob/main/docs/checks/DEV-03.md): Platform supports passkeys
+
+## Optional
+
+- [README](https://github.com/rezaiyan/PassKi/blob/main/README.md): the overview
+- [CHANGELOG](https://github.com/rezaiyan/PassKi/blob/main/CHANGELOG.md): every change per release, with migration notes

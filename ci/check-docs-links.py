@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 """Fails when a relative link or #anchor in the README, CONTRIBUTING or docs/ points nowhere.
 
+Also fails when:
+- README.md is longer than README_LIMIT lines (details belong on docs pages; raise the limit deliberately),
+- docs/guides/what-to-show-users.md has no table row for a PasskeyError subtype,
+- a page in docs/guides/ names a check ID that isn't in docs/checks/catalog.json,
+- a link in passki-web/public/llms.txt doesn't resolve to a file in this repository.
+
 Usage: python3 ci/check-docs-links.py   (from the repository root)
 """
+import json
 import os
 import re
 import sys
@@ -29,8 +36,55 @@ def anchors(path):
     return found
 
 
+README_LIMIT = 150
+REPO_URL = "https://github.com/rezaiyan/PassKi/blob/main/"
+ERRORS_PAGE = os.path.join("docs", "guides", "what-to-show-users.md")
+LLMS_TXT = os.path.join("passki-web", "public", "llms.txt")
+
+
+def read(name):
+    with open(os.path.join(ROOT, name), encoding="utf-8") as f:
+        return f.read()
+
+
+def readme_length():
+    lines = read("README.md").count("\n")
+    return [f"README.md: {lines} lines, more than {README_LIMIT}"] if lines > README_LIMIT else []
+
+
+def error_table():
+    """Every PasskeyError subtype needs a row in the "What to show users" table."""
+    source = read(os.path.join("passki", "src", "commonMain", "kotlin", "com", "alirezaiyan", "passki", "PasskeyError.kt"))
+    subtypes = re.findall(r"public (?:data object|class) (\w+)\b[^{]*?: PasskeyError\(\)", source, re.S)
+    rows = set(re.findall(r"^\| `(\w+)` \|", read(ERRORS_PAGE), re.M))
+    return [f"{ERRORS_PAGE}: no row for PasskeyError.{name}" for name in subtypes if name not in rows]
+
+
+def guide_check_ids():
+    catalog = {check["id"] for check in json.loads(read(os.path.join("docs", "checks", "catalog.json")))["checks"]}
+    problems = []
+    guides = os.path.join(ROOT, "docs", "guides")
+    for name in sorted(os.listdir(guides)):
+        for check_id in sorted(set(re.findall(r"\b(?:AND|IOS|CFG|DEV|SRV)-\d{2}\b", read(os.path.join("docs", "guides", name))))):
+            if check_id not in catalog:
+                problems.append(f"docs/guides/{name}: {check_id} is not in docs/checks/catalog.json")
+    return problems
+
+
+def llms_txt():
+    problems = []
+    for link in re.findall(r"\]\(([^)\s]+)\)", read(LLMS_TXT)):
+        if not link.startswith(REPO_URL):
+            problems.append(f"{LLMS_TXT}: {link} is not a {REPO_URL} link")
+            continue
+        target = link[len(REPO_URL):].partition("#")[0]
+        if not os.path.exists(os.path.join(ROOT, target)):
+            problems.append(f"{LLMS_TXT}: {link} (no such file)")
+    return problems
+
+
 def main():
-    broken = []
+    broken = readme_length() + error_table() + guide_check_ids() + llms_txt()
     for name in FILES:
         path = os.path.join(ROOT, name)
         with open(path, encoding="utf-8") as f:

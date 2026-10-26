@@ -49,8 +49,10 @@ Gradle runs with the configuration cache on (`gradle.properties`). Keep new task
   :shared:jvmTest :androidApp:assembleDebug dokkaGenerate
 ./gradlew -p passki-gradle-plugin test
 (cd passki-web && npm ci && npm test)
-python3 ci/check-docs-links.py
+python3 ci/check-docs-links.py   # links, README under 150 lines, error table, llms.txt
 python3 ci/check-xcode-project.py
+python3 ci/check-open-types.py
+python3 ci/check-network-use.py  # no network calls outside PasskeyDoctor (docs/security-model.md)
 ```
 
 `ci/check-xcode-project.py` fails when `iosApp/iosApp.xcodeproj/project.pbxproj` hardcodes a team, bundle ID or
@@ -67,8 +69,14 @@ CI (`.github/workflows/ci.yml`) runs the same checks, plus two that protect the 
 | iOS, API dumps and consumer apps | macOS 26 (`main`, pull requests and manual runs only: macOS minutes cost 10x on a private repository) | iOS simulator tests, ABI dumps, the Xcode build of the iOS sample, and the [consumer apps](ci/consumers/README.md): an app on Kotlin 2.2.21 and an Android app on AGP's built-in Kotlin with `compileSdk` 35, both using PassKi from Maven Local |
 
 The macOS job also runs `ci/doc-snippets.py`: every Kotlin example in the README and `docs/` must compile against the
-published artifacts, every `passki { }` block must configure, and every `com.alirezaiyan.passki` coordinate must name a
+published artifacts, every ```` ```kotlin server ```` example must compile and its tests pass against webauthn4j and
+java-webauthn-server, every `passki { }` block must configure, and every `com.alirezaiyan.passki` coordinate must name a
 published artifact and the current version. When you change an example, run it locally after publishing to Maven Local.
+
+The plugin's TestKit tests must run, not skip: a skipped functional test hides a broken plugin.
+
+CI can't tap through a passkey sheet or Face ID. Before a release, run the iOS steps in
+[`ci/manual-checks-ios.md`](ci/manual-checks-ios.md).
 
 The consumer apps fail when a Kotlin or dependency upgrade would lock out apps on older toolchains. Run them locally
 with the commands in [`ci/consumers/README.md`](ci/consumers/README.md).

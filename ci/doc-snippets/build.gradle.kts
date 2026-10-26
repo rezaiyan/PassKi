@@ -24,5 +24,13 @@ kotlin {
                 implementation("org.jetbrains.compose.material3:material3:1.10.0-alpha05")
             }
         }
+        // Server examples (```kotlin server blocks): compiled and run as tests against real server libraries.
+        jvmTest {
+            kotlin.srcDir(layout.buildDirectory.dir("generated/server-snippets"))
+            dependencies {
+                implementation("com.webauthn4j:webauthn4j-core:0.30.0.RELEASE")
+                implementation("com.yubico:webauthn-server-core:2.7.0")
+            }
+        }
     }
 }

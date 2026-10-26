@@ -83,6 +83,12 @@ class PasskeyResultTest {
         )
     }
 
+    @Test
+    fun passwordToStringHidesThePassword() {
+        val credential = SignInCredential.Password("alice", "correct horse")
+        assertEquals("SignInCredential.Password(id=alice, password=***)", credential.toString())
+    }
+
     private val success: PasskeyResult<Int> = PasskeyResult.Success(1)
     private val failure: PasskeyResult<Int> = PasskeyResult.Failure(PasskeyError.NoCredentials)
 

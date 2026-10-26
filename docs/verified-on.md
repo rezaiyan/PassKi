@@ -79,4 +79,4 @@ Earlier registration responses from both platforms were also checked with webaut
 
 ---
 
-[← README](../README.md)
+[← Docs](README.md)

@@ -54,4 +54,4 @@ blobs are secrets, so `PrfResults.toString()` prints only their sizes.
 
 ---
 
-[← README](../README.md)
+[← Docs](README.md)
