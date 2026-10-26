@@ -4,12 +4,14 @@ import {
   byteLength,
   fetchProblem,
   isJsonContentType,
+  isWebPage,
   parseJson,
   plural,
   result,
   strings,
 } from "./common";
 import type { CheckResult, Fetched, VerifyInput } from "./types";
+import { webPageText } from "@/lib/catalog";
 
 export function webcredentialsApps(json: unknown): string[] {
   return strings(asObject(asObject(json)?.webcredentials)?.apps);
@@ -43,6 +45,17 @@ export function checkAasa(
   const out: CheckResult[] = [];
   const params = { rpId };
   const problem = fetchProblem(direct);
+  if (!problem && isWebPage(direct)) {
+    const text = webPageText("IOS-01", direct.url, "apple-app-site-association");
+    out.push(result("IOS-01", "fail", text.message, { fixParams: params, hint: text.fix }));
+    const subjects = expected.length ? expected.map(label) : [undefined];
+    for (const subject of subjects)
+      out.push(
+        result("IOS-02", "skip", "apple-app-site-association is a web page", { subject }),
+        result("IOS-03", "skip", "apple-app-site-association is a web page", { subject }),
+      );
+    return out;
+  }
   const json = problem ? undefined : parseJson(direct.body);
   if (problem || !asObject(json)) {
     out.push(

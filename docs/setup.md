@@ -29,6 +29,10 @@ With the [Gradle plugin](#gradle-plugin) applied to your Android app module:
   setting). It never edits `project.pbxproj`.
 - It writes your server's RP ID and allowed origins to `build/passki/server-config.json`, plus ready-made code for
   SimpleWebAuthn, webauthn4j, java-webauthn-server and py_webauthn.
+- When the RP ID is a bare domain such as `example.com` and its live well-known files already list other apps, it
+  warns: passkeys belong to the RP ID and can't move later, so a company domain shared by several products is usually
+  the wrong choice, and a subdomain such as `app.example.com` is safer. The warning never fails the task; it is skipped
+  with `--offline` and turned off with `-Ppasski.setup.sharedRpIdCheck=false`.
 
 You can run it again at any time. It ends with a list of every file it created, changed or left unchanged, a diff of
 your own files (entitlements, `xcconfig`), and the next steps. With `--preview` it prints the same list and writes

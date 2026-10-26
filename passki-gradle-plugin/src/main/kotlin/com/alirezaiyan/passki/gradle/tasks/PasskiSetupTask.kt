@@ -2,10 +2,12 @@ package com.alirezaiyan.passki.gradle.tasks
 
 import com.alirezaiyan.passki.gradle.PasskiConfigException
 import com.alirezaiyan.passki.gradle.WellKnownFiles
+import com.alirezaiyan.passki.gradle.check.Http
 import com.alirezaiyan.passki.gradle.setup.DemoRegistration
 import com.alirezaiyan.passki.gradle.setup.Entitlements
 import com.alirezaiyan.passki.gradle.setup.FileChanges
 import com.alirezaiyan.passki.gradle.setup.ServerConfig
+import com.alirezaiyan.passki.gradle.setup.SharedRpId
 import com.alirezaiyan.passki.gradle.setup.Xcconfig
 import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
@@ -16,6 +18,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
 import org.gradle.work.DisableCachingByDefault
 import java.io.File
+import java.time.Duration
 
 /**
  * One-shot, idempotent setup driven by `passki { }`:
@@ -51,8 +54,22 @@ public abstract class PasskiSetupTask : PasskiAppleTask() {
     @get:Internal
     public abstract val rootDirectory: DirectoryProperty
 
+    /** Whether to warn about an RP ID shared with other apps (Gradle property `passki.setup.sharedRpIdCheck`). */
+    @get:Internal
+    public abstract val sharedRpIdCheck: Property<Boolean>
+
+    /** Overrides `https://<rpId>` for that check (Gradle property `passki.check.baseUrl`); for tests. */
+    @get:Internal
+    public abstract val baseUrl: Property<String>
+
+    /** `--offline`: the shared RP ID check is skipped. */
+    @get:Internal
+    public abstract val offline: Property<Boolean>
+
     init {
         preview.convention(false)
+        sharedRpIdCheck.convention(true)
+        offline.convention(false)
     }
 
     @TaskAction
@@ -80,6 +97,7 @@ public abstract class PasskiSetupTask : PasskiAppleTask() {
 
         // 1. Well-known files: generated for your domain, or the app registered with the demo server.
         val failed = if (demoMode()) registerWithDemo(byPackage, appIds, changes, steps) else writeWellKnown(rp, out, byPackage, appIds, changes, steps)
+        if (!demoMode()) warnIfRpIdIsShared(rp, byPackage.keys, appIds.toSet())
 
         // 2 + 3. iOS entitlements and their wiring.
         if (apple.configured) setupIos(rp, apple, changes, steps)
@@ -103,6 +121,22 @@ public abstract class PasskiSetupTask : PasskiAppleTask() {
         if (failed.isNotEmpty()) {
             throw GradleException("passkiSetup: demo registration failed for ${failed.joinToString()}. See the summary above.")
         }
+    }
+
+    /** Best effort: any network or parsing problem just skips the warning; it never fails the task. */
+    private fun warnIfRpIdIsShared(rp: String, packages: Set<String>, appIds: Set<String>) {
+        if (!sharedRpIdCheck.get() || offline.get() || !SharedRpId.isBareDomain(rp)) return
+        val base = baseUrl.orNull?.trimEnd('/') ?: "https://$rp"
+        val http = Http(Duration.ofSeconds(5))
+        val others = runCatching {
+            SharedRpId.otherApps(
+                packages,
+                appIds,
+                http.get("$base/.well-known/${PasskiWellKnownTask.ASSET_LINKS}").response,
+                http.get("$base/.well-known/${PasskiWellKnownTask.AASA}").response,
+            )
+        }.getOrDefault(emptyList())
+        if (others.isNotEmpty()) logger.warn(SharedRpId.warning(rp, others))
     }
 
     private fun writeWellKnown(

@@ -1,6 +1,7 @@
 package com.alirezaiyan.passki.gradle
 
 import com.alirezaiyan.passki.gradle.WellKnownVerifier.Expected
+import com.alirezaiyan.passki.gradle.check.Catalog
 import com.alirezaiyan.passki.gradle.WellKnownVerifier.Fetched
 import com.alirezaiyan.passki.gradle.WellKnownVerifier.Problem
 import com.alirezaiyan.passki.gradle.WellKnownVerifier.Severity
@@ -80,7 +81,7 @@ internal class WellKnownVerifierTest {
 
     @Test
     fun nonJsonBodyIsAnError() {
-        val problem = verify(assetLinks = json("<html>hi</html>")).single("not valid JSON")
+        val problem = verify(assetLinks = json("""[{"relation":""")).single("not valid JSON")
 
         assertEquals(Severity.ERROR, problem.severity)
     }
@@ -193,5 +194,51 @@ internal class WellKnownVerifierTest {
         assertEquals(listOf("IOS-02"), ids(verify(aasa = json(WellKnownFiles.aasa(listOf("X.y"))))))
         assertEquals(listOf("IOS-01"), ids(verify(aasa = json(WellKnownFiles.aasa(listOf("ABCDE12345.com.example.app")), contentType = "text/plain"))))
         assertEquals(listOf("IOS-04"), ids(verify(entitlements = entitlements("webcredentials:other.com"))))
+    }
+
+    @Test
+    fun webPageAtAssetLinksIsAnd01WithHostingFix() {
+        val problem = verify(assetLinks = json(SPA_INDEX_HTML, "text/html; charset=utf-8"))
+            .single("served a web page, not assetlinks.json")
+
+        assertEquals("AND-01", problem.id)
+        assertEquals("https://example.com/.well-known/assetlinks.json served a web page, not assetlinks.json", problem.message)
+        assertTrue("catch-all route" in problem.fix, problem.fix)
+        assertEquals(Severity.ERROR, problem.severity)
+    }
+
+    @Test
+    fun webPageAtAasaIsIos01() {
+        val problem = verify(aasa = json(SPA_INDEX_HTML, "text/html")).single("served a web page")
+
+        assertEquals("IOS-01", problem.id)
+        assertTrue(problem.message.endsWith("not apple-app-site-association"), problem.message)
+    }
+
+    @Test
+    fun nonJsonTextHtmlIsAWebPage() {
+        verify(assetLinks = json("Not here", "text/html")).single("served a web page")
+    }
+
+    @Test
+    fun jsonServedAsTextHtmlIsCheckedAsJson() {
+        val problems = verify(aasa = json(WellKnownFiles.aasa(listOf("ABCDE12345.com.example.app")), "text/html"))
+
+        assertTrue(problems.none { "web page" in it.message }, problems.toString())
+        problems.single("Content-Type")
+    }
+
+    @Test
+    fun webPageTextComesFromTheCatalog() {
+        val problem = verify(assetLinks = json(SPA_INDEX_HTML)).single("served a web page")
+        val text = Catalog.bundled["AND-01"].webPage!!
+        assertEquals(text.fix("https://example.com/.well-known/assetlinks.json", "assetlinks.json"), problem.fix)
+    }
+
+    private companion object {
+        /** Same body as passki's commonTest `SPA_INDEX_HTML` and passki-web's fixture: one response for all three checkers. */
+        const val SPA_INDEX_HTML: String =
+            "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\"><title>App</title></head>" +
+                "<body><div id=\"root\"></div><script src=\"/assets/index.js\"></script></body></html>\n"
     }
 }

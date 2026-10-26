@@ -37,6 +37,24 @@ it as a word suggestion instead of the passkeys. Sign-out now clears the field.
 - `upgrade()`: declined by the credential provider and reported as `NotSupported`, as expected.
 - Setup check: `PasskeyDoctor` has 0 failures; SRV-01 and SRV-02 pass.
 
+## Known failure: Pixel 9 Pro Fold emulator, 2026-10-24/25
+
+On this emulator every passkey creation failed with Play services error 50152 "RP ID cannot be validated"
+(`Misconfigured`, AND-03), for the sample app on the demo domain and for another app on its own domain. Both work on a
+physical phone, and `PasskeyDoctor` passed AND-01 and AND-03 on the emulator. The cause isn't known.
+
+| | |
+|---|---|
+| Device profile | `pixel_9_pro_fold` |
+| System image | `system-images/android-36/google_apis_playstore/arm64-v8a`, revision 7 (build `BE2A.250530.026.D1`) |
+| Play services | 25.08.34 during the failing runs; it updated itself to 26.41.31 when the emulator booted on 2026-10-26 |
+| Device state | Google account signed in, screen lock set |
+
+Re-running it needs a Google account signed in and a screen lock again (on 2026-10-26 neither was set, so the
+emulator only offered "Create passkey on another device"). If it still fails with Play services 26.41.31, try a
+physical device or another system image. Since then, AND-03 errors name the app's signing fingerprint and add an
+emulator note, so this case can be told apart from a missing fingerprint.
+
 ## iOS 26.3 simulator (Face ID)
 
 - Create a passkey. The response was saved as an `ios` fixture on the demo server.

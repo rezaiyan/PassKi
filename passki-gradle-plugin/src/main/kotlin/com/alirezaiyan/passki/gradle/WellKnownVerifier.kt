@@ -1,5 +1,6 @@
 package com.alirezaiyan.passki.gradle
 
+import com.alirezaiyan.passki.gradle.check.Catalog
 import com.alirezaiyan.passki.gradle.check.CheckIds
 import groovy.json.JsonSlurper
 import org.w3c.dom.Element
@@ -61,12 +62,25 @@ internal object WellKnownVerifier {
                 return null
             }
         }
-        return try {
-            JsonSlurper().parseText(fetched.body)
-        } catch (e: Exception) {
+        val parsed = runCatching { JsonSlurper().parseText(fetched.body) }
+        if (isWebPage(fetched, parsed.isSuccess)) {
+            val text = Catalog.bundled[id].webPage ?: error("catalog entry $id has no html text")
+            problems += Problem(text.message(url, file), text.fix(url, file), id = id)
+            return null
+        }
+        return parsed.getOrElse { e ->
             problems += Problem("$url is not valid JSON: ${e.message?.lineSequence()?.firstOrNull()}", upload, id = id)
             null
         }
+    }
+
+    /**
+     * A web page instead of the file (typically a single-page app's catch-all route): the body starts with `<`, or it
+     * is served as text/html and isn't JSON. Same rule as PasskeyDoctor and the passki-web verifier.
+     */
+    private fun isWebPage(fetched: Fetched, isJson: Boolean): Boolean {
+        if (fetched.body.trimStart('\uFEFF', ' ', '\t', '\r', '\n').startsWith("<")) return true
+        return fetched.contentType.orEmpty().contains("text/html", ignoreCase = true) && !isJson
     }
 
     private fun checkAssetLinks(expected: Expected, fetched: Fetched): List<Problem> {

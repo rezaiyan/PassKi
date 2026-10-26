@@ -83,10 +83,15 @@ internal class AndroidTestProject(val dir: File) {
         )
     }
 
+    // passkiSetup's shared RP ID check fetches https://<rpId>/.well-known/; tests opt in explicitly so builds stay offline.
     fun runner(vararg args: String): GradleRunner = GradleRunner.create()
         .withProjectDir(dir)
         .withPluginClasspath()
-        .withArguments(*args, "--stacktrace")
+        .withArguments(
+            *args,
+            *listOf(NO_SHARED_RP_ID_CHECK).filter { default -> args.none { it.startsWith(default.substringBefore('=')) } }.toTypedArray(),
+            "--stacktrace",
+        )
         .forwardOutput()
 
     fun build(vararg args: String): BuildResult = runner(*args).build()
@@ -94,6 +99,8 @@ internal class AndroidTestProject(val dir: File) {
     fun buildAndFail(vararg args: String): BuildResult = runner(*args).buildAndFail()
 
     companion object {
+        private const val NO_SHARED_RP_ID_CHECK = "-Ppasski.setup.sharedRpIdCheck=false"
+
         val sdkDir: File? = System.getenv("ANDROID_HOME")?.let(::File)?.takeIf { it.isDirectory }
 
         private val keytoolBinary: String =

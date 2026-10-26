@@ -1,9 +1,11 @@
+import { webPageText } from "@/lib/catalog";
 import { normalizeFingerprint } from "@/lib/fingerprints";
 import {
   asObject,
   byteLength,
   fetchProblem,
   isJsonContentType,
+  isWebPage,
   parseJson,
   plural,
   result,
@@ -80,6 +82,13 @@ export function checkAssetLinks(
     return out.concat(
       skipDependents("assetlinks.json is not reachable", expected),
     );
+  }
+  if (isWebPage(fetched)) {
+    const text = webPageText("AND-01", fetched.url, "assetlinks.json");
+    out.push(
+      result("AND-01", "fail", text.message, { fixParams: params, hint: text.fix }),
+    );
+    return out.concat(skipDependents("assetlinks.json is a web page", expected));
   }
   const statements = parseStatements(fetched.body);
   if (!statements) {

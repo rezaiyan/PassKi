@@ -50,6 +50,10 @@ public class PasskiPlugin : Plugin<Project> {
                 task.developerMode.set(extension.apple.developerMode)
                 task.outputDir.set(project.layout.buildDirectory.dir("passki"))
                 task.rootDirectory.set(project.rootProject.layout.projectDirectory)
+                val providers = project.providers
+                task.sharedRpIdCheck.set(providers.gradleProperty("passki.setup.sharedRpIdCheck").map { it.toBoolean() }.orElse(true))
+                task.baseUrl.set(providers.gradleProperty("passki.check.baseUrl"))
+                task.offline.set(project.gradle.startParameter.isOffline)
             }
             project.tasks.register("passkiCheck", PasskiCheckTask::class.java) { task ->
                 task.group = GROUP

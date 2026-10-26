@@ -22,8 +22,25 @@ internal object CheckIds {
     val all: List<String> = listOf(AND_01, AND_02, AND_03, AND_04, AND_05, IOS_01, IOS_02, IOS_03, IOS_04, IOS_05, IOS_06, SRV_01, SRV_02, SRV_03)
 }
 
-/** One entry of the shared setup check catalog. */
-internal data class CatalogEntry(val id: String, val platform: String, val severity: String, val title: String, val fix: String)
+/**
+ * One entry of the shared setup check catalog. [webPage] is the message and fix for a hosted file that came back as a
+ * web page (AND-01, IOS-01), with `<url>` and `<file>` placeholders.
+ */
+internal data class CatalogEntry(
+    val id: String,
+    val platform: String,
+    val severity: String,
+    val title: String,
+    val fix: String,
+    val webPage: WebPageText? = null,
+)
+
+/** The catalog's `html` entry: what to say when a well-known path serves a web page. */
+internal data class WebPageText(val message: String, val fix: String) {
+    fun message(url: String, file: String): String = message.replace("<url>", url).replace("<file>", file)
+
+    fun fix(url: String, file: String): String = fix.replace("<url>", url).replace("<file>", file)
+}
 
 /**
  * The shared setup check catalog (`docs/checks/catalog.json`, bundled into the plugin jar at build time):
@@ -64,6 +81,7 @@ internal class Catalog(val version: Int, private val docsBase: String, private v
                     severity = e["severity"].toString(),
                     title = e["title"].toString(),
                     fix = e["fix"].toString(),
+                    webPage = (e["html"] as? Map<*, *>)?.let { WebPageText(it["message"].toString(), it["fix"].toString()) },
                 )
             }
             return Catalog((root["version"] as Number).toInt(), root["docsBase"].toString(), root["docsRepo"] as String?, entries)

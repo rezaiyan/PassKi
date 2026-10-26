@@ -52,6 +52,19 @@ export function fetchProblem(f: Fetched): string | null {
   return null;
 }
 
+/**
+ * A web page instead of the well-known file (typically a single-page app's catch-all route): the body starts with
+ * `<`, or it is served as text/html and isn't JSON. Same rule as the Kotlin doctor's `HttpResult.isWebPage`.
+ */
+export function isWebPage(f: Fetched): boolean {
+  const text = (f.body ?? "").replace(/^[\uFEFF\s]+/, "");
+  if (text.startsWith("<")) return true;
+  return (
+    (f.contentType ?? "").toLowerCase().includes("text/html") &&
+    parseJson(text) === undefined
+  );
+}
+
 export function parseJson(body: string): unknown {
   try {
     return JSON.parse(body);

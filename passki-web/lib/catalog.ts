@@ -9,6 +9,8 @@ export interface CatalogCheck {
   severity: Severity;
   title: string;
   fix: string;
+  /** AND-01 / IOS-01: message and fix when a well-known path serves a web page (`<url>`, `<file>` placeholders). */
+  html?: { message: string; fix: string };
 }
 
 export interface Catalog {
@@ -103,4 +105,12 @@ export function groupByPlatform(
 /** "Edit on GitHub" URL for a check page; null unless the catalog sets docsRepo. */
 export function editUrl(id: string, repo: string | undefined): string | null {
   return repo ? `${repo}${id}.md` : null;
+}
+
+/** The catalog's web-page message and fix for [id] (AND-01, IOS-01), filled for [url] and [file]. */
+export function webPageText(id: string, url: string, file: string): { message: string; fix: string } {
+  const html = check(id).html;
+  if (!html) throw new Error(`Check ${id} has no html text in the catalog`);
+  const fill = (text: string) => text.replaceAll("<url>", url).replaceAll("<file>", file);
+  return { message: fill(html.message), fix: fill(html.fix) };
 }

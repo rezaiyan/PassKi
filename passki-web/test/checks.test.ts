@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { catalog, editUrl, fixText, groupByPlatform, platformLabel } from "@/lib/catalog";
+import { catalog, editUrl, fixText, groupByPlatform, platformLabel, webPageText } from "@/lib/catalog";
 import { checkAasa } from "@/lib/checks/aasa";
 import {
   checkAssetLinks,
@@ -214,6 +214,61 @@ describe("AND-01..03 assetlinks", () => {
     const rs = checkAssetLinks(RP, ok(AL, fixture("assetlinks.live.json")), []);
     expect(one(rs, "AND-02").message).toContain(PKG);
     expect(one(rs, "AND-03").status).toBe("skip");
+  });
+});
+
+describe("web page at a well-known path (AND-01 / IOS-01)", () => {
+  // Same body as passki's commonTest SPA_INDEX_HTML and the plugin's WellKnownVerifierTest.
+  const spa = fixture("spa-index.html");
+  const html = "text/html; charset=utf-8";
+
+  it("should fail AND-01 with the catalog web-page text and skip the dependents", () => {
+    const rs = checkAssetLinks(RP, ok(AL, spa, html), [{ packageName: PKG, fingerprints: [FP] }]);
+    const and01 = one(rs, "AND-01");
+    expect(and01.status).toBe("fail");
+    expect(and01.message).toBe(`${AL} served a web page, not assetlinks.json`);
+    expect(and01.hint).toBe(webPageText("AND-01", AL, "assetlinks.json").fix);
+    expect(and01.hint).toContain("catch-all route");
+    expect(one(rs, "AND-02").status).toBe("skip");
+  });
+
+  it("should treat an HTML body as a web page whatever the content type", () => {
+    expect(one(checkAssetLinks(RP, ok(AL, spa), []), "AND-01").message).toContain("served a web page");
+  });
+
+  it("should treat non-JSON text/html as a web page", () => {
+    expect(one(checkAssetLinks(RP, ok(AL, "Not here", "text/html"), []), "AND-01").message).toContain(
+      "served a web page",
+    );
+  });
+
+  it("should check JSON served as text/html as JSON", () => {
+    const and01 = one(checkAssetLinks(RP, ok(AL, fixture("assetlinks.live.json"), "text/html"), []), "AND-01");
+    expect(and01.status).toBe("warn");
+    expect(and01.message).toContain("expected application/json");
+  });
+
+  it("should fail IOS-01 with the catalog web-page text", () => {
+    const rs = checkAasa(RP, ok(AA, spa, html), ok(CDN, fixture("aasa.live.json")), [
+      { teamId: TEAM, bundleId: BUNDLE },
+    ]);
+    const ios01 = one(rs, "IOS-01");
+    expect(ios01.status).toBe("fail");
+    expect(ios01.message).toBe(`${AA} served a web page, not apple-app-site-association`);
+    expect(ios01.hint).toBe(webPageText("IOS-01", AA, "apple-app-site-association").fix);
+    expect(one(rs, "IOS-02").status).toBe("skip");
+  });
+
+  it("should keep the catalog html text in step with the Kotlin doctor", () => {
+    const kotlin = readFileSync(
+      join(__dirname, "..", "..", "passki", "src", "commonMain", "kotlin", "com", "alirezaiyan", "passki", "internal", "doctor", "HttpFetch.kt"),
+      "utf8",
+    );
+    for (const id of ["AND-01", "IOS-01"]) {
+      const html = catalog.checks.find((c) => c.id === id)?.html;
+      expect(html?.message).toBe("<url> served a web page, not <file>");
+      expect(kotlin).toContain(`"${html?.message}"`);
+    }
   });
 });
 
