@@ -99,7 +99,8 @@ def how_it_works(t):
                style)
 
 
-PHASE = 4  # seconds each stage of the journey diagram stays highlighted
+PHASE = 5  # seconds each stage of the journey diagram stays highlighted
+ROW = 0.9  # seconds between the "underneath" rows lighting up within a stage
 
 
 def journey(t):
@@ -125,28 +126,41 @@ def journey(t):
                 f'<path d="M{x + 4.5} {y} h9 v3 M{x + 10} {y} v3" fill="none" stroke="{color}" stroke-width="2" '
                 f'stroke-linecap="round"/>')
 
+    # What happens underneath each stage: (who, label, lines); a line starting with "`" is code.
     stages = [
-        ("server", "Sign in as today", ["Your existing login: password,", "Google or Apple. No passkey yet."],
-         "your current sign-in"),
-        ("passki", "Add a passkey", ["Signed in, in Settings. Your server", "stores the new passkey."],
-         "passkeys.register(options)"),
-        ("os", "Next time: one tap", ["The device offers the passkey,", "your server verifies it."],
-         "passkeys.signIn(options)"),
+        ("server", "Sign in as today", [
+            ("text", "YOUR APP", ["Sends the password, or the Google", "or Apple token, as it does today."]),
+            ("server", "YOUR SERVER", ["Checks it and starts a session", "for alice. Nothing changes here."]),
+            ("muted", "NO PASSKEY YET", ["Signed in, alice can now add one", "in Settings."]),
+        ]),
+        ("passki", "Add a passkey", [
+            ("server", "YOUR SERVER", ["Sends creation options: a fresh", "challenge, alice's user handle, rp.id."]),
+            ("passki", "PASSKI", ["`passkeys.register(options)`", "shows the system sheet."]),
+            ("os", "THE DEVICE", ["Makes a new key pair. The private", "key stays in her password manager."]),
+            ("server", "YOUR SERVER", ["Verifies the response, then stores", "the public key and credential ID."]),
+        ]),
+        ("os", "Next time: one tap", [
+            ("server", "YOUR SERVER", ["Sends request options with a new", "challenge. No username needed."]),
+            ("passki", "PASSKI", ["`passkeys.signIn(options)`", "shows alice's passkey."]),
+            ("os", "THE DEVICE", ["Her fingerprint unlocks the private", "key, which signs the challenge."]),
+            ("server", "YOUR SERVER", ["Checks the signature with the", "stored public key: she's signed in."]),
+        ]),
     ]
     # Timeline across the top, with a dot moving along it.
     first, last = panel_w / 2, width - panel_w / 2
     body.append(f'<line x1="{first}" y1="22" x2="{last}" y2="22" stroke="{t["stroke"]}" stroke-width="2"/>')
     body.append(f'<circle class="traveller" cx="{first}" cy="22" r="4" fill="{t["passki"]}"/>')
-    for i, (kind, title, desc, code) in enumerate(stages):
+    panel_h = 496
+    for i, (kind, title, rows) in enumerate(stages):
         x0 = i * (panel_w + gap)
         cx = x0 + panel_w / 2
         color = t[kind]
         body.append(f'<circle cx="{cx}" cy="22" r="12" fill="{color}"/>')
         body.append(text(cx, 26.5, str(i + 1), 12, "#ffffff", "700", anchor="middle"))
         body.append(text(cx, 56, title, 15, t["text"], "600", anchor="middle"))
-        body.append(rect(x0, top - 8, panel_w, 348, t["card"], 14, f'stroke="{t["stroke"]}"'))
+        body.append(rect(x0, top - 8, panel_w, panel_h, t["card"], 14, f'stroke="{t["stroke"]}"'))
         body.append(f'<rect class="stage" style="animation-delay:{i * PHASE}s" x="{x0}" y="{top - 8}" '
-                    f'width="{panel_w}" height="348" rx="14" fill="none" stroke="{color}" stroke-width="2"/>')
+                    f'width="{panel_w}" height="{panel_h}" rx="14" fill="none" stroke="{color}" stroke-width="2"/>')
         # The phone and its screen.
         px, py = cx - phone_w / 2, top + 6
         body.append(f'<clipPath id="screen{i}"><rect x="{px + 5}" y="{py + 5}" width="{phone_w - 10}" '
@@ -182,12 +196,32 @@ def journey(t):
                      button(sx + 8, py + 185, sw - 16, "Continue", t["os"], "#ffffff")]
             screen.append(f'<g class="sheet" style="animation-delay:{i * PHASE}s">{"".join(sheet)}</g>')
         body.append(f'<g clip-path="url(#screen{i})">{"".join(screen)}</g>')
-        # What happens, and the call.
-        body.append(lines(cx, top + 246, desc, 12.5, t["muted"], 18, anchor="middle"))
-        body.append(rect(x0 + 24, top + 290, panel_w - 48, 28, t["code"], 6))
-        body.append(text(cx, top + 308, code, 11.5, t["text"] if i else t["muted"], family=MONO, anchor="middle"))
+        # Underneath: who does what, in order, joined by a thin line.
+        rx_, ry = x0 + 26, top + 264
+        body.append(f'<line x1="{x0 + 20}" y1="{top + 236}" x2="{x0 + panel_w - 20}" y2="{top + 236}" '
+                    f'stroke="{t["stroke"]}"/>')
+        body.append(text(x0 + 20, top + 252, "UNDERNEATH", 9.5, t["muted"], "700"))
+        body.append(f'<line x1="{rx_}" y1="{ry}" x2="{rx_}" y2="{ry + (len(rows) - 1) * 54}" stroke="{t["stroke"]}" '
+                    f'stroke-width="2"/>')
+        for r, (who, label, row_lines) in enumerate(rows):
+            y = ry + r * 54
+            row = [f'<circle cx="{rx_}" cy="{y}" r="5" fill="{t[who]}" stroke="{t["card"]}" stroke-width="2"/>',
+                   text(rx_ + 14, y + 3.5, label, 9.5, t[who], "700")]
+            for n, line in enumerate(row_lines):
+                code = line.startswith("`")
+                row.append(text(rx_ + 14, y + 20 + n * 15, line.strip("`"), 11 if code else 11.5,
+                                t["text"], family=MONO if code else SANS))
+            delay = i * PHASE + 0.4 + r * ROW
+            body.append(f'<g class="row{r}" style="animation-delay:{delay:.2f}s">{"".join(row)}</g>')
     loop = 3 * PHASE
-    style = (
+    # A row lights up in its turn and stays lit until its stage ends; at rest (no motion) every row is lit.
+    rows_css = ""
+    for r in range(4):
+        hold = (PHASE - 0.4 - r * ROW) / loop * 100
+        rows_css += (f".row{r}{{animation:row{r} {loop}s ease-out infinite backwards}}"
+                     f"@keyframes row{r}{{0%{{opacity:.5}}3%{{opacity:1}}{hold:.1f}%{{opacity:1}}"
+                     f"{hold + 3:.1f}%{{opacity:.5}}100%{{opacity:.5}}}}")
+    style = rows_css + (
         f".stage{{opacity:0;animation:stage {loop}s ease-in-out infinite}}"
         f"@keyframes stage{{0%{{opacity:0}}4%{{opacity:1}}30%{{opacity:1}}34%{{opacity:0}}100%{{opacity:0}}}}"
         # Each sheet rises when its stage starts and stays up; it rests up when motion is off.
@@ -197,9 +231,11 @@ def journey(t):
         f"@keyframes traveller{{0%,25%{{transform:translateX(0)}}33%,58%{{transform:translateX({panel_w + gap}px)}}"
         f"66%,92%{{transform:translateX({2 * (panel_w + gap)}px)}}100%{{transform:translateX(0)}}}}"
     )
-    return svg(width, top + 352, "".join(body), "The user's journey with PassKi: 1. they sign in as today, with a "
+    return svg(width, top + panel_h, "".join(body), "The user's journey with PassKi: 1. they sign in as today, with a "
                "password, Google or Apple; 2. signed in, they add a passkey in Settings (passkeys.register); "
-               "3. next time they sign in with one tap (passkeys.signIn), and your server verifies it.", style)
+               "3. next time they sign in with one tap (passkeys.signIn). Underneath: the device creates a key pair whose "
+               "private key never leaves it, your server stores the public key, and later checks the device's "
+               "signature of a fresh challenge with it.", style)
 
 
 def setup(t):

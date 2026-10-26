@@ -32,12 +32,12 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/media/journey-dark.svg">
-    <img src="docs/media/journey-light.svg" width="880" alt="The user's journey: 1. they sign in as today with a password, Google or Apple; 2. signed in, they add a passkey in Settings and confirm with their fingerprint; 3. next time they tap Sign in with a passkey and confirm, and your server verifies it">
+    <img src="docs/media/journey-light.svg" width="880" alt="The user's journey, with what happens underneath. 1. Sign in as today: your server checks the password or Google or Apple token. 2. Add a passkey in Settings: your server sends a challenge and the user handle, passkeys.register shows the sheet, the device makes a key pair whose private key stays in the password manager, and your server stores the public key. 3. Next time: your server sends a new challenge, passkeys.signIn shows the passkey, the fingerprint unlocks the private key to sign the challenge, and your server checks the signature with the stored public key">
   </picture>
 </p>
 
-People keep signing in the way they do today. Once signed in, they add a passkey, and next time one tap signs them
-in. For each passkey step, your server creates the options and verifies the result; PassKi shows the device's sheet in
+People keep signing in the way they do today. Once signed in, they add a passkey: the device keeps a private key and
+your server a public one. Next time, one tap signs them in. For each passkey step, your server creates the options and verifies the result; PassKi shows the device's sheet in
 between, from `commonMain`:
 
 ```kotlin
