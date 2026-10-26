@@ -119,7 +119,8 @@ CI can't tap through a passkey sheet or Face ID, or catch what R8 only breaks at
    add a rule to `passki/consumer-rules.pro` with a comment saying what needs it.
 3. Bump `VERSION_NAME`, give the CHANGELOG section its date, tag `v<version>` and push the tag. The release workflow
    publishes, then waits until `python3 ci/published-artifacts.py --verify` finds every artifact on Maven Central,
-   then publishes the API reference to GitHub Pages.
+   then creates the GitHub Release (notes from the CHANGELOG section, via `ci/release-notes.py`) and publishes the API
+   reference to GitHub Pages.
 
 ## Secrets
 

@@ -1,7 +1,8 @@
 name: Release
 
 # Publishes the libraries (passki, passki-compose, passki-test, passki-demo), the BOM (passki-bom) and the Gradle plugin
-# to Maven Central, waits until they resolve from repo1.maven.org, and publishes the API reference to GitHub Pages.
+# to Maven Central, waits until they resolve from repo1.maven.org, then creates the GitHub Release (notes from
+# CHANGELOG.md) and publishes the API reference to GitHub Pages.
 #
 # - Push a tag v<VERSION_NAME> (e.g. v0.1.0-alpha02): builds, signs, checks the signatures, then uploads two deployments
 #   (libraries, Gradle plugin) to the Central Portal and releases each one as soon as Central has validated it. There
@@ -151,6 +152,27 @@ jobs:
           version="${{ inputs.verify_version }}"
           [ -n "$version" ] || version=$(sed -n 's/^VERSION_NAME=//p' gradle.properties)
           python3 ci/published-artifacts.py --verify "$version" --timeout-minutes "${{ inputs.verify_minutes || '75' }}"
+
+  # The GitHub Release for the tag: its CHANGELOG section plus install lines. Alphas and betas are pre-releases.
+  github-release:
+    name: GitHub Release
+    needs: verify-published
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(sed -n 's/^VERSION_NAME=//p' gradle.properties)
+          python3 ci/release-notes.py "$version" > notes.md
+          prerelease=""
+          case "$version" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "v$version" --title "PassKi $version" --notes-file notes.md --verify-tag $prerelease
+          echo "GitHub Release: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/v$version" >> "$GITHUB_STEP_SUMMARY"
 
   # One folder per version on the gh-pages branch, plus latest/: https://rezaiyan.github.io/PassKi/
   api-reference:
